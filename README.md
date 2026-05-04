@@ -59,9 +59,11 @@ The `base` path in `vite.config.js` is set to `/portfolio-v3/` to match the GitH
 
 ```
 src/
-├── assets/
+├── styles/
 │   ├── main.css              # Tailwind v4 entry — @theme, @layer base/components
-│   ├── base.css              # Unused (kept for reference)
+│   └── base.css              # Unused (kept for reference)
+│
+├── assets/
 │   ├── Resume.pdf
 │   ├── Cover Letter.docx
 │   ├── MountHoodImage.webp   # Hero right-side image
@@ -111,7 +113,7 @@ All personalizable content lives in the Vue components. Key locations:
 | Form submission endpoint | `ContactForm.vue` → `formspreeEndpoint` |
 | Footer links | `Footer.vue` |
 | AI context (resume/cover letter text) | `data/resumeContext.js` |
-| Design tokens (colors, type scale) | `src/assets/main.css` → `@theme` |
+| Design tokens (colors, type scale) | `src/styles/main.css` → `@theme` |
 
 ---
 

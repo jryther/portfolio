@@ -74,8 +74,16 @@
   </section>
 </template>
 
-<script setup>
-const projects = [
+<script setup lang="ts">
+interface Project {
+  name: string
+  description: string
+  achievements: string[]
+  link: string
+  github: string
+}
+
+const projects: Project[] = [
   {
     name: 'Test Delivery Client Application',
     description: 'Student-facing web application delivering secure assessments to thousands of students. Contributed to modernizing the codebase, improving performance, and ensuring a reliable, accessible user experience.',

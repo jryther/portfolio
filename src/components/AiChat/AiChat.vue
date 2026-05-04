@@ -142,23 +142,28 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, nextTick, onMounted } from 'vue'
-import { loadModel, askQuestion, clearHistory } from '../../services/webllm.js'
-import resumeContext from '../../data/resumeContext.js'
+import { loadModel, askQuestion, clearHistory } from '../../services/webllm'
+import resumeContext from '../../data/resumeContext'
 
-const webGpuSupported  = ref(false)
-const isOpen           = ref(false)
-const modelStarted     = ref(false)
-const modelReady       = ref(false)
-const loadingText      = ref('Downloading model… this only happens once.')
-const loadingProgress  = ref(0)
-const messages         = ref([])
-const userInput        = ref('')
-const thinking         = ref(false)
-const firstQuestion    = ref(true)
-const firstResponseStarted = ref(false)
-const messagesEl       = ref(null)
+interface ChatMessage {
+  role: 'user' | 'assistant'
+  text: string
+}
+
+const webGpuSupported  = ref<boolean>(false)
+const isOpen           = ref<boolean>(false)
+const modelStarted     = ref<boolean>(false)
+const modelReady       = ref<boolean>(false)
+const loadingText      = ref<string>('Downloading model… this only happens once.')
+const loadingProgress  = ref<number>(0)
+const messages         = ref<ChatMessage[]>([])
+const userInput        = ref<string>('')
+const thinking         = ref<boolean>(false)
+const firstQuestion    = ref<boolean>(true)
+const firstResponseStarted = ref<boolean>(false)
+const messagesEl       = ref<HTMLElement | null>(null)
 
 onMounted(() => {
   // Only show the widget if WebGPU is available

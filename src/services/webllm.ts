@@ -1,23 +1,28 @@
-import { CreateWebWorkerMLCEngine } from '@mlc-ai/web-llm'
+import { CreateWebWorkerMLCEngine, MLCEngineInterface } from '@mlc-ai/web-llm'
 
 const MODEL_ID = 'Llama-3.2-1B-Instruct-q4f16_1-MLC'
 
-let engine = null
+interface ChatMessage {
+  role: 'user' | 'assistant' | 'system'
+  content: string
+}
+
+let engine: MLCEngineInterface | null = null
 
 // Persists for the entire browser session
-const conversationHistory = []
+const conversationHistory: ChatMessage[] = []
 
 /**
  * Load the model inside a Web Worker thread.
  * Calls onProgress(progress 0-1, statusText) during download.
  * Subsequent calls return the cached engine immediately.
  */
-export async function loadModel(onProgress) {
+export async function loadModel(onProgress: (progress: number, text: string) => void): Promise<MLCEngineInterface> {
   if (engine) return engine
 
   // Spin up a dedicated worker — all model loading and inference happens there
   const worker = new Worker(
-    new URL('../workers/webllm.worker.js', import.meta.url),
+    new URL('../workers/webllm.worker.ts', import.meta.url),
     { type: 'module' }
   )
 
@@ -30,7 +35,7 @@ export async function loadModel(onProgress) {
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
-export function buildSystemPrompt(resumeContext) {
+export function buildSystemPrompt(resumeContext: string): string {
   return `You are a professional AI representative for Josh Ryther, a full-stack software engineer. You are embedded in Josh's portfolio website to help recruiters and hiring managers learn about him.
 
 Your rules:
@@ -56,7 +61,7 @@ ${resumeContext}
  * @param {(chunk: string) => void} onChunk - called with each new token as it arrives
  * @returns {Promise<void>} resolves when the full response is complete
  */
-export async function askQuestion(question, resumeContext, onChunk) {
+export async function askQuestion(question: string, resumeContext: string, onChunk: (chunk: string) => void): Promise<void> {
   if (!engine) throw new Error('Model not loaded')
 
   conversationHistory.push({ role: 'user', content: question })

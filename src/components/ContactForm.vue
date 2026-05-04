@@ -41,13 +41,19 @@
   </form>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 
-const formData  = ref({ name: '', email: '', message: '' })
-const submitted = ref(false)
+interface FormData {
+  name: string
+  email: string
+  message: string
+}
 
-const handleSubmit = async () => {
+const formData  = ref<FormData>({ name: '', email: '', message: '' })
+const submitted = ref<boolean>(false)
+
+const handleSubmit = async (): Promise<void> => {
   const formspreeEndpoint = 'https://formspree.io/f/YOUR_FORM_ID'
   try {
     const response = await fetch(formspreeEndpoint, {
@@ -60,7 +66,7 @@ const handleSubmit = async () => {
       formData.value = { name: '', email: '', message: '' }
       setTimeout(() => { submitted.value = false }, 5000)
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error submitting form:', error)
   }
 }

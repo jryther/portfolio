@@ -68,7 +68,7 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import reactSvg       from '../assets/techIcons/react.svg'
 import vueSvg         from '../assets/techIcons/vuejs.svg'
 import tsSvg          from '../assets/techIcons/typescript.svg'
@@ -83,7 +83,13 @@ import tailwindSvg    from '../assets/techIcons/tailwindcss.svg'
 import resumeUrl      from '../assets/Resume.pdf'
 import coverLetterUrl from '../assets/Cover Letter.docx'
 
-const skills = [
+interface Skill {
+  name: string
+  svg: string | null
+  icon?: string
+}
+
+const skills: Skill[] = [
   { name: 'React',        svg: reactSvg },
   { name: 'Vue.js',       svg: vueSvg },
   { name: 'TypeScript',   svg: tsSvg },

@@ -13,7 +13,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Header from './components/Header.vue'
 import Hero from './components/Hero.vue'
 import AiChat from './components/AiChat/AiChat.vue'

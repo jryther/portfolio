@@ -38,17 +38,25 @@
   </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import MountHoodImage from "../assets/MountHoodImage.webp"
 import BigfootSrc from "../assets/bigfoot.png"
 
-const rainCanvas      = ref(null)
-const cloudCanvas     = ref(null)
-const lightningCanvas = ref(null)
-const heroSection     = ref(null)
-let animationId      = null
-let cloudAnimationId = null
+interface Point          { x: number; y: number }
+interface Flash          { life: number; maxLife: number; bfX: number; bfY: number; showBigfoot: boolean; boltPoints: Point[] }
+interface Cloud          { x: number; y: number; speed: number; scale: number; opacity: number }
+interface Drop           { x: number; y: number; length: number; speed: number; opacity: number; width: number }
+interface Splash         { x: number; y: number; opacity: number; radius: number; maxRadius: number; life: number; decay: number }
+interface AnimController { cleanup: () => void; pause: () => void; resume: () => void }
+interface LightningController { trigger: (x: number, y: number) => void; cleanup: () => void }
+
+const rainCanvas      = ref<HTMLCanvasElement | null>(null)
+const cloudCanvas     = ref<HTMLCanvasElement | null>(null)
+const lightningCanvas = ref<HTMLCanvasElement | null>(null)
+const heroSection     = ref<HTMLElement | null>(null)
+let animationId:      number | null = null
+let cloudAnimationId: number | null = null
 
 // ── Bigfoot — fixed absolute position on the canvas ──────────────────────────
 const BIGFOOT_POS       = { xFrac: 0.78, yFrac: 0.82 }
@@ -59,7 +67,7 @@ const bigfootImg = new Image()
 bigfootImg.src   = BigfootSrc
 
 // Offscreen canvas for the silhouette — built once after image loads
-let bigfootSilhouette = null
+let bigfootSilhouette: HTMLCanvasElement | null = null
 
 function buildSilhouette() {
   if (!bigfootImg.complete || !bigfootImg.naturalWidth) return
@@ -68,6 +76,7 @@ function buildSilhouette() {
   src.width    = bigfootImg.naturalWidth
   src.height   = bigfootImg.naturalHeight
   const sCtx   = src.getContext('2d')
+  if (!sCtx) return
   sCtx.drawImage(bigfootImg, 0, 0)
 
   const imageData = sCtx.getImageData(0, 0, src.width, src.height)
@@ -97,7 +106,7 @@ function buildSilhouette() {
 
 bigfootImg.onload = buildSilhouette
 
-function drawBigfoot(ctx, cx, cy) {
+function drawBigfoot(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
   if (!bigfootSilhouette) return
 
   const targetH = 220
@@ -109,9 +118,9 @@ function drawBigfoot(ctx, cx, cy) {
 // ── Lightning ─────────────────────────────────────────────────────────────────
 
 
-function initLightning(canvas) {
-  const ctx     = canvas.getContext('2d')
-  const section = canvas.parentElement
+function initLightning(canvas: HTMLCanvasElement): LightningController {
+  const ctx     = canvas.getContext('2d')!
+  const section = canvas.parentElement as HTMLElement
 
   function resize() {
     canvas.width  = section.offsetWidth
@@ -121,10 +130,10 @@ function initLightning(canvas) {
   const resizeObserver = new ResizeObserver(resize)
   resizeObserver.observe(section)
 
-  const flashes = []
+  const flashes: Flash[] = []
 
-  function makeBolt(fromX, toX, toY) {
-    const points = [{ x: fromX, y: 0 }]
+  function makeBolt(fromX: number, toX: number, toY: number): Point[] {
+    const points: Point[] = [{ x: fromX, y: 0 }]
     let cy = 0
     while (cy < toY) {
       cy = Math.min(cy + Math.random() * 55 + 25, toY)
@@ -134,7 +143,7 @@ function initLightning(canvas) {
     return points
   }
 
-  function triggerFlash(clickX, clickY) {
+  function triggerFlash(clickX: number, clickY: number) {
 
     // Bigfoot's canvas-space position
     const bfX  = canvas.width  * BIGFOOT_POS.xFrac
@@ -151,7 +160,7 @@ function initLightning(canvas) {
     flashes.push({ life: 70, maxLife: 70, bfX, bfY, showBigfoot, boltPoints })
   }
 
-  function drawBolt(points, alpha) {
+  function drawBolt(points: Point[], alpha: number) {
     if (points.length < 2) return
     ctx.save()
     ctx.strokeStyle = `rgba(180,210,255,${alpha * 0.18})`
@@ -199,11 +208,11 @@ function initLightning(canvas) {
   return { trigger: triggerFlash, cleanup: () => resizeObserver.disconnect() }
 }
 
-let lightningController = null
+let lightningController: LightningController | null = null
 
 // ── Clouds ────────────────────────────────────────────────────────────────────
 
-function makeCloud(canvasWidth) {
+function makeCloud(canvasWidth: number): Cloud {
   return {
     x:       Math.random() * canvasWidth,
     y:       Math.random() * 30 + 130,
@@ -213,7 +222,7 @@ function makeCloud(canvasWidth) {
   }
 }
 
-function drawCloud(ctx, cx, cy, scale, opacity) {
+function drawCloud(ctx: CanvasRenderingContext2D, cx: number, cy: number, scale: number, opacity: number) {
   ctx.save()
   const w = 260 * scale
   const h = 90  * scale
@@ -258,9 +267,9 @@ function drawCloud(ctx, cx, cy, scale, opacity) {
   ctx.restore()
 }
 
-function initClouds(canvas) {
-  const ctx     = canvas.getContext('2d')
-  const section = canvas.parentElement
+function initClouds(canvas: HTMLCanvasElement): AnimController {
+  const ctx     = canvas.getContext('2d')!
+  const section = canvas.parentElement as HTMLElement
   function resize() {
     canvas.width  = section.offsetWidth
     canvas.height = section.offsetHeight
@@ -270,7 +279,7 @@ function initClouds(canvas) {
   const resizeObserver = new ResizeObserver(resize)
   resizeObserver.observe(section)
 
-  const clouds = []
+  const clouds: Cloud[] = []
   for (let i = 0; i < 4; i++) {
     const c = makeCloud(canvas.width)
     c.x = (canvas.width / 4) * i + Math.random() * 100
@@ -291,17 +300,17 @@ function initClouds(canvas) {
   }
   drawFrame()
 
-  function pause()  { cancelAnimationFrame(cloudAnimationId); cloudAnimationId = null }
+  function pause()  { if (cloudAnimationId !== null) cancelAnimationFrame(cloudAnimationId); cloudAnimationId = null }
   function resume() { if (!cloudAnimationId) drawFrame() }
 
-  return { cleanup: () => { resizeObserver.disconnect(); cancelAnimationFrame(cloudAnimationId) }, pause, resume }
+  return { cleanup: () => { resizeObserver.disconnect(); if (cloudAnimationId !== null) cancelAnimationFrame(cloudAnimationId) }, pause, resume }
 }
 
 // ── Rain ──────────────────────────────────────────────────────────────────────
 
-function initRain(canvas) {
-  const ctx     = canvas.getContext('2d')
-  const section = canvas.parentElement
+function initRain(canvas: HTMLCanvasElement): AnimController {
+  const ctx     = canvas.getContext('2d')!
+  const section = canvas.parentElement as HTMLElement
   function resize() {
     canvas.width  = section.offsetWidth
     canvas.height = section.offsetHeight
@@ -314,14 +323,14 @@ function initRain(canvas) {
   const dx    = Math.sin(ANGLE)
   const dy    = Math.cos(ANGLE)
 
-  const drops = []
-  function makeDropAt(x, y) {
+  const drops: Drop[] = []
+  function makeDropAt(x: number, y: number): Drop {
     return { x, y, length: Math.random() * 14 + 8, speed: Math.random() * 2 + 1.2, opacity: Math.random() * 0.18 + 0.08, width: Math.random() * 0.6 + 0.3 }
   }
   for (let i = 0; i < 90; i++) drops.push(makeDropAt(Math.random() * canvas.width, Math.random() * canvas.height))
 
-  const splashes = []
-  function spawnSplash(x, y, op) {
+  const splashes: Splash[] = []
+  function spawnSplash(x: number, y: number, op: number) {
     splashes.push({ x, y, opacity: Math.min(op * 2.5, 0.7), radius: 1, maxRadius: Math.random() * 10 + 10, life: 1, decay: Math.random() * 0.018 + 0.012 })
   }
 
@@ -356,26 +365,26 @@ function initRain(canvas) {
   }
   draw()
 
-  function pause()  { cancelAnimationFrame(animationId); animationId = null }
+  function pause()  { if (animationId !== null) cancelAnimationFrame(animationId); animationId = null }
   function resume() { if (!animationId) draw() }
 
-  return { cleanup: () => { resizeObserver.disconnect(); cancelAnimationFrame(animationId) }, pause, resume }
+  return { cleanup: () => { resizeObserver.disconnect(); if (animationId !== null) cancelAnimationFrame(animationId) }, pause, resume }
 }
 
 // ── Handlers & lifecycle ──────────────────────────────────────────────────────
 
-function onHeroClick(e) {
-  if (!lightningController) return
+function onHeroClick(e: MouseEvent) {
+  if (!lightningController || !lightningCanvas.value) return
   const rect = lightningCanvas.value.getBoundingClientRect()
   lightningController.trigger(e.clientX - rect.left, e.clientY - rect.top)
 }
 
-let rainController = null, cloudController = null
+let rainController: AnimController | null = null, cloudController: AnimController | null = null
 
 onMounted(() => {
-  rainController      = initRain(rainCanvas.value)
-  cloudController     = initClouds(cloudCanvas.value)
-  lightningController = initLightning(lightningCanvas.value)
+  rainController      = initRain(rainCanvas.value!)
+  cloudController     = initClouds(cloudCanvas.value!)
+  lightningController = initLightning(lightningCanvas.value!)
 })
 
 onUnmounted(() => {

@@ -24,9 +24,9 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-const isMenuOpen = ref(false)
+const isMenuOpen = ref<boolean>(false)
 </script>
 
 <style scoped>
