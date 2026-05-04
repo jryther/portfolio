@@ -14,6 +14,7 @@ Live at **[https://jryth.github.io/portfolio-v3](https://jryth.github.io/portfol
 | Styling | Tailwind CSS v4 + scoped `<style>` for animations |
 | Animations | AOS (Animate On Scroll) + Canvas 2D |
 | AI chat | `@mlc-ai/web-llm` — runs entirely in the browser via WebGPU |
+| Testing | Vitest + `@vue/test-utils` |
 | Deployment | GitHub Pages via `gh-pages` |
 
 ---
@@ -51,7 +52,7 @@ npm run build
 npm run deploy
 ```
 
-The `base` path in `vite.config.js` is set to `/portfolio-v3/` to match the GitHub Pages URL.
+The `base` path in `vite.config.ts` is set to `/portfolio-v3/` to match the GitHub Pages URL.
 
 ---
 
@@ -59,6 +60,16 @@ The `base` path in `vite.config.js` is set to `/portfolio-v3/` to match the GitH
 
 ```
 src/
+├── __tests__/
+│   ├── components/
+│   │   └── ContactForm.spec.ts
+│   ├── composables/
+│   │   └── useAiState.spec.ts
+│   ├── data/
+│   │   └── resumeContext.spec.ts
+│   └── services/
+│       └── webllm.spec.ts
+│
 ├── styles/
 │   ├── main.css              # Tailwind v4 entry — @theme, @layer base/components
 │   └── base.css              # Unused (kept for reference)
@@ -83,19 +94,19 @@ src/
 │       └── AiChat.vue        # Floating AI chat modal
 │
 ├── composables/
-│   └── useAiState.js         # Shared AI loading/ready state
+│   └── useAiState.ts         # Shared AI loading/ready state
 │
 ├── data/
-│   └── resumeContext.js      # Resume/cover letter context string fed to the LLM
+│   └── resumeContext.ts      # Resume/cover letter context string fed to the LLM
 │
 ├── services/
-│   └── webllm.js             # loadModel / askQuestion / clearHistory API
+│   └── webllm.ts             # loadModel / askQuestion / clearHistory API
 │
 ├── workers/
-│   └── webllm.worker.js      # Web Worker that runs the LLM off the main thread
+│   └── webllm.worker.ts      # Web Worker that runs the LLM off the main thread
 │
 ├── App.vue                   # Root — composes all sections
-└── main.js                   # App entry, AOS init
+└── main.ts                   # App entry, AOS init
 ```
 
 ---
@@ -112,7 +123,7 @@ All personalizable content lives in the Vue components. Key locations:
 | Contact email / phone | `Contact.vue` |
 | Form submission endpoint | `ContactForm.vue` → `formspreeEndpoint` |
 | Footer links | `Footer.vue` |
-| AI context (resume/cover letter text) | `data/resumeContext.js` |
+| AI context (resume/cover letter text) | `data/resumeContext.ts` |
 | Design tokens (colors, type scale) | `src/styles/main.css` → `@theme` |
 
 ---
@@ -130,6 +141,41 @@ All personalizable content lives in the Vue components. Key locations:
 ## Contact Form
 
 Uses [Formspree](https://formspree.io/) for serverless email delivery. Replace `YOUR_FORM_ID` in `ContactForm.vue` with your actual Formspree form ID.
+
+---
+
+## Testing
+
+Tests are written with **[Vitest](https://vitest.dev/)** and **[@vue/test-utils](https://test-utils.vuejs.org/)**, running in a `jsdom` environment. Vitest shares `vite.config.ts` directly so no separate babel/transform config is needed.
+
+```sh
+# Watch mode (re-runs on file save)
+npm test
+
+# Single run (CI-friendly)
+npm run test:run
+
+# Single run with coverage report
+npm run test:coverage
+```
+
+Coverage reports are written to `coverage/` (HTML at `coverage/index.html`).
+
+### Test structure
+
+```
+src/__tests__/
+├── components/
+│   └── ContactForm.spec.ts   # mount/submit/validation behaviour
+├── composables/
+│   └── useAiState.spec.ts    # shared ref initialisation and mutation
+├── data/
+│   └── resumeContext.spec.ts # content sanity checks
+└── services/
+    └── webllm.spec.ts        # buildSystemPrompt, clearHistory, askQuestion guard
+```
+
+> **Note:** `webllm.ts` and `webllm.worker.ts` are excluded from coverage because they depend on WebGPU/Worker APIs not available in jsdom. `@mlc-ai/web-llm` is mocked in the service tests.
 
 ---
 
