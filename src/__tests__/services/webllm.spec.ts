@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 // Mock the web-llm module — it uses WebGPU which isn't available in jsdom
 vi.mock('@mlc-ai/web-llm', () => ({
@@ -45,8 +45,7 @@ describe('buildSystemPrompt', () => {
 
 describe('askQuestion', () => {
   it('throws an error if the model has not been loaded', async () => {
-    // Each dynamic import gets a fresh module instance in Vitest
-    const { askQuestion } = await import('../../services/webllm?v=throw-test')
+    const { askQuestion } = await getModule()
     await expect(askQuestion('Who is Josh?', 'context', vi.fn())).rejects.toThrow('Model not loaded')
   })
 })

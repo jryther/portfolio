@@ -1,4 +1,5 @@
-import { CreateWebWorkerMLCEngine, MLCEngineInterface } from '@mlc-ai/web-llm'
+import { CreateWebWorkerMLCEngine } from '@mlc-ai/web-llm'
+import type { MLCEngineInterface } from '@mlc-ai/web-llm'
 
 const MODEL_ID = 'Llama-3.2-1B-Instruct-q4f16_1-MLC'
 

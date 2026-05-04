@@ -1,24 +1,26 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="max-w-[600px] mx-auto my-12 flex flex-col gap-6 max-md:my-8 max-md:gap-4">
-
+  <form
+    class="max-w-[600px] mx-auto my-12 flex flex-col gap-6 max-md:my-8 max-md:gap-4"
+    @submit.prevent="handleSubmit"
+  >
     <div class="flex flex-col">
       <input
-        type="text"
         v-model="formData.name"
+        type="text"
         placeholder="Your Name"
         required
         class="p-4 border border-forest/40 bg-forest/[.08] rounded-lg text-snow text-body transition-all duration-300 focus:outline-none focus:border-amber focus:bg-forest/15 focus:shadow-[0_0_10px_rgba(212,165,116,0.2)] placeholder:text-smoke max-md:text-base max-md:p-[0.8rem]"
-      />
+      >
     </div>
 
     <div class="flex flex-col">
       <input
-        type="email"
         v-model="formData.email"
+        type="email"
         placeholder="Your Email"
         required
         class="p-4 border border-forest/40 bg-forest/[.08] rounded-lg text-snow text-body transition-all duration-300 focus:outline-none focus:border-amber focus:bg-forest/15 focus:shadow-[0_0_10px_rgba(212,165,116,0.2)] placeholder:text-smoke max-md:text-base max-md:p-[0.8rem]"
-      />
+      >
     </div>
 
     <div class="flex flex-col">
@@ -28,14 +30,20 @@
         rows="5"
         required
         class="p-4 border border-forest/40 bg-forest/[.08] rounded-lg text-snow text-body resize-y min-h-[150px] transition-all duration-300 focus:outline-none focus:border-amber focus:bg-forest/15 focus:shadow-[0_0_10px_rgba(212,165,116,0.2)] placeholder:text-smoke max-md:text-base max-md:p-[0.8rem]"
-      ></textarea>
+      />
     </div>
 
-    <button type="submit" class="button py-[1.2rem] px-8 mt-4 text-body">
+    <button
+      type="submit"
+      class="button py-[1.2rem] px-8 mt-4 text-body"
+    >
       Send Message
     </button>
 
-    <p v-if="submitted" class="success-message p-4 bg-forest/20 border border-amber rounded-lg text-amber text-center text-base">
+    <p
+      v-if="submitted"
+      class="success-message p-4 bg-forest/20 border border-amber rounded-lg text-amber text-center text-base"
+    >
       ✅ Message sent successfully! I'll get back to you soon.
     </p>
   </form>

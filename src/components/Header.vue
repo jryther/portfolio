@@ -1,24 +1,51 @@
 <template>
   <header class="header-fixed">
-    <div class="logo"></div>
+    <div class="logo" />
 
-    <nav class="nav" :class="{ active: isMenuOpen }">
+    <nav
+      class="nav"
+      :class="{ active: isMenuOpen }"
+    >
       <button
         class="menu"
         :class="{ active: isMenuOpen }"
-        @click="isMenuOpen = !isMenuOpen"
         aria-label="Toggle menu"
+        @click="isMenuOpen = !isMenuOpen"
       >
-        <span></span>
-        <span></span>
-        <span></span>
+        <span />
+        <span />
+        <span />
       </button>
 
       <ul>
-        <li><a href="#home"     @click="isMenuOpen = false" class="text-snow font-medium transition-colors duration-300 hover:text-amber">Home</a></li>
-        <li><a href="#about"    @click="isMenuOpen = false" class="text-snow font-medium transition-colors duration-300 hover:text-amber">About</a></li>
-        <li><a href="#projects" @click="isMenuOpen = false" class="text-snow font-medium transition-colors duration-300 hover:text-amber">Projects</a></li>
-        <li><a href="#contact"  @click="isMenuOpen = false" class="text-snow font-medium transition-colors duration-300 hover:text-amber">Contact</a></li>
+        <li>
+          <a
+            href="#home"
+            class="text-snow font-medium transition-colors duration-300 hover:text-amber"
+            @click="isMenuOpen = false"
+          >Home</a>
+        </li>
+        <li>
+          <a
+            href="#about"
+            class="text-snow font-medium transition-colors duration-300 hover:text-amber"
+            @click="isMenuOpen = false"
+          >About</a>
+        </li>
+        <li>
+          <a
+            href="#projects"
+            class="text-snow font-medium transition-colors duration-300 hover:text-amber"
+            @click="isMenuOpen = false"
+          >Projects</a>
+        </li>
+        <li>
+          <a
+            href="#contact"
+            class="text-snow font-medium transition-colors duration-300 hover:text-amber"
+            @click="isMenuOpen = false"
+          >Contact</a>
+        </li>
       </ul>
     </nav>
   </header>
