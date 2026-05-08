@@ -15,8 +15,7 @@ Live at **[https://jryth.github.io/portfolio-v3](https://jryth.github.io/portfol
 | Animations | AOS (Animate On Scroll) + Canvas 2D |
 | AI chat | `@mlc-ai/web-llm` — runs entirely in the browser via WebGPU |
 | Testing | Vitest + `@vue/test-utils` |
-| Linting | ESLint 10 + `typescript-eslint` + `eslint-plugin-vue` |
-| Deployment | Cloudflare Pages |
+| Deployment | GitHub Pages via `gh-pages` |
 
 ---
 
@@ -47,35 +46,13 @@ npm run dev
 
 ```sh
 # Production build (outputs to dist/)
-# Runs lint + tests first — build fails if either step fails
 npm run build
+
+# Deploy to GitHub Pages
+npm run deploy
 ```
 
-The `base` path in `vite.config.ts` is set to `/` for Cloudflare Pages root hosting.
-
-### Cloudflare Pages setup
-
-Deployments are handled automatically by Cloudflare Pages via GitHub integration.
-
-**First-time setup (one-time, done in the Cloudflare dashboard):**
-
-1. Log in at [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
-2. Select the `portfolio-v3` repository
-3. Set the build configuration:
-
-| Setting | Value |
-|---|---|
-| Build command | `npm run build` |
-| Build output directory | `dist` |
-| Node.js version | `22` (auto-detected from `.node-version`) |
-
-4. Click **Save and Deploy**
-
-After the first deploy, every push to `main` triggers an automatic redeploy.
-
-**Why Cloudflare Pages over GitHub Pages:**
-
-GitHub Pages does not support custom HTTP response headers. The AI chat feature requires `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers for `SharedArrayBuffer` (used by WebLLM). Cloudflare Pages honours the `public/_headers` file which sets these headers on every response.
+The `base` path in `vite.config.ts` is set to `/portfolio-v3/` to match the GitHub Pages URL.
 
 ---
 
@@ -130,9 +107,6 @@ src/
 │
 ├── App.vue                   # Root — composes all sections
 └── main.ts                   # App entry, AOS init
-
-eslint.config.ts              # ESLint flat config — TS + Vue rules
-vite.config.ts                # Vite + Vitest config
 ```
 
 ---
@@ -167,38 +141,6 @@ All personalizable content lives in the Vue components. Key locations:
 ## Contact Form
 
 Uses [Formspree](https://formspree.io/) for serverless email delivery. Replace `YOUR_FORM_ID` in `ContactForm.vue` with your actual Formspree form ID.
-
----
-
-## Linting
-
-Linting is handled by **[ESLint 10](https://eslint.org/)** using the flat config format (`eslint.config.ts`), with full TypeScript and Vue 3 support.
-
-```sh
-# Check for lint errors
-npm run lint
-
-# Check and auto-fix
-npm run lint:fix
-```
-
-### Rule sets
-| Plugin | Preset |
-|---|---|
-| `@eslint/js` | `recommended` |
-| `typescript-eslint` | `recommended` |
-| `eslint-plugin-vue` | `flat/recommended` (Vue 3) |
-
-### Key custom rules
-| Rule | Setting |
-|---|---|
-| `@typescript-eslint/consistent-type-imports` | error — enforces `import type` for type-only imports |
-| `vue/multi-word-component-names` | off — single-word component names are intentional |
-| `vue/component-api-style` | error — enforces `<script setup>` |
-| `no-console` | warn — allows `console.warn` and `console.error` |
-| `eqeqeq` | error — no `==`, only `===` |
-
-> Lint runs automatically as the first step of `npm run build` — the build fails fast if any errors are found.
 
 ---
 

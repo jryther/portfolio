@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "homepage": "https://portfolio-v3.pages.dev",
+  "homepage": "https://jryth.github.io/portfolio-v3",
   "scripts": {
     "dev": "vite",
     "build": "npm run lint && npm run test:run && vite build",
     "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",

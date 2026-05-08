@@ -34,7 +34,7 @@
         class="text-body mb-[0.6rem]"
         data-aos="fade-in-up"
       >
-        Hey there 👋, I'm
+        Hey there , I'm
       </p>
       <h1
         class="font-bold leading-[1.05] mb-4"
@@ -302,7 +302,7 @@ let lightningController: LightningController | null = null
 function makeCloud(canvasWidth: number): Cloud {
   return {
     x:       Math.random() * canvasWidth,
-    y:       Math.random() * 30 + 220,
+    y:       Math.random() * 30 + 130,
     speed:   Math.random() * 0.15 + 0.05,
     scale:   Math.random() * 0.5 + 0.8,
     opacity: Math.random() * 0.09 + 0.08,
@@ -380,7 +380,7 @@ function initClouds(canvas: HTMLCanvasElement): AnimController {
       cloud.x += cloud.speed
       if (cloud.x > canvas.width + 300) {
         cloud.x = -300
-        cloud.y = Math.random() * 30 + 220
+        cloud.y = Math.random() * 30 + 130
       }
     })
     cloudAnimationId = requestAnimationFrame(drawFrame)
