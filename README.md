@@ -1,7 +1,7 @@
 # Josh Ryther — Portfolio v3
 
 Personal portfolio website for Josh Ryther, Full-Stack Software Engineer based in Portland, Oregon.
-Live at **[https://jryth.github.io/portfolio-v3](https://jryth.github.io/portfolio-v3)**
+Live at **[https://portfolio-v3.jryther91.workers.dev](https://portfolio-v3.jryther91.workers.dev)**
 
 ---
 
@@ -15,7 +15,7 @@ Live at **[https://jryth.github.io/portfolio-v3](https://jryth.github.io/portfol
 | Animations | AOS (Animate On Scroll) + Canvas 2D |
 | AI chat | `@mlc-ai/web-llm` — runs entirely in the browser via WebGPU |
 | Testing | Vitest + `@vue/test-utils` |
-| Deployment | GitHub Pages via `gh-pages` |
+| Deployment | Cloudflare Pages (auto-deploy on push to `main`) |
 
 ---
 
@@ -35,7 +35,7 @@ Live at **[https://jryth.github.io/portfolio-v3](https://jryth.github.io/portfol
 ```sh
 npm install
 npm run dev
-# App available at http://localhost:5173/portfolio-v3/
+# App available at http://localhost:5173/
 ```
 
 > **Note:** The dev server requires `localhost` (not `127.0.0.1`) due to [COOP/COEP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy) required by the WebLLM/SharedArrayBuffer AI model.
@@ -45,14 +45,11 @@ npm run dev
 ## Build & Deploy
 
 ```sh
-# Production build (outputs to dist/)
+# Production build (runs lint + tests + vite build, outputs to dist/)
 npm run build
-
-# Deploy to GitHub Pages
-npm run deploy
 ```
 
-The `base` path in `vite.config.ts` is set to `/portfolio-v3/` to match the GitHub Pages URL.
+Cloudflare Pages auto-deploys on every push to `main`. The build command and output directory (`dist`) are configured in the Cloudflare Pages dashboard.
 
 ---
 
@@ -132,7 +129,7 @@ All personalizable content lives in the Vue components. Key locations:
 
 - Only appears when `navigator.gpu` is available (Chrome/Edge with WebGPU enabled)
 - Downloads ~740 MB on first use; cached by the browser after that
-- Model: Qwen-2.5 (quantized, WASM/WebGPU)
+- Model: Llama-3.2-1B-Instruct (quantized, WASM/WebGPU)
 - Runs in a Web Worker to keep the UI responsive
 - Prompted to only answer questions relevant to Josh's professional background
 

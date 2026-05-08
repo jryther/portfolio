@@ -4,10 +4,10 @@
 
 | File | Role |
 |---|---|
-| `index.html` | HTML shell; loads `/src/main.js` |
-| `src/main.js` | Creates Vue app, imports `main.css`, initializes AOS |
+| `index.html` | HTML shell; loads `/src/main.ts` |
+| `src/main.ts` | Creates Vue app, imports `main.css`, initializes AOS |
 | `src/App.vue` | Root component — composes Header, Hero, About, Project, Contact, Footer, AiChat |
-| `src/assets/main.css` | Tailwind v4 entry point (`@import "tailwindcss"`, `@theme`, `@layer base/components`) |
+| `src/styles/main.css` | Tailwind v4 entry point (`@import "tailwindcss"`, `@theme`, `@layer base/components`) |
 
 ---
 
@@ -89,43 +89,44 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 
 ## Services & Workers
 
-### `services/webllm.js`
+### `services/webllm.ts`
 - Exports: `loadModel(progressCallback)`, `askQuestion(question, context, tokenCallback)`, `clearHistory()`
-- Creates a `webllm.worker.js` Web Worker via Vite's `?worker` import
+- Creates a `webllm.worker.ts` Web Worker via Vite's worker URL import
 - Communicates via `postMessage` / `onmessage`
-- Layer 1 relevance check: model is prompted to determine if a question is relevant to hiring Josh before answering
 - System prompt embedded here — **do not expose to users**
 
-### `workers/webllm.worker.js`
+### `workers/webllm.worker.ts`
 - Runs `@mlc-ai/web-llm` entirely off main thread
 - Uses `SharedArrayBuffer` (requires COOP/COEP headers)
-- Model: Qwen2.5-1.5B-Instruct-q4f16_1-MLC (cached in browser after first download)
+- Model: Llama-3.2-1B-Instruct-q4f16_1-MLC (cached in browser after first download)
 
-### `data/resumeContext.js`
+### `data/resumeContext.ts`
 - Exports a single template literal string containing Josh's resume and cover letter context
 - This string is passed as context to every AI query
 
-### `composables/useAiState.js`
+### `composables/useAiState.ts`
 - Shared reactive state for AI loading/ready status (used if multiple components need to know AI state)
 
 ---
 
-## Vite Configuration (`vite.config.js`)
+## Vite Configuration (`vite.config.ts`)
 
-```js
-base: '/portfolio-v3/'          // GitHub Pages sub-path
+```ts
+base: '/'                       // Cloudflare Pages serves from domain root
 plugins: [tailwindcss(), vue()] // Tailwind MUST be first plugin
 assetsInclude: ['**/*.docx']    // .docx treated as static asset
-server.host: 'localhost'        // Required for COOP/COEP to work
-server.headers: {               // Required for SharedArrayBuffer (WebLLM)
+server.host: 'localhost'        // Required for COOP/COEP to work locally
+server.headers: {               // Required for SharedArrayBuffer (WebLLM) in dev
   'Cross-Origin-Opener-Policy': 'same-origin',
-  'Cross-Origin-Embedder-Policy': 'require-corp'
+  'Cross-Origin-Embedder-Policy': 'credentialless'
 }
 worker.format: 'es'             // ESM workers for WebLLM compatibility
 optimizeDeps.exclude: ['@mlc-ai/web-llm']  // Skip pre-bundling (huge)
 build.manualChunks: { 'web-llm': ['@mlc-ai/web-llm'] }  // Separate chunk
 build.chunkSizeWarningLimit: 3000  // Suppress warning for WebLLM chunk (~6MB)
 ```
+
+Production COOP/COEP headers are served via `public/_headers` (Cloudflare Pages).
 
 ---
 

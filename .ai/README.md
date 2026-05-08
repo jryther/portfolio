@@ -22,8 +22,8 @@ This directory contains machine-readable documentation for AI coding agents work
 
 - **Framework:** Vue 3 Composition API — no React, no Vue Router
 - **Styling:** Tailwind CSS v4 — `@import "tailwindcss"` in `main.css`, custom `@theme`, no `tailwind.config.js`
-- **Build:** Vite 7, base path `/portfolio-v3/`, deploys to GitHub Pages
-- **AI:** WebLLM (`@mlc-ai/web-llm`) in a Web Worker, WebGPU required, ~740 MB model
+- **Build:** Vite 7, base path `/`, deploys to Cloudflare Pages
+- **AI:** WebLLM (`@mlc-ai/web-llm`) in a Web Worker, WebGPU required, Llama-3.2-1B model (~740 MB)
 - **1 rem = 10 px** (html font-size: 62.5%)
 - **Primary accent color:** `#D4A574` (amber) — token `--color-amber`
 - **Background:** `#0F1419` (charcoal) — token `--color-charcoal`

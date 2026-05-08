@@ -149,16 +149,20 @@ Buttons use `<a :href="url" download="filename">` — browser-native download.
 
 ---
 
-## 9. GitHub Pages Deployment
+## 9. Cloudflare Pages Deployment
 
 ```sh
-npm run deploy
+npm run build
 ```
-Uses `gh-pages` package to push `dist/` to the `gh-pages` branch.
-`package.json` scripts:
-```json
-"predeploy": "npm run build",
-"deploy": "gh-pages -d dist"
+
+`npm run build` runs lint → tests → `vite build` in sequence. Cloudflare Pages auto-deploys on every push to `main`.
+
+`public/_headers` sets the required COOP/COEP headers for `SharedArrayBuffer` (WebLLM):
 ```
-`vite.config.js` `base: '/portfolio-v3/'` ensures all asset paths resolve correctly under the sub-path.
+/*
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Embedder-Policy: credentialless
+```
+
+`vite.config.ts` `base: '/'` ensures all asset paths resolve correctly from the domain root.
 
