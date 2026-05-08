@@ -6,7 +6,7 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/portfolio-v3/',
+  base: '/',
   plugins: [
     tailwindcss(),
     vue(),

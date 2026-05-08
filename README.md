@@ -16,7 +16,7 @@ Live at **[https://jryth.github.io/portfolio-v3](https://jryth.github.io/portfol
 | AI chat | `@mlc-ai/web-llm` — runs entirely in the browser via WebGPU |
 | Testing | Vitest + `@vue/test-utils` |
 | Linting | ESLint 10 + `typescript-eslint` + `eslint-plugin-vue` |
-| Deployment | GitHub Pages via `gh-pages` |
+| Deployment | Cloudflare Pages |
 
 ---
 
@@ -49,12 +49,33 @@ npm run dev
 # Production build (outputs to dist/)
 # Runs lint + tests first — build fails if either step fails
 npm run build
-
-# Deploy to GitHub Pages
-npm run deploy
 ```
 
-The `base` path in `vite.config.ts` is set to `/portfolio-v3/` to match the GitHub Pages URL.
+The `base` path in `vite.config.ts` is set to `/` for Cloudflare Pages root hosting.
+
+### Cloudflare Pages setup
+
+Deployments are handled automatically by Cloudflare Pages via GitHub integration.
+
+**First-time setup (one-time, done in the Cloudflare dashboard):**
+
+1. Log in at [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
+2. Select the `portfolio-v3` repository
+3. Set the build configuration:
+
+| Setting | Value |
+|---|---|
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Node.js version | `22` (auto-detected from `.node-version`) |
+
+4. Click **Save and Deploy**
+
+After the first deploy, every push to `main` triggers an automatic redeploy.
+
+**Why Cloudflare Pages over GitHub Pages:**
+
+GitHub Pages does not support custom HTTP response headers. The AI chat feature requires `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers for `SharedArrayBuffer` (used by WebLLM). Cloudflare Pages honours the `public/_headers` file which sets these headers on every response.
 
 ---
 
