@@ -153,12 +153,7 @@
               <span class="dot" />
             </div>
           </div>
-          <div
-            v-if="thinking && !firstQuestion && !firstResponseStarted && messages.filter(m => m.role === 'user').length === 1"
-            class="text-xs text-[#999] bg-white/[.03] border border-white/[.07] rounded-[0.6rem] py-[0.65rem] px-4 leading-[1.6] mt-2 ml-10"
-          >
-            ⏱ The first response may take a moment and could briefly affect page performance. Subsequent responses will be much faster.
-          </div>
+
         </div>
 
         <!-- Input area -->
@@ -202,7 +197,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onMounted } from 'vue'
-import { loadModel, askQuestion, clearHistory } from '../../services/webllm'
+import { loadModel, warmupModel, askQuestion, clearHistory } from '../../services/webllm'
 import resumeContext from '../../data/resumeContext'
 
 interface ChatMessage {
@@ -219,13 +214,13 @@ const loadingProgress  = ref<number>(0)
 const messages         = ref<ChatMessage[]>([])
 const userInput        = ref<string>('')
 const thinking         = ref<boolean>(false)
-const firstQuestion    = ref<boolean>(true)
-const firstResponseStarted = ref<boolean>(false)
 const messagesEl       = ref<HTMLElement | null>(null)
 
-onMounted(() => {
-  // Only show the widget if WebGPU is available
-  webGpuSupported.value = !!navigator.gpu
+onMounted(async () => {
+  // Check that WebGPU is available AND that a real adapter can be obtained
+  if (!navigator.gpu) return
+  const adapter = await navigator.gpu.requestAdapter()
+  webGpuSupported.value = !!adapter
 })
 
 function toggleModal() {
@@ -239,6 +234,8 @@ async function startChat() {
       loadingProgress.value = Math.round(progress * 100)
       if (text) loadingText.value = text
     })
+    loadingText.value = 'Warming up…'
+    await warmupModel(resumeContext)
     modelReady.value = true
     messages.value.push({
       role: 'assistant',
@@ -258,8 +255,6 @@ async function sendMessage() {
   userInput.value = ''
   messages.value.push({ role: 'user', text: question })
   thinking.value = true
-  firstQuestion.value = false
-  firstResponseStarted.value = false
   await scrollToBottom()
 
   // Push an empty assistant message that we'll stream tokens into
@@ -268,7 +263,6 @@ async function sendMessage() {
 
   try {
     await askQuestion(question, resumeContext, (chunk) => {
-      if (!firstResponseStarted.value) firstResponseStarted.value = true
       messages.value[liveIndex].text += chunk
       scrollToBottom()
     })

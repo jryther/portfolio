@@ -91,6 +91,15 @@ export async function askQuestion(question: string, resumeContext: string, onChu
 }
 
 /**
+ * Send a full silent request that populates conversationHistory so the engine's
+ * KV cache is primed with a real exchange. The first visible user request will
+ * extend that cache rather than rebuilding from scratch.
+ */
+export async function warmupModel(resumeContext: string): Promise<void> {
+  await askQuestion('Is Josh a software engineer?', resumeContext, () => { /* discard tokens */ })
+}
+
+/**
  * Clear the conversation history for the current session.
  */
 export function clearHistory() {
