@@ -21,7 +21,6 @@ const conversationHistory: ChatMessage[] = []
 export async function loadModel(onProgress: (progress: number, text: string) => void): Promise<MLCEngineInterface> {
   if (engine) return engine
 
-  // Spin up a dedicated worker — all model loading and inference happens there
   const worker = new Worker(
     new URL('../workers/webllm.worker.ts', import.meta.url),
     { type: 'module' }
@@ -62,7 +61,13 @@ ${resumeContext}
  * @param {(chunk: string) => void} onChunk - called with each new token as it arrives
  * @returns {Promise<void>} resolves when the full response is complete
  */
-export async function askQuestion(question: string, resumeContext: string, onChunk: (chunk: string) => void): Promise<void> {
+export async function askQuestion(
+  question: string,
+  resumeContext: string,
+  onChunk: (chunk: string) => void,
+  yieldMs = 0,
+  maxTokens = 500
+): Promise<void> {
   if (!engine) throw new Error('Model not loaded')
 
   conversationHistory.push({ role: 'user', content: question })
@@ -72,9 +77,9 @@ export async function askQuestion(question: string, resumeContext: string, onChu
       { role: 'system', content: buildSystemPrompt(resumeContext) },
       ...conversationHistory.slice(-10),
     ],
-    max_tokens: 500,
+    max_tokens: maxTokens,
     temperature: 0.4,
-    stream: true,  // stream tokens as they are generated
+    stream: true,
   })
 
   let fullText = ''
@@ -84,6 +89,7 @@ export async function askQuestion(question: string, resumeContext: string, onChu
     if (delta) {
       fullText += delta
       onChunk(delta)
+      await new Promise<void>(r => setTimeout(r, yieldMs))
     }
   }
 
@@ -94,9 +100,13 @@ export async function askQuestion(question: string, resumeContext: string, onChu
  * Send a full silent request that populates conversationHistory so the engine's
  * KV cache is primed with a real exchange. The first visible user request will
  * extend that cache rather than rebuilding from scratch.
+ *
+ * Pass gameIsActive=true to use a longer per-token yield so the game canvas
+ * gets more animation frames during warmup (at the cost of slower warmup).
  */
-export async function warmupModel(resumeContext: string): Promise<void> {
-  await askQuestion('Is Josh a software engineer?', resumeContext, () => { /* discard tokens */ })
+export async function warmupModel(resumeContext: string, gameIsActive = false): Promise<void> {
+  const yieldMs = gameIsActive ? 16 : 0
+  await askQuestion('Is Josh a software engineer?', resumeContext, () => { /* discard */ }, yieldMs, 500)
 }
 
 /**

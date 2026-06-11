@@ -126,13 +126,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import MountHoodImage from "../assets/MountHoodImage.webp"
 import BigfootSrc from "../assets/bigfoot.png"
+import { gameActive, gamePlaying } from '../composables/useAiState'
 
 interface Point          { x: number; y: number }
 interface Flash          { life: number; maxLife: number; bfX: number; bfY: number; showBigfoot: boolean; boltPoints: Point[] }
-interface Cloud          { x: number; y: number; speed: number; scale: number; opacity: number }
+interface Cloud          { x: number; y: number; speed: number; scale: number; opacity: number; cache?: HTMLCanvasElement }
 interface Drop           { x: number; y: number; length: number; speed: number; opacity: number; width: number }
 interface Splash         { x: number; y: number; opacity: number; radius: number; maxRadius: number; life: number; decay: number }
 interface AnimController { cleanup: () => void; pause: () => void; resume: () => void }
@@ -218,6 +219,7 @@ function initLightning(canvas: HTMLCanvasElement): LightningController {
   resizeObserver.observe(section)
 
   const flashes: Flash[] = []
+  let lightningRafId: number | null = null
 
   function makeBolt(fromX: number, toX: number, toY: number): Point[] {
     const points: Point[] = [{ x: fromX, y: 0 }]
@@ -231,20 +233,15 @@ function initLightning(canvas: HTMLCanvasElement): LightningController {
   }
 
   function triggerFlash(clickX: number, clickY: number) {
-
-    // Bigfoot's canvas-space position
     const bfX  = canvas.width  * BIGFOOT_POS.xFrac
     const bfY  = canvas.height * BIGFOOT_POS.yFrac
     const dist = Math.hypot(clickX - bfX, clickY - bfY)
-
-    // Lightning always strikes the click point
-    // Bigfoot only appears if click is close enough
     const showBigfoot = dist <= BIGFOOT_PROXIMITY
-
     const originX    = clickX + (Math.random() - 0.5) * 60
     const boltPoints = makeBolt(originX, clickX, clickY)
-
     flashes.push({ life: 70, maxLife: 70, bfX, bfY, showBigfoot, boltPoints })
+    // Start the loop only if it isn't already running
+    if (!lightningRafId) lightningRafId = requestAnimationFrame(drawFrame)
   }
 
   function drawBolt(points: Point[], alpha: number) {
@@ -288,11 +285,16 @@ function initLightning(canvas: HTMLCanvasElement): LightningController {
     for (let i = flashes.length - 1; i >= 0; i--) {
       if (flashes[i].life <= 0) flashes.splice(i, 1)
     }
-    requestAnimationFrame(drawFrame)
+    // Self-terminate: only reschedule if there are active flashes
+    if (flashes.length > 0) {
+      lightningRafId = requestAnimationFrame(drawFrame)
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      lightningRafId = null
+    }
   }
 
-  drawFrame()
-  return { trigger: triggerFlash, cleanup: () => resizeObserver.disconnect() }
+  return { trigger: triggerFlash, cleanup: () => { resizeObserver.disconnect(); if (lightningRafId !== null) cancelAnimationFrame(lightningRafId) } }
 }
 
 let lightningController: LightningController | null = null
@@ -354,6 +356,26 @@ function drawCloud(ctx: CanvasRenderingContext2D, cx: number, cy: number, scale:
   ctx.restore()
 }
 
+// Pre-render each cloud to an offscreen canvas so we only pay the
+// radial-gradient cost once per cloud instead of every frame.
+function buildCloudCache(cloud: Cloud): void {
+  const w   = 260 * cloud.scale
+  const h   = 90  * cloud.scale
+  // Bounding box: cloud Bezier extends to ±w*0.6 and +h*0.65/-h*1.25
+  const pad = 4
+  const cw  = Math.ceil(w * 2.2) + pad * 2
+  const ch  = Math.ceil(h * 2.0) + pad * 2
+  // Draw at this position inside the offscreen canvas
+  const ocx = cw / 2
+  const ocy = Math.ceil(h * 1.35) + pad
+
+  const ofc  = document.createElement('canvas')
+  ofc.width  = cw
+  ofc.height = ch
+  drawCloud(ofc.getContext('2d')!, ocx, ocy, cloud.scale, cloud.opacity)
+  cloud.cache = ofc
+}
+
 function initClouds(canvas: HTMLCanvasElement): AnimController {
   const ctx     = canvas.getContext('2d')!
   const section = canvas.parentElement as HTMLElement
@@ -370,13 +392,21 @@ function initClouds(canvas: HTMLCanvasElement): AnimController {
   for (let i = 0; i < 4; i++) {
     const c = makeCloud(canvas.width)
     c.x = (canvas.width / 4) * i + Math.random() * 100
+    buildCloudCache(c)
     clouds.push(c)
   }
 
   function drawFrame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     clouds.forEach(cloud => {
-      drawCloud(ctx, cloud.x, cloud.y, cloud.scale, cloud.opacity)
+      if (cloud.cache) {
+        // Fast path: blit pre-rendered offscreen canvas
+        const w = 260 * cloud.scale
+        const h = 90  * cloud.scale
+        ctx.drawImage(cloud.cache, Math.round(cloud.x - cloud.cache.width / 2), Math.round(cloud.y - h * 1.35 - 4))
+      } else {
+        drawCloud(ctx, cloud.x, cloud.y, cloud.scale, cloud.opacity)
+      }
       cloud.x += cloud.speed
       if (cloud.x > canvas.width + 300) {
         cloud.x = -300
@@ -467,17 +497,37 @@ function onHeroClick(e: MouseEvent) {
 }
 
 let rainController: AnimController | null = null, cloudController: AnimController | null = null
+let heroIntersectionObserver: IntersectionObserver | null = null
+let heroVisible = true
+
+function pauseHeroAnims()  { rainController?.pause();  cloudController?.pause()  }
+function resumeHeroAnims() { rainController?.resume(); cloudController?.resume() }
 
 onMounted(() => {
   rainController      = initRain(rainCanvas.value!)
   cloudController     = initClouds(cloudCanvas.value!)
   lightningController = initLightning(lightningCanvas.value!)
+
+  // ── Pause animations when Hero scrolls out of view ──────────────────────
+  heroIntersectionObserver = new IntersectionObserver(([entry]) => {
+    heroVisible = entry.isIntersecting
+    if (heroVisible && !gameActive.value) resumeHeroAnims()
+    else pauseHeroAnims()
+  }, { threshold: 0.05 })
+  heroIntersectionObserver.observe(heroSection.value!)
+
+  // ── Pause animations only during active gameplay (not idle/dead screens) ──
+  watch(gamePlaying, (playing) => {
+    if (playing || !heroVisible) pauseHeroAnims()
+    else resumeHeroAnims()
+  })
 })
 
 onUnmounted(() => {
-  if (rainController)      rainController.cleanup()
-  if (cloudController)     cloudController.cleanup()
-  if (lightningController) lightningController.cleanup()
+  if (rainController)              rainController.cleanup()
+  if (cloudController)             cloudController.cleanup()
+  if (lightningController)         lightningController.cleanup()
+  heroIntersectionObserver?.disconnect()
 })
 </script>
 
