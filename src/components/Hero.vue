@@ -401,7 +401,6 @@ function initClouds(canvas: HTMLCanvasElement): AnimController {
     clouds.forEach(cloud => {
       if (cloud.cache) {
         // Fast path: blit pre-rendered offscreen canvas
-        const w = 260 * cloud.scale
         const h = 90  * cloud.scale
         ctx.drawImage(cloud.cache, Math.round(cloud.x - cloud.cache.width / 2), Math.round(cloud.y - h * 1.35 - 4))
       } else {
