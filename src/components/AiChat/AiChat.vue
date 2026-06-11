@@ -198,7 +198,6 @@
               <span class="dot" />
             </div>
           </div>
-
         </div>
 
         <!-- Input area -->
@@ -241,7 +240,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted, watch, computed } from 'vue'
+import { ref, nextTick, onMounted, computed } from 'vue'
 import { loadModel, warmupModel, askQuestion, clearHistory } from '../../services/webllm'
 import resumeContext from '../../data/resumeContext'
 import MiniGame from './MiniGame.vue'

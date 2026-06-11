@@ -1,5 +1,8 @@
 <template>
-  <div ref="containerEl" class="flex flex-col overflow-hidden">
+  <div
+    ref="containerEl"
+    class="flex flex-col overflow-hidden"
+  >
     <!-- ── Top bar: swaps to shader warning when compiling ── -->
     <div
       class="flex items-center gap-4 px-3 py-2 border-b flex-shrink-0 transition-colors duration-300"
@@ -44,12 +47,16 @@
           class="text-[1.6rem] leading-none bg-transparent border-none cursor-pointer px-1 py-[2px] rounded transition-colors hover:bg-white/[.06]"
           :title="muted ? 'Unmute sounds' : 'Mute sounds'"
           @click.stop="toggleMute"
-        >{{ muted ? '🔇' : '🔊' }}</button>
+        >
+          {{ muted ? '🔇' : '🔊' }}
+        </button>
         <button
           class="text-[1.6rem] leading-none bg-transparent border-none cursor-pointer px-1 py-[2px] rounded transition-colors text-[#777] hover:text-snow hover:bg-white/[.06]"
           :title="props.expanded ? 'Collapse' : 'Expand'"
           @click.stop="emit('toggle-expand')"
-        >{{ props.expanded ? '🔽' : '🔳' }}</button>
+        >
+          {{ props.expanded ? '🔽' : '🔳' }}
+        </button>
       </div>
     </div>
 
@@ -66,7 +73,10 @@
       @click="handleFlap"
       @touchstart.prevent="handleFlap"
     >
-      <canvas ref="canvasEl" class="block w-full h-full" />
+      <canvas
+        ref="canvasEl"
+        class="block w-full h-full"
+      />
 
       <!-- Shader compilation pause overlay -->
       <Transition name="fade-game">
@@ -78,7 +88,9 @@
           @touchstart.prevent="shaderPausedMidGame && resumeAfterShaderPause()"
         >
           <span class="text-4xl leading-none">{{ shaderPausedMidGame ? '▶️' : '🖥️' }}</span>
-          <p class="text-lg font-bold text-amber m-0">{{ shaderPausedMidGame ? 'Shaders Ready' : 'Game Paused' }}</p>
+          <p class="text-lg font-bold text-amber m-0">
+            {{ shaderPausedMidGame ? 'Shaders Ready' : 'Game Paused' }}
+          </p>
           <p class="text-base text-[#bbb] m-0 text-center px-6 leading-snug">
             <template v-if="shaderPausedMidGame">
               Tap or press Space to resume
@@ -107,9 +119,16 @@
           class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/65 backdrop-blur-[2px]"
         >
           <span class="text-4xl leading-none">💀</span>
-          <p class="text-lg font-bold text-snow m-0">Game Over</p>
-          <p class="text-base text-[#aaa] m-0">Score <span class="text-amber font-semibold">{{ score }}</span></p>
-          <button class="button py-[0.45rem] px-5 text-base" @click.stop="restart">
+          <p class="text-lg font-bold text-snow m-0">
+            Game Over
+          </p>
+          <p class="text-base text-[#aaa] m-0">
+            Score <span class="text-amber font-semibold">{{ score }}</span>
+          </p>
+          <button
+            class="button py-[0.45rem] px-5 text-base"
+            @click.stop="restart"
+          >
             Play Again
           </button>
         </div>
@@ -122,8 +141,12 @@
           class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/75 backdrop-blur-[3px]"
         >
           <span class="text-4xl leading-none">🎉</span>
-          <p class="text-xl font-bold text-snow m-0">AI Model Ready!</p>
-          <p class="text-base text-[#aaa] m-0">Score <span class="text-amber font-semibold">{{ score }}</span></p>
+          <p class="text-xl font-bold text-snow m-0">
+            AI Model Ready!
+          </p>
+          <p class="text-base text-[#aaa] m-0">
+            Score <span class="text-amber font-semibold">{{ score }}</span>
+          </p>
           <div class="flex flex-col gap-2 items-center w-full px-8">
             <button
               class="button py-[0.45rem] px-5 text-base w-full justify-center text-center"
@@ -315,7 +338,7 @@ function scheduleArpBatch() {
 
 function stopMusic() {
   if (musicScheduler !== null) { clearInterval(musicScheduler); musicScheduler = null }
-  musicOscs.forEach(o => { try { o.stop() } catch {} })
+  musicOscs.forEach(o => { try { o.stop() } catch { /* oscillator already stopped */ } })
   musicOscs = []
   musicCtx?.close().catch(() => {})
   musicCtx = null; musicMaster = null; musicDelay = null
@@ -343,7 +366,7 @@ interface Star { x: number; y: number; r: number; s: number }
 let stars: Star[] = []
 
 // Timing
-let frame = 0, deathTimer = 0
+let deathTimer = 0
 let rafId = 0, running = false
 
 // ── Game constants ─────────────────────────────────────────────────────────────
@@ -413,7 +436,7 @@ function buildStars() {
 
 function resetGame() {
   by = H * 0.42; bvy = 0; bAng = 0; wingTimer = 0; idleT = 0
-  frame = 0; pipeTimer = 0; deathTimer = 0
+  pipeTimer = 0; deathTimer = 0
   pipes = []
   score.value = 0
   deathAnimDone.value = false
@@ -480,7 +503,6 @@ function update() {
   }
 
   // ── playing ──
-  frame++
   wingTimer = Math.max(0, wingTimer - 1)
   bvy = Math.min(bvy + GRAVITY_S, VY_MAX_S); by += bvy
   // Normalise bvy by H_SCALE so the tilt angle is the same regardless of canvas size
