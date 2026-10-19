@@ -1,52 +1,63 @@
 # Features — AI Agent Reference
 
-## 1. Canvas Animation System (Hero.vue)
+## 1. Hero Scene (Hero.vue)
 
-Three `<canvas>` elements stack at `position: absolute; inset: 0` inside the hero section:
+Layer stack inside the hero (all `position: absolute`, `pointer-events: none` — nothing in the scene is clickable):
 
-| Canvas | z-index | `pointer-events` | Content |
-|---|---|---|---|
-| `cloudCanvas` | 0 | none | Animated clouds |
-| `rainCanvas` | 1 | none | Falling rain + splashes |
-| `lightningCanvas` | 2 | all | Lightning bolts + Bigfoot silhouette |
+| Layer | z-index | Content |
+|---|---|---|
+| `.sky-night` / `.sky-day` | 0 | Dusk and summer-sky gradients, cross-faded by theme (1.8s) |
+| `.sky-flash` | 0 | Lightning glow behind the ridgelines (animated with WAAPI) |
+| `.mountain` SVG | 1 | Sun, distant bolt, ridgelines, Hood, snowpack, foothills, Bigfoot, foreground firs |
+| `cloudCanvas` | 2 | Clouds (storm palette ↔ fair-weather palette) |
+| `rainCanvas` | 3 | Rain + splashes |
+| `.grain` | 4 | Film-grain overlay |
 
-Hero content sits at `z-index: 3`.
+Hero content and the summit coordinates sit at `z-index: 5`.
+
+### Day / night (theme)
+- Driven by `theme` from `composables/useTheme.ts`; a `watch(theme)` calls `cloudController.setDay()`, `rainController.setRaining()` and reschedules lightning
+- SVG fills/opacity/transform transition via CSS classes (`.m-far`, `.m-body`, `.m-foot`, `.m-near`, `.night-only`, `.day-only`, `.sun`, `.alpenglow`) with `:root[data-theme="light"] .x` overrides in the scoped styles — **do not** wrap these in `:global()`; Vue drops everything after the `:global()` part and the rule lands on `<html>`
+- Light mode: sun rises 300 user units (`.sun` transform), winter snowpack cross-fades to a smaller late-summer cap, ridgelines turn hazy blue / meadow green
 
 ### Rain (`initRain`)
-- 90 rain drops with randomized `length`, `speed`, `opacity`, `width`
-- Angle: `Math.PI / 10` (slightly diagonal, left-to-right)
-- Color: `rgba(180, 210, 255, opacity)` — light blue
-- Splashes: ellipse + two splash lines drawn when a drop hits `canvas.height - 20`
-- `ResizeObserver` keeps canvas sized to section
+- Drop count scales with width (70–170). Each drop has a depth `z` (0 far → 1 near) that sets length (9–23px), speed (1.6–3.8px/frame — a gentle, steady rain), width and opacity (0.12–0.38) for a sense of volume
+- Only near drops (`z > 0.55`) splash
+- `intensity` eases toward its target (0 or 1) so the rain tapers off over ~2s when switching to light
+- The loop stops itself once intensity reaches 0 and splashes finish; `setRaining(true)` restarts it
 
 ### Clouds (`initClouds`)
-- 4 clouds, evenly spaced horizontally, slow drift right
-- Each cloud drawn with layered Bezier paths + radial gradients for realistic shading
-- Opacity: `0.08–0.17` range — subtle, ornamental
-- Clouds wrap: when `x > canvas.width + 300`, reset to `x = -300`
+- Two parallax layers (4 far + 3 near; 2 + 2 under 768px), seeded with `mulberry32(42)` so the sky is the same every visit
+- **Flat illustrated style** to match the vector ridgelines — no soft gradients. Three kinds (`CLOUD_SHAPES`, picked by `pickKind`): tall **cumulus**, long low **stratus** banks, and small **puffs**, with varied size/aspect
+- `makePuffs` builds a scalloped row of round bumps (biggest in the middle) plus crown lumps; `renderCloud` fills their union in the shade tone, then the same shape nudged up-left in the light tone (`source-atop`), leaving shade crescents under each bump. There is deliberately no base slab — everything outside the bumps stays transparent
+- Pre-rendered twice (`NIGHT_CLOUDS` slate / `DAY_CLOUDS` white with a cool blue underside) to offscreen canvases
+- `dayMix` blends the two caches each frame; when paused (reduced motion / offscreen) `setDay` jumps straight to the target and redraws one frame
 
-### Lightning (`initLightning`)
-- Triggered by every click on `lightningCanvas` (the `@click="onHeroClick"` handler on the canvas)
-- Bolt: randomized segmented path from top of canvas to click point
-- Color: two strokes — wide soft blue-white glow + narrow bright core
-- `flashes` array: each flash has a `life` counter (70 frames), fading in and out
+### Ambient lightning (dark mode only)
+- `scheduleFlash()` fires every 9–20s (first at 4–7s) while `canFlash()`: dark theme, hero visible, scene not paused, no active gameplay, tab visible, no reduced motion
+- Each strike is a single soft `PULSE` (~120ms rise, ~1.4s fade — no flicker) on `.sky-flash`; 60% chance of a bolt (`makeBolt()`), drawn **behind** the Hood body so the mountain occludes the strike
+- **Photosensitivity (WCAG 2.3.1 / 2.3.2):** measured peak change in sky relative luminance is ≈ 0.04 (dusk sky ≈ 0.008 → ≈ 0.05), below the 0.1 that counts as a flash. The bolt and lit Bigfoot are far smaller than the 25%-of-10° area threshold. If you change `.sky-flash` colours or `PULSE`, keep the peak ΔL < 0.1, keep it to one pulse per strike, and avoid saturated red
 
-### Bigfoot Easter Egg
-- Fixed logical position: `{ xFrac: 0.78, yFrac: 0.82 }` of canvas dimensions
-- Proximity radius: `BIGFOOT_PROXIMITY = 280px`
-- If click distance ≤ 280px from Bigfoot's position: silhouette is drawn on the lightning canvas during the flash
-- Silhouette: `bigfoot.png` is processed in `buildSilhouette()` — pixels with brightness > 180 become transparent, remaining pixels become muted blue-grey (`rgb(160, 175, 200)`)
-- Lightning **always fires** on every click; Bigfoot only appears if click is close enough
+### Scene pause (WCAG 2.2.2)
+- `SceneToggle.vue` — a quiet icon-only pause/play button in the header, beside the theme toggle (hidden under reduced motion, where the scene is already still). Stops rain, clouds and lightning
+- Only present while the hero is on screen: the hero's IntersectionObserver sets `heroInView`, and once the hero scrolls away (the scene auto-pauses anyway) the button collapses to zero width, fades out, and becomes `visibility: hidden` so it leaves the tab order — no dead control and no gap in the header
+- State lives in `composables/useScene.ts` (`scenePaused`, `toggleScene`, `heroInView`), persisted in `localStorage['scene-paused']`
+
+### Bigfoot
+- Original SVG silhouette (`BIGFOOT` path) standing in a clearing in the foreground treeline (`treeline(..., [1160, 1214])` leaves the gap)
+- Dark: `.bf-lit` is lit up during roughly 1 in 3 flashes (always the 2nd)
+- Light: `.bf` is a slightly darker green than the firs — hiding in plain sight
+
+### Reduced motion
+- No rain, no lightning, clouds frozen; theme changes apply instantly
 
 ---
 
-## 2. Skills Carousel (About.vue)
+## 2. Skills Grid (About.vue)
 
-- Array `skills` (12 items) is duplicated: `[...skills, ...skills]` = 24 items rendered
-- CSS animation `skills-scroll` runs `translateX(0)` → `translateX(-50%)` on the track
-- Duration: 28 seconds, `linear infinite`
-- `mask-image` on the container fades item edges: transparent → black from 0%–6%, black from 6%–94%, black → transparent from 94%–100%
-- No hover interactivity (cursor is default, no hover effects) — purely decorative
+- `skillGroups` holds three categories (Frontend, Backend & Data, Testing & DevOps), each rendered as a `.card` of `.chip` items
+- Icons are desaturated (`saturate(0.2)`, 75% opacity) and pick up their brand colour on chip hover
+- Jenkins uses the official simple-icons mark (`techIcons/jenkins.svg`)
 
 ---
 
@@ -59,7 +70,7 @@ onMounted(() => { webGpuSupported.value = !!navigator.gpu })
 The entire widget (`v-if="webGpuSupported"`) only mounts if `navigator.gpu` is available. Not present on Firefox, Safari, or devices without a compatible GPU.
 
 ### UI States
-1. **Pre-load CTA** (`!modelStarted`) — Robot icon, description, meta badges, "Start Chat" button
+1. **Pre-load CTA** (`!modelStarted`) — Sparkle icon, description, meta badges, "Start Chat" button
 2. **Loading** (`modelStarted && !modelReady`) — Spinning gear, loading bar with `%`, performance warning
 3. **Chat** (`modelReady`) — Scrollable message history + input area
 
@@ -93,15 +104,14 @@ The system prompt is **not exposed to users**.
 
 ## 4. AOS Scroll Animations
 
-Initialized in `main.js`:
+Initialized in `main.ts`:
 ```js
-AOS.init({ duration: 1000, offset: 100, once: true })
+AOS.init({ duration: 600, easing: "ease-out-cubic", offset: 60, once: true, disable: () => prefersReducedMotion })
 ```
 
 All components use `data-aos` attributes:
-- `data-aos="fade-in-up"` — rises from below on scroll
-- `data-aos="fade-in-left"` — slides from left
-- `data-aos-delay="200"` — 200ms delay (in ms)
+- `data-aos="fade-up"` — fades in and rises 12px (distance overridden in `main.css`)
+- `data-aos-delay="80"` — small stagger in ms; keep delays at or under ~240ms
 
 Animations run once (`once: true`) — do not re-animate on scroll-up.
 
@@ -109,7 +119,11 @@ Animations run once (`once: true`) — do not re-animate on scroll-up.
 
 ## 5. Responsive Navigation (Header.vue)
 
-**Desktop (> 768px):** Horizontal flex nav, links inline
+**Desktop (> 768px):** Horizontal flex nav (About / Work / Contact + ghost Resume button); the logo links home
+
+**Scroll state:** after 8px of scroll the header gains a blurred translucent background and hairline border (`.scrolled`)
+
+**Active section:** an `IntersectionObserver` (`rootMargin: -40% 0px -55% 0px`) sets `activeId`; the matching link gets `.current` (amber dot on desktop, amber text on mobile) and `aria-current`
 
 **Mobile (≤ 768px):**
 - Hamburger button (3 `<span>` lines) appears

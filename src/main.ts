@@ -6,13 +6,15 @@ import 'aos/dist/aos.css'
 
 const app = createApp(App)
 
-// Initialize AOS (Animate On Scroll)
+// Initialize AOS (Animate On Scroll) — short, subtle reveals
 app.use({
   install() {
     AOS.init({
-      duration: 1000,
-      offset: 100,
+      duration: 600,
+      easing: 'ease-out-cubic',
+      offset: 60,
       once: true,
+      disable: () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     })
   }
 })

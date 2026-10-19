@@ -6,25 +6,25 @@
   >
     <!-- Floating toggle button -->
     <button
-      class="pointer-events-auto w-[5.6rem] h-[5.6rem] rounded-full bg-amber border-none cursor-pointer shadow-[0_4px_20px_rgba(0,0,0,0.5)] flex items-center justify-center transition-[background,transform] duration-200 flex-shrink-0 hover:bg-golden hover:scale-[1.08]"
+      class="pointer-events-auto w-[5.6rem] h-[5.6rem] rounded-2xl bg-amber border border-golden/40 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.3),0_0_0_6px_color-mix(in_srgb,var(--color-amber)_10%,transparent)] flex items-center justify-center transition-[background,transform] duration-200 flex-shrink-0 hover:bg-golden"
       aria-label="Ask about Josh (AI)"
       title="Ask about Josh"
       @click="toggleModal"
     >
-      <span class="text-[2.2rem] leading-none">🤖</span>
+      <SparkleIcon class="w-[2.4rem] h-[2.4rem] text-ink" />
     </button>
 
     <!-- Modal panel -->
     <Transition name="chat-panel">
       <div
         v-if="isOpen"
-        class="pointer-events-auto absolute bottom-0 right-0 bg-panel border border-white/[.08] rounded-[1.2rem] flex flex-col overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.6)] z-[1] max-xs:w-[calc(100vw-2rem)] max-xs:max-h-[70vh]"
+        class="pointer-events-auto absolute bottom-0 right-0 bg-panel border border-line-strong rounded-[1.4rem] flex flex-col overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.35)] z-[1] max-xs:w-[calc(100vw-2rem)] max-xs:max-h-[70vh]"
         :style="modalStyle"
       >
         <!-- Header -->
-        <div class="flex items-center justify-between px-[1.2rem] py-5 bg-white/[.04] border-b border-white/[.06] font-semibold text-lg text-[#f0f0f0] flex-shrink-0">
+        <div class="flex items-center justify-between px-[1.2rem] py-5 bg-snow/[.04] border-b border-snow/[.06] font-semibold text-lg text-snow flex-shrink-0">
           <div class="flex items-center gap-3">
-            <span class="text-[1.6rem]">🤖</span>
+            <SparkleIcon class="w-[1.8rem] h-[1.8rem] text-amber" />
             <span class="ml-1 text-lg">Ask About Josh</span>
           </div>
           <div class="flex items-center gap-2">
@@ -34,7 +34,7 @@
               :class="[
                 showGame
                   ? 'text-amber bg-amber/[.15] ring-1 ring-amber/50'
-                  : 'text-[#666] hover:text-snow hover:bg-white/[.06]',
+                  : 'text-ash hover:text-snow hover:bg-snow/[.06]',
                 !modelReady && !showGame ? 'btn-loading-glow' : ''
               ]"
               :title="showGame ? 'Back to chat' : 'Play a game'"
@@ -47,7 +47,7 @@
               <span class="font-semibold">{{ showGame ? 'Exit' : 'Game' }}</span>
             </button>
             <button
-              class="bg-transparent border-none text-smoke text-[1.6rem] cursor-pointer leading-none w-9 h-9 flex items-center justify-center rounded transition-[color,background] duration-200 hover:text-snow hover:bg-white/[.06]"
+              class="bg-transparent border-none text-smoke text-[1.6rem] cursor-pointer leading-none w-9 h-9 flex items-center justify-center rounded transition-[color,background] duration-200 hover:text-snow hover:bg-snow/[.06]"
               aria-label="Close chat"
               @click="toggleModal"
             >
@@ -63,7 +63,7 @@
           :loading-text="loadingText"
           :model-ready="modelReady"
           :expanded="expanded"
-          class="flex-1 min-h-0"
+          class="force-dark flex-1 min-h-0"
           @close="showGame = false"
           @continue-to-chat="showGame = false"
           @toggle-expand="expanded = !expanded"
@@ -75,10 +75,10 @@
           class="flex-1 flex flex-col items-center justify-center gap-[1.8rem] px-10 py-10 text-center"
         >
           <div class="text-[4rem] leading-none opacity-85">
-            🤖
+            <SparkleIcon class="w-[4.4rem] h-[4.4rem] text-amber" />
           </div>
           <div class="flex flex-col gap-4">
-            <p class="text-lg font-bold text-[#f0f0f0] m-0">
+            <p class="text-lg font-bold text-snow m-0">
               AI-Powered Q&amp;A
             </p>
             <p class="text-mist text-md mb-4 leading-[1.7]">
@@ -91,7 +91,7 @@
               <span class="meta-badge">Cached after first visit</span>
             </div>
           </div>
-          <div class="w-full h-px bg-white/[.06]" />
+          <div class="w-full h-px bg-snow/[.06]" />
           <button
             class="button w-full py-[0.95rem] px-6 text-md text-center justify-center"
             @click="startChat"
@@ -109,7 +109,7 @@
             ⚙️
           </div>
           <div class="flex flex-col gap-4">
-            <p class="text-lg font-bold text-[#f0f0f0] m-0">
+            <p class="text-lg font-bold text-snow m-0">
               Loading AI Model…
             </p>
             <!-- Progress text swaps to shader warning while compiling -->
@@ -121,14 +121,14 @@
             </div>
             <p
               v-else
-              class="text-[1.15rem] text-[#bbb] leading-[1.7] m-0"
+              class="text-[1.15rem] text-mist leading-[1.7] m-0"
             >
               {{ loadingText }}
             </p>
           </div>
           <!-- Loading bar -->
           <div class="w-full flex flex-col gap-[0.6rem]">
-            <div class="w-full h-[0.55rem] bg-white/[.08] rounded-full overflow-hidden">
+            <div class="w-full h-[0.55rem] bg-snow/[.08] rounded-full overflow-hidden">
               <div
                 class="h-full bg-amber rounded-full transition-[width] duration-[350ms] ease-out"
                 :style="{ width: loadingProgress + '%' }"
@@ -136,10 +136,10 @@
             </div>
             <div class="flex justify-between items-center">
               <span class="text-base font-semibold text-amber">{{ Math.round(loadingProgress) }}%</span>
-              <span class="text-base text-[#666]">Cached after first load</span>
+              <span class="text-base text-ash">Cached after first load</span>
             </div>
           </div>
-          <div class="w-full h-px bg-white/[.06]" />
+          <div class="w-full h-px bg-snow/[.06]" />
           <div class="flex flex-wrap justify-center gap-[0.6rem]">
             <span class="meta-badge">~740 MB</span>
             <span class="meta-badge">One-time download</span>
@@ -156,7 +156,7 @@
           v-else
           ref="messagesEl"
           class="flex-1 overflow-y-auto px-4 py-[1.2rem] flex flex-col gap-2"
-          style="scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.1) transparent"
+          style="scrollbar-width:thin; scrollbar-color:var(--color-line-strong) transparent"
         >
           <template
             v-for="(msg, i) in messages"
@@ -169,15 +169,15 @@
             >
               <div
                 v-if="msg.role === 'assistant'"
-                class="text-[1.3rem] flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white/[.05] rounded-full mb-[0.1rem]"
+                class="text-[1.3rem] flex-shrink-0 w-8 h-8 flex items-center justify-center bg-snow/[.05] rounded-full mb-[0.1rem]"
               >
-                🤖
+                <SparkleIcon class="w-[1.4rem] h-[1.4rem] text-amber" />
               </div>
               <div
                 class="max-w-[72%] py-[0.7rem] px-4 text-base leading-[1.55] whitespace-pre-wrap break-words rounded-[1.2rem]"
                 :class="msg.role === 'user'
                   ? 'bg-amber text-ink font-medium rounded-br-[0.25rem]'
-                  : 'bg-white/[.09] text-[#ddd] rounded-bl-[0.25rem] border border-white/[.07]'"
+                  : 'bg-snow/[.09] text-snow rounded-bl-[0.25rem] border border-snow/[.07]'"
               >
                 {{ msg.text }}
               </div>
@@ -189,10 +189,10 @@
             v-if="thinking && messages[messages.length - 1]?.text === ''"
             class="flex items-end gap-2 mt-1"
           >
-            <div class="text-[1.3rem] flex-shrink-0 w-8 h-8 flex items-center justify-center bg-white/[.05] rounded-full">
-              🤖
+            <div class="text-[1.3rem] flex-shrink-0 w-8 h-8 flex items-center justify-center bg-snow/[.05] rounded-full">
+              <SparkleIcon class="w-[1.4rem] h-[1.4rem] text-amber" />
             </div>
-            <div class="flex items-center gap-[0.35rem] bg-white/[.09] border border-white/[.07] rounded-[1.2rem] rounded-bl-[0.25rem] py-3 px-4">
+            <div class="flex items-center gap-[0.35rem] bg-snow/[.09] border border-snow/[.07] rounded-[1.2rem] rounded-bl-[0.25rem] py-3 px-4">
               <span class="dot" />
               <span class="dot" />
               <span class="dot" />
@@ -203,14 +203,14 @@
         <!-- Input area -->
         <div
           v-if="modelReady && !showGame"
-          class="px-4 py-[0.8rem] border-t border-white/[.06] bg-white/[.02] flex-shrink-0 box-border w-full"
+          class="px-4 py-[0.8rem] border-t border-snow/[.06] bg-snow/[.02] flex-shrink-0 box-border w-full"
         >
           <input
             v-model="userInput"
             placeholder="Ask about Josh..."
             :disabled="thinking"
             maxlength="400"
-            class="block w-full box-border bg-white/[.06] border border-white/10 rounded-[0.75rem] py-3 px-4 text-[#eee] text-[1.1rem] font-[inherit] outline-none transition-[border-color] duration-200 h-20 resize-none mb-[0.6rem] focus:border-amber disabled:opacity-50 placeholder:text-[#555]"
+            class="block w-full box-border bg-snow/[.06] border border-snow/10 rounded-[0.75rem] py-3 px-4 text-snow text-[1.1rem] font-[inherit] outline-none transition-[border-color] duration-200 h-20 resize-none mb-[0.6rem] focus:border-amber disabled:opacity-50 placeholder:text-smoke"
             @keydown.enter="sendMessage"
           >
           <div class="flex items-center justify-between">
@@ -219,7 +219,7 @@
             </p>
             <div class="flex items-center gap-3">
               <button
-                class="bg-transparent border-none text-[#666] text-base cursor-pointer p-0 transition-colors duration-200 hover:text-amber font-[inherit]"
+                class="bg-transparent border-none text-ash text-base cursor-pointer p-0 transition-colors duration-200 hover:text-amber font-[inherit]"
                 @click="clearChat"
               >
                 ↺ Clear
@@ -244,6 +244,7 @@ import { ref, nextTick, onMounted, computed } from 'vue'
 import { loadModel, warmupModel, askQuestion, clearHistory } from '../../services/webllm'
 import resumeContext from '../../data/resumeContext'
 import MiniGame from './MiniGame.vue'
+import SparkleIcon from '../icons/SparkleIcon.vue'
 import { gameActive, shaderCompiling } from '../../composables/useAiState'
 
 interface ChatMessage {
@@ -398,9 +399,9 @@ async function scrollToBottom() {
 /* ── Meta badge (shared) ── */
 .meta-badge {
   font-size: 1.2rem;
-  color: #999;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--color-ash);
+  background: color-mix(in srgb, var(--color-snow) 5%, transparent);
+  border: 1px solid var(--color-line-strong);
   border-radius: 2rem;
   padding: 0.3rem 0.9rem;
 }
@@ -420,7 +421,7 @@ async function scrollToBottom() {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: #888;
+  background: var(--color-ash);
   animation: typing-bounce 1.2s ease-in-out infinite;
 }
 .dot:nth-child(1) { animation-delay: 0s; }

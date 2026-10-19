@@ -48,12 +48,13 @@ These constraints must be respected in all changes:
 The project is fully built and deployed. All content is personalized. The tech stack migration (scoped CSS → Tailwind v4) is complete. The following are **done and should not be rebuilt from scratch**:
 
 - PNW theme with full design token system
-- Canvas-based rain, cloud, and lightning animations (Hero.vue)
-- Bigfoot easter egg (click near right side of hero to trigger)
+- Dark / light themes (`useTheme`, header toggle, saved to localStorage, dark by default) — dusk storm vs. summer sun hero scene
+- Canvas rain + clouds, ambient lightning, Bigfoot hiding in the treeline (Hero.vue)
 - AI chat modal with WebGPU guard, loading progress, streaming responses, and chat history
-- Infinite horizontal skills carousel with mask-image fade edges
+- Skills grid grouped by category; experience & education timeline
 - Professional work section with app store links (TestNav)
 - AOS scroll animations on all sections
+- 2026 redesign: cooler PNW palette, Inter + JetBrains Mono, SVG Mount Hood hero, bento work grid, reduced-motion support
 - Tailwind v4 migration with custom `@theme` design tokens
 - Cloudflare Pages deployment (auto-deploy on push to `main`)
 

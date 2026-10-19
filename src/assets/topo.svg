@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <path id="c" d="M0-100C58-104 104-62 112-8 120 46 84 92 30 104-24 116-86 96-108 48-130 0-112-50-74-78-52-94-26-99 0-100Z" fill="none" vector-effect="non-scaling-stroke"/>
+  </defs>
+  <g stroke="#E8EEEA" stroke-opacity="0.05" stroke-width="1">
+    <g transform="translate(920 220)">
+      <use href="#c" transform="rotate(0) scale(0.35)"/>
+      <use href="#c" transform="rotate(6) scale(0.7 0.62)"/>
+      <use href="#c" transform="rotate(12) scale(1.05 0.92)"/>
+      <use href="#c" transform="rotate(18) scale(1.45 1.24)"/>
+      <use href="#c" transform="rotate(24) scale(1.9 1.6)"/>
+      <use href="#c" transform="rotate(30) scale(2.4 2.0)"/>
+      <use href="#c" transform="rotate(36) scale(2.95 2.45)"/>
+      <use href="#c" transform="rotate(42) scale(3.55 2.95)"/>
+      <use href="#c" transform="rotate(48) scale(4.2 3.5)"/>
+      <use href="#c" transform="rotate(54) scale(4.9 4.1)"/>
+    </g>
+    <g transform="translate(180 680)">
+      <use href="#c" transform="rotate(-10) scale(0.4 0.32)"/>
+      <use href="#c" transform="rotate(-16) scale(0.8 0.66)"/>
+      <use href="#c" transform="rotate(-22) scale(1.25 1.02)"/>
+      <use href="#c" transform="rotate(-28) scale(1.75 1.42)"/>
+      <use href="#c" transform="rotate(-34) scale(2.3 1.86)"/>
+      <use href="#c" transform="rotate(-40) scale(2.9 2.34)"/>
+      <use href="#c" transform="rotate(-46) scale(3.55 2.86)"/>
+    </g>
+  </g>
+</svg>

@@ -2,7 +2,9 @@
 
 ## Overview
 
-Styling uses **Tailwind CSS v4** (`@tailwindcss/vite` plugin). There is **no `tailwind.config.js`** — all customization lives in `src/assets/main.css` via `@theme`, `@layer base`, and `@layer components`.
+Styling uses **Tailwind CSS v4** (`@tailwindcss/vite` plugin). There is **no `tailwind.config.js`** — all customization lives in `src/styles/main.css` via `@theme`, `@layer base`, and `@layer components`.
+
+Design direction: modern, dark, engineering-focused, with a Pacific Northwest identity — wet basalt backgrounds, Douglas-fir greens, and **one** sunset-amber accent. Mono type carries the "software engineer" voice (eyebrows, dates, tags).
 
 ---
 
@@ -12,164 +14,136 @@ Styling uses **Tailwind CSS v4** (`@tailwindcss/vite` plugin). There is **no `ta
 
 | Token | Value | Usage |
 |---|---|---|
-| `forest` | `#2D5016` | Primary backgrounds, borders — deep evergreen |
-| `amber` | `#D4A574` | Headings, accents, interactive elements — warm wood |
-| `moss` | `#4A7C59` | Hover states — forest floor green |
-| `slate-pnw` | `#1F3A3A` | Deep slate/teal — rainy sky |
-| `golden` | `#E8B559` | Golden hour accent — button hover |
-| `charcoal` | `#0F1419` | Page background — night sky |
-| `snow` | `#F5F5F5` | Primary text — forest light |
-| `mist` | `#C4C4C4` | Secondary text — shaded |
-| `ash` | `#aaaaaa` | Tertiary text, captions |
-| `smoke` | `#888888` | Placeholder text, disabled |
-| `ember` | `#c49550` | Warning text in AI chat |
-| `ink` | `#1a1a1a` | Dark text on light backgrounds (AI user bubble) |
-| `panel` | `#1a1e2a` | AI chat panel background |
+| `charcoal` | `#0B1012` | Page background — wet basalt at dusk |
+| `surface` | `#121A1C` | Cards, inputs |
+| `surface-2` | `#18221F` | Raised / hovered surfaces |
+| `panel` | `#111819` | AI chat panel |
+| `forest` | `#1F3D33` | Douglas fir — surfaces and borders only, never text |
+| `slate-pnw` | `#1A2C2E` | Rainy-sky teal |
+| `moss` | `#5E8C6A` | Secondary accent: success states, check icons, status dot |
+| `amber` | `#E3A867` | **The** accent — CTAs, links, eyebrows, highlights. Use sparingly |
+| `golden` | `#EEBD82` | Amber hover |
+| `ember` | `#D99A5B` | Warnings |
+| `snow` | `#E8EEEA` | Primary text |
+| `mist` | `#9FB0AA` | Secondary text (body copy) |
+| `ash` | `#7F918B` | Tertiary text, captions, labels |
+| `smoke` | `#5F706A` | Placeholders, separators, disabled |
+| `ink` | `#0B1012` | Dark text on amber |
+| `line` | `rgb(232 238 234 / 0.08)` | Default hairline border |
+| `line-strong` | `rgb(232 238 234 / 0.16)` | Hover / emphasized border |
 
-**Usage in Tailwind:**
 ```html
-<!-- Background -->
-<div class="bg-forest">           <!-- solid -->
-<div class="bg-forest/[.12]">     <!-- 12% opacity -->
-<div class="bg-forest/40">        <!-- 40% opacity -->
-
-<!-- Text -->
-<p class="text-amber">
-<p class="text-snow">
-
-<!-- Border -->
-<div class="border border-amber/45">
+<div class="bg-surface border border-line">
+<p class="text-mist">
+<span class="text-amber">
 ```
+
+Rule of thumb: if more than one or two things per screen are amber, something should be `snow` or `mist` instead.
+
+### Themes (dark default, light = summer sun)
+
+- `<html data-theme="dark|light">` — set before first paint by an inline script in `index.html`, then managed by `src/composables/useTheme.ts` (`theme`, `setTheme`, `toggleTheme`; persisted under `localStorage['theme']`). Dark is always the default; the OS preference is intentionally ignored
+- The values above are the dark palette (`@theme`). `:root[data-theme="light"]` in `main.css` remaps the **same token names by role** — `snow` is still "primary text" (now `#13201C`), `charcoal` is still "page background" (`#F5F3EC`), `amber` is still the accent (`#9A4F0E`, AA on the light background), `ink` becomes white
+- So: **never hard-code a colour that should flip**. Use tokens, or `color-mix(in srgb, var(--color-snow) 5%, transparent)` / `bg-snow/[.05]` for translucent tints (not `rgb(232 238 234 / x)` or `bg-white/x`)
+- `.force-dark` re-declares the dark tokens on a subtree (used to keep the mini-game dark in both themes)
+- `useTheme` adds `.theme-transition` to `<html>` for ~900ms while switching, which fades background/colour/border changes everywhere except the hero (the hero runs its own 1.8s scene transition)
+- In scoped component styles, target light mode with `:root[data-theme="light"] .my-class { … }` — **not** `:global(...)`, which makes Vue drop the rest of the selector
+
+### Fonts
+
+| Token | Stack | Usage |
+|---|---|---|
+| `font-sans` | Inter → system UI | Everything by default |
+| `font-mono` | JetBrains Mono → system mono | Eyebrows, dates, chips/tags, form labels, coordinates |
+
+Loaded from Google Fonts in `index.html` (Inter 400–700, JetBrains Mono 400–500).
 
 ### Typography Scale
 
-All sizes are in `rem` relative to `html { font-size: 62.5% }` which makes `1rem = 10px`.
+`html { font-size: 62.5% }` makes `1rem = 10px` (kept because AiChat/MiniGame sizing depends on it). There is **no** extra font shrink on mobile — use `clamp()` for fluid display sizes instead.
 
-| Token | Value | Pixels | Usage |
-|---|---|---|---|
-| `text-2xs` | `0.9rem` | 9px | Tiny badges |
-| `text-xs` | `1rem` | 10px | Small meta labels |
-| `text-sm` | `1.2rem` | 12px | Captions, list items |
-| `text-base` | `1.4rem` | 14px | Small body, cards |
-| `text-body` | `1.6rem` | 16px | **Standard body text** |
-| `text-lg` | `1.8rem` | 18px | Card titles, sub-headings |
-| `text-xl` | `2rem` | 20px | Section sub-headings |
-| `text-2xl` | `2.4rem` | 24px | Medium headings |
-| `text-3xl` | `3rem` | 30px | Section headings (`h2`) |
-| `text-4xl` | `4.2rem` | 42px | Large headings |
+| Token | Value | Pixels |
+|---|---|---|
+| `text-2xs` | `1.1rem` | 11px |
+| `text-xs` | `1.2rem` | 12px |
+| `text-sm` | `1.3rem` | 13px |
+| `text-base` | `1.5rem` | 15px |
+| `text-body` | `1.6rem` | 16px — standard body text |
+| `text-lg` | `1.8rem` | 18px |
+| `text-xl` | `2rem` | 20px |
+| `text-2xl` | `2.4rem` | 24px |
+| `text-3xl` | `3rem` | 30px |
+| `text-4xl` | `4.2rem` | 42px |
 
-> **Hero heading** uses `clamp(3rem, 6.5vw, 5.5rem)` set in `<style scoped>` — cannot be a Tailwind utility.
+Display sizes (`.section-title`, hero name) use `clamp()`.
 
 ### Breakpoints
 
-| Token | Value | Pixels (at 16px media query base) |
-|---|---|---|
-| `xs` | `30rem` | 480px |
-| `sm` (default) | `40rem` | 640px |
-| `md` (default) | `48rem` | 768px |
-| `lg` (default) | `64rem` | 1024px |
+`xs` = `30rem` (480px) plus Tailwind defaults `sm` 640, `md` 768, `lg` 1024.
 
-**Max-width usage (mobile-first overrides):**
+---
+
+## `@layer base`
+
+- `body`: Inter, 16px, `line-height: 1.6`, charcoal background, snow text
+- Headings: `letter-spacing: -0.02em`, `line-height: 1.15`
+- `:focus-visible`: 2px amber outline, 3px offset
+- `::selection`: translucent amber
+
+---
+
+## `@layer components` — Shared Classes
+
+| Class | What it is |
+|---|---|
+| `.wrap` | Centered content column — `max-width: 112rem`, `padding-inline: 2.4rem` |
+| `.section` | Section vertical rhythm — `padding-block: 12rem` (8rem ≤ 768px) |
+| `.eyebrow` | Mono, uppercase, amber label with a trailing hairline, e.g. `01 — About` |
+| `.section-title` | Large tight heading — `clamp(3rem, 4.2vw, 4.4rem)`, weight 650 |
+| `.button` | Primary CTA — amber fill, ink text, 8px radius; hover → golden. No lift/shadow |
+| `.button-ghost` | Secondary — transparent, `line-strong` border; hover → amber border + text |
+| `.chip` | Mono tag — hairline border, 6px radius, `mist` text |
+| `.card` | `surface` background, `line` border, 12px radius |
+| `.spotlight` | Add to a `.card`: cursor-following amber glow. Set `--mx` / `--my` on `mousemove` (see `Project.vue` `trackPointer`) |
+| `.bg-topo` | Topographic contour background (`topo.svg` dark, `topo-light.svg` light) — used on About and Contact |
+| `.field` | Form input / textarea — surface fill, hairline border, amber focus ring |
+
+Utilities override these freely (components layer has lower precedence), e.g. `class="button-ghost py-[1rem] px-[1.4rem]"`.
+
+---
+
+## Section Pattern
+
 ```html
-<p class="text-body max-md:text-base max-xs:text-sm">
+<section id="x" class="section">
+  <div class="wrap">
+    <p class="eyebrow">04 — Work</p>
+    <h2 class="section-title mt-6 mb-14">Professional work</h2>
+    ...
+  </div>
+</section>
 ```
+
+Content is left-aligned. Sections are numbered 01–05 in page order.
 
 ---
 
-## `@layer base` — Global Resets and Body Styles
+## Motion
 
-```css
-html  { font-size: 62.5%; scroll-behavior: smooth; scroll-padding-top: 10rem; }
-body  { font-size: 1.6rem; background: #0F1419; color: #F5F5F5; font-family: 'Red Hat Display', sans-serif; }
-a     { text-decoration: none; color: inherit; }
-ul,li { list-style: none; margin: 0; padding: 0; }
-/* Responsive font-size: 55% @ 768px, 50% @ 480px */
-```
-
-Tailwind Preflight (included via `@import "tailwindcss"`) handles box-sizing, margin/padding resets, and base element normalization.
-
----
-
-## `@layer components` — Shared Component Classes
-
-### `.button`
-Used by: `Hero.vue` (Let's Connect), `About.vue` (Download Resume, Download Cover Letter), `AiChat.vue` (Start Chat, Send)
-
-```css
-.button {
-  display: inline-flex; align-items: center; justify-content: center;
-  background-color: var(--color-forest);  /* #2D5016 */
-  color: var(--color-snow);               /* #F5F5F5 */
-  border-radius: 2rem;
-  font-weight: 500;
-  padding: 1rem 2rem;
-  font-size: 1.6rem;
-  line-height: 1;
-  transition: all 0.3s ease;
-}
-.button:hover {
-  background-color: var(--color-moss);   /* #4A7C59 */
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.3);
-}
-```
-
-Individual buttons can override padding/font-size with Tailwind utility classes since `@layer components` has lower specificity than utilities.
+- AOS: `data-aos="fade-up"` only, delays ≤ ~240ms. Travel distance is overridden to 12px (unlayered rule in `main.css` so it beats `aos.css`)
+- Hover states change color/border only — no `translateY` hops
+- `prefers-reduced-motion: reduce` collapses all CSS animations/transitions, disables AOS, stops hero rain and lightning, and freezes clouds (theme switches apply instantly). The header also has a visitor pause/play icon for the hero scene (WCAG 2.2.2, `SceneToggle.vue`)
+- Lightning must stay below the WCAG 2.3.1 flash threshold — see FEATURES.md §1 before touching `.sky-flash` or `PULSE`
 
 ---
 
 ## Scoped Styles Kept in Components
 
-| Component | What's Kept | Why |
+| Component | What's kept | Why |
 |---|---|---|
-| `Header.vue` | `.nav` mobile max-height transition, `.menu span:nth-child(n)` transforms | `nth-child` and `.active` state toggle can't be expressed as Tailwind utilities |
-| `Hero.vue` | `.hero`, `.canvas-layer`, `.hero-text`, `.hero-image`, `.mount-hood`, all `@media` | `clamp()` font sizes, canvas absolute positioning, complex responsive layout |
-| `About.vue` | `.skills-carousel` (mask-image), `.skills-track` (@keyframes skills-scroll) | `mask-image` linear gradient, custom `@keyframes` |
-| `ContactForm.vue` | `.success-message` animation, `@keyframes slideIn` | Custom `@keyframes` |
-| `AiChat.vue` | `.meta-badge`, `.spin-gear`, `@keyframes spin-gear`, `.dot`, `@keyframes typing-bounce`, Vue transition classes | `@keyframes`, `nth-child` animation delays, Vue `<Transition>` class hooks |
-
----
-
-## Common Patterns
-
-### Section background gradient
-```html
-<section class="bg-[linear-gradient(135deg,_rgba(45,80,22,0.08)_0%,_rgba(15,20,25,0.9)_100%)]">
-```
-
-### Section padding
-```html
-<section class="py-32 px-[5%] max-md:py-16 max-md:px-8 max-xs:py-8 max-xs:px-4">
-```
-(`py-32` = `8rem` top/bottom, `px-[5%]` = 5% horizontal)
-
-### Card style
-```html
-<div class="bg-white/5 border border-forest/40 rounded-2xl p-8 flex flex-col">
-```
-
-### Hover border highlight
-```html
-<div class="... transition-all duration-300 hover:bg-forest/20 hover:border-amber">
-```
-
-### Education/experience block with left accent border
-```html
-<div class="my-8 p-6 bg-forest/[.12] border-l-4 border-amber rounded-lg">
-```
-
-### Heading hierarchy
-```html
-<h2 class="text-3xl text-snow">           <!-- Section heading -->
-<h3 class="text-xl text-amber">           <!-- Sub-section heading (amber) -->
-<h4 class="text-lg text-snow">            <!-- Card/item heading -->
-<p  class="text-body text-mist">          <!-- Body text -->
-<p  class="text-base text-ash">           <!-- Secondary/caption text -->
-```
-
----
-
-## Font
-
-**Red Hat Display** — loaded from Google Fonts (referenced in `index.html`). Set as `font-family` on `body` and all form elements in `@layer base`.
-
+| `Header.vue` | Scrolled/blur state, active-link dot, mobile dropdown, hamburger `nth-child` transforms | Pseudo-elements, state classes |
+| `Hero.vue` | Sky layers, `.mountain` sizing + day/night fills, canvas layers, grain, status pill ping, `clamp()` type, responsive rules | Scene transitions, absolute layering, `@keyframes` |
+| `About.vue` | Timeline rail/dots, skill-chip icon desaturate → colour hover | Structural pseudo-borders, filters |
+| `Contact.vue` | Contact row hover, icon tile | Hover on descendant |
+| `ContactForm.vue` | Mono field labels, `.success-message` slide-in | `@keyframes` |
+| `AiChat.vue` | `.meta-badge`, spinners, typing dots, Vue transition classes | `@keyframes`, `<Transition>` hooks |

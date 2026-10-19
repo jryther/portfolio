@@ -9,7 +9,7 @@ This directory contains machine-readable documentation for AI coding agents work
 | [`CONTEXT.md`](./CONTEXT.md) | **Start here.** Project identity, owner profile, hard constraints, current state, sensitive areas |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | File structure, component tree, component responsibilities, services, Vite config, asset pipeline |
 | [`STYLING.md`](./STYLING.md) | Tailwind v4 setup, full design token reference (colors + type scale + breakpoints), global layers, shared patterns |
-| [`FEATURES.md`](./FEATURES.md) | Every interactive feature explained in implementation detail: canvas animations, AI chat, carousel, nav, forms, deployment |
+| [`FEATURES.md`](./FEATURES.md) | Every interactive feature explained in implementation detail: canvas animations, AI chat, skills grid, nav, forms, deployment |
 
 ## Recommended Reading Order
 
@@ -25,7 +25,7 @@ This directory contains machine-readable documentation for AI coding agents work
 - **Build:** Vite 7, base path `/`, deploys to Cloudflare Pages
 - **AI:** WebLLM (`@mlc-ai/web-llm`) in a Web Worker, WebGPU required, Llama-3.2-1B model (~740 MB)
 - **1 rem = 10 px** (html font-size: 62.5%)
-- **Primary accent color:** `#D4A574` (amber) — token `--color-amber`
-- **Background:** `#0F1419` (charcoal) — token `--color-charcoal`
-- **Forest green:** `#2D5016` — token `--color-forest`
+- **Primary accent color:** `#E3A867` (amber) — the only accent; use sparingly — token `--color-amber`
+- **Background:** `#0B1012` (charcoal) — token `--color-charcoal`
+- **Fonts:** Inter (`font-sans`) + JetBrains Mono (`font-mono`) for labels, dates, and tags
 

@@ -21,11 +21,12 @@ Live at **[https://portfolio-v3.jryther91.workers.dev](https://portfolio-v3.jryt
 
 ## Features
 
-- **Pacific Northwest theme** — Deep forest greens, warm amber/wood tones, charcoal backgrounds
-- **Rain + cloud + lightning canvas animations** — Confined to the hero section
-- **Bigfoot easter egg** — Click near his position on the hero to reveal him during a lightning flash
+- **Pacific Northwest theme** — Wet-basalt backgrounds, Douglas-fir greens, and a single sunset-amber accent; Inter + JetBrains Mono
+- **SVG Mount Hood hero** — Layered ridgelines with procedurally generated fir treelines and alpenglow
+- **Dark / light mode** — Toggle in the header (dark by default, choice remembered). Dark is a rainy dusk with ambient lightning; light is a clear summer day with the sun rising behind Hood
+- **Bigfoot easter egg** — Watch the treeline during a lightning flash, or look closely in the sun
 - **AI chat modal** — Floating button (bottom-right) that opens a chat powered by a quantized LLM. Only renders if the browser supports WebGPU. The model answers questions about Josh's professional background
-- **Skills carousel** — Infinite horizontal scroll of tech icons
+- **Experience timeline & skills grid** — Work and education on one timeline; skills grouped by category
 - **Responsive** — Full mobile/tablet/desktop support with hamburger nav
 
 ---
@@ -61,37 +62,42 @@ src/
 │   ├── components/
 │   │   └── ContactForm.spec.ts
 │   ├── composables/
-│   │   └── useAiState.spec.ts
+│   │   ├── useAiState.spec.ts
+│   │   ├── useTheme.spec.ts
+│   │   └── useScene.spec.ts
 │   ├── data/
 │   │   └── resumeContext.spec.ts
 │   └── services/
 │       └── webllm.spec.ts
 │
 ├── styles/
-│   ├── main.css              # Tailwind v4 entry — @theme, @layer base/components
-│   └── base.css              # Unused (kept for reference)
+│   └── main.css              # Tailwind v4 entry — @theme, @layer base/components
 │
 ├── assets/
 │   ├── Resume.pdf
 │   ├── Cover Letter.docx
-│   ├── MountHoodImage.webp   # Hero right-side image
-│   ├── bigfoot.png           # Bigfoot easter egg source
+│   ├── topo.svg              # Topographic contour section background
+│   ├── topo-light.svg        # Contour background for light mode
 │   ├── spinner-solid-full.svg
-│   └── techIcons/            # SVG icons for skills carousel
+│   └── techIcons/            # SVG icons for the skills grid
 │
 ├── components/
 │   ├── Header.vue            # Fixed nav with mobile hamburger
-│   ├── Hero.vue              # Canvas rain/clouds/lightning + layout
-│   ├── About.vue             # Bio, education, experience, skills carousel, documents
+│   ├── Hero.vue              # SVG Mount Hood scene, weather, day/night
+│   ├── ThemeToggle.vue       # Sun/moon theme switch
+│   ├── SceneToggle.vue       # Pause/play the hero animation
+│   ├── About.vue             # Bio, timeline, skills grid, documents
 │   ├── Project.vue           # Professional work cards + app store links
-│   ├── Contact.vue           # Contact info cards
+│   ├── Contact.vue           # Contact links + form card
 │   ├── ContactForm.vue       # Formspree-backed email form
-│   ├── Footer.vue            # Links + trademark disclaimer
+│   ├── Footer.vue            # One-line footer + trademark disclaimer
 │   └── AiChat/
 │       └── AiChat.vue        # Floating AI chat modal
 │
 ├── composables/
-│   └── useAiState.ts         # Shared AI loading/ready state
+│   ├── useAiState.ts         # Shared AI loading/ready state
+│   ├── useTheme.ts           # Dark/light theme state + persistence
+│   └── useScene.ts           # Hero animation pause state
 │
 ├── data/
 │   └── resumeContext.ts      # Resume/cover letter context string fed to the LLM
@@ -165,7 +171,8 @@ src/__tests__/
 ├── components/
 │   └── ContactForm.spec.ts   # mount/submit/validation behaviour
 ├── composables/
-│   └── useAiState.spec.ts    # shared ref initialisation and mutation
+│   ├── useAiState.spec.ts    # shared ref initialisation and mutation
+│   └── useTheme.spec.ts      # default/restore/toggle/persist behaviour
 ├── data/
 │   └── resumeContext.spec.ts # content sanity checks
 └── services/

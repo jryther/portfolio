@@ -39,25 +39,25 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - Mobile hamburger/active-state `nth-child` selectors kept in `<style scoped>`
 
 ### `Hero.vue`
-- Three stacked `<canvas>` elements (z-index 0, 1, 2) for rain, clouds, lightning
+- Inline SVG Mount Hood (`.mountain`, z-index 0): layered ridgelines, alpenglow gradient, and seeded-PRNG fir treelines (`firPath` / `treeline`). Sized by height with `aspect-ratio` and `overflow: visible` so the extended ridgelines fill ultrawide screens; centred on the summit below 768px
+- Day/night sky divs (z-index 0), the SVG mountain (1), cloud + rain canvases (2, 3) and a film-grain overlay (4); see FEATURES.md §1 for the full stack
 - All canvas logic is vanilla JS Canvas 2D API inside `<script setup>`
-- Content sits at `z-index: 3`
-- Mount Hood image (`MountHoodImage.webp`) fills the right half
-- Bigfoot easter egg: pre-loaded PNG processed into a silhouette offscreen canvas; revealed on click if within `BIGFOOT_PROXIMITY = 280px` of `BIGFOOT_POS = { xFrac: 0.78, yFrac: 0.82 }`
-- Lightning always triggers on every click regardless of proximity
-- Responsive layout: two-column → stacked below 960px
+- Content sits at `z-index: 5`; summit coordinates line pinned to the bottom
+- `prefers-reduced-motion`: rain never starts and clouds render as a still frame
+- Weather follows the theme: rain + ambient lightning at dusk (dark), sun + fair-weather clouds in summer (light)
+- Bigfoot is an SVG silhouette in the treeline — lit by lightning flashes in dark mode, hiding in plain sight in light mode. Nothing in the hero is clickable
 - `clamp()` font sizes and responsive breakpoints live in `<style scoped>` (Canvas CSS and clamp cannot be expressed as Tailwind utilities)
 
 ### `About.vue`
-- Skills carousel: duplicated `[...skills, ...skills]` array with CSS `translateX(-50%)` loop animation
-- Mask-image fade on carousel edges — cannot be Tailwind, kept in `<style scoped>`
-- Download buttons use the global `.button` class
+- Three blocks: bio + "At a glance" card, experience & education timeline (`timeline` array), and skills grouped by category (`skillGroups` array)
+- Timeline rail/dot styles and the skill-chip desaturate→colour hover live in `<style scoped>`
+- Download buttons use the global `.button-ghost` class
 - Resume and cover letter imported as asset URLs via Vite
 
 ### `Project.vue`
-- Four work cards rendered from a `const projects = [...]` array in `<script setup>`
-- App store links for TestNav (Apple + Microsoft) above the cards
-- No `technologies` tags (removed intentionally)
+- Four work cards rendered from a `const projects = [...]` array in `<script setup>`, in a bento grid (cards 1 and 4 span two columns on `lg`)
+- Each card has mono tech `tags` (taken from the resume) and a cursor-following `.spotlight` glow fed by `trackPointer`
+- Compact "TestNav ships on" row with App Store / Microsoft Store links beside the heading
 - No `coming-soon` badge (removed intentionally)
 - No hover lift effect on cards (removed intentionally — cards are informational, not interactive links)
 
@@ -141,7 +141,6 @@ Production COOP/COEP headers are served via `public/_headers` (Cloudflare Pages)
 
 ## Scroll & Animation
 
-- **AOS** (`aos` npm package): initialized in `main.js` with `duration: 1000, offset: 100, once: true`. Components use `data-aos="fade-in-up"` / `data-aos-delay="N"` attributes
+- **AOS** (`aos` npm package): initialized in `main.ts` with `duration: 600, offset: 60, once: true`, disabled under reduced motion. Components use `data-aos="fade-up"` (travel distance shortened to 12px in `main.css`) / `data-aos-delay="N"` attributes
 - **Canvas animations**: managed entirely in `Hero.vue` via `requestAnimationFrame` loops started on `onMounted` and cleaned up on `onUnmounted`
-- **Skills carousel**: CSS-only `@keyframes skills-scroll` looping `translateX(0)` → `translateX(-50%)` on a doubled item array
 

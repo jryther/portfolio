@@ -1,38 +1,147 @@
 <template>
   <section
     id="contact"
-    class="py-32 px-[5%] bg-[linear-gradient(135deg,_rgba(45,80,22,0.1)_0%,_rgba(15,20,25,0.95)_100%)] max-md:py-16 max-md:px-8 max-xs:py-8 max-xs:px-4"
+    class="section bg-topo"
   >
-    <header class="text-center mb-12">
-      <h2 class="text-3xl mb-4 text-snow max-md:text-2xl max-xs:text-xl">
-        Let's Connect
-      </h2>
-      <p class="text-body text-mist my-2 max-md:text-base">
-        I'm always interested in discussing new opportunities, technical challenges, and collaborations.
-      </p>
-      <p class="text-body text-mist my-2 max-md:text-base">
-        Whether you're looking for a full-stack developer, need technical insights, or just want to chat about software engineering, feel free to reach out!
-      </p>
-    </header>
+    <div class="wrap grid grid-cols-1 gap-16 lg:grid-cols-[1fr_1.15fr] lg:gap-24">
+      <div data-aos="fade-up">
+        <p class="eyebrow">
+          05 — Contact
+        </p>
+        <h2 class="section-title mt-6 mb-8">
+          Let's connect
+        </h2>
+        <p class="text-body leading-[1.8] text-mist mb-4">
+          I'm always interested in discussing new opportunities, technical challenges, and collaborations.
+        </p>
+        <p class="text-body leading-[1.8] text-mist">
+          Whether you're looking for a full-stack developer, need technical insights, or just want to chat about software engineering, feel free to reach out!
+        </p>
 
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-8 mb-16 text-center max-md:grid-cols-1 max-md:gap-6">
-      <div class="p-8 bg-forest/[.12] border border-forest/40 rounded-2xl transition-all duration-300 hover:bg-forest/20 hover:border-amber max-xs:p-6">
-        <a
-          href="mailto:jryther91@gmail.com"
-          title="Email"
-          class="block my-4 text-[2.5rem]"
-        >📧</a>
-        <a
-          href="mailto:jryther91@gmail.com"
-          class="block my-4 text-amber text-body font-medium transition-colors duration-300 hover:text-snow"
-        >jryther91@gmail.com</a>
+        <ul class="mt-12 flex flex-col gap-3">
+          <li
+            v-for="item in contactLinks"
+            :key="item.label"
+          >
+            <component
+              :is="item.href ? 'a' : 'div'"
+              :href="item.href"
+              :target="item.external ? '_blank' : undefined"
+              :rel="item.external ? 'noreferrer' : undefined"
+              class="contact-row"
+              :class="{ 'is-link': item.href }"
+            >
+              <span class="contact-icon">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                ><path :d="item.icon" /></svg>
+              </span>
+              <span class="flex flex-col">
+                <span class="font-mono text-2xs uppercase tracking-[0.12em] text-ash">{{ item.label }}</span>
+                <span class="contact-value text-body text-snow">{{ item.value }}</span>
+              </span>
+            </component>
+          </li>
+        </ul>
+      </div>
+
+      <div
+        class="card p-10 self-start max-xs:p-7"
+        data-aos="fade-up"
+        data-aos-delay="100"
+      >
+        <h3 class="text-xl font-semibold text-snow mb-2">
+          Send a message
+        </h3>
+        <p class="text-base text-mist mb-8">
+          I usually reply within a day or two.
+        </p>
+        <ContactForm />
       </div>
     </div>
-
-    <ContactForm />
   </section>
 </template>
 
 <script setup lang="ts">
 import ContactForm from './ContactForm.vue'
+
+// Lucide-style 24px line icons
+const contactLinks = [
+  {
+    label: 'Email',
+    value: 'jryther91@gmail.com',
+    href: 'mailto:jryther91@gmail.com',
+    external: false,
+    icon: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm17 2-9 6-9-6',
+  },
+  {
+    label: 'LinkedIn',
+    value: 'in/joshua-ryther',
+    href: 'https://linkedin.com/in/joshua-ryther-121400109',
+    external: true,
+    icon: 'M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6ZM2 9h4v12H2zM4 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z',
+  },
+  {
+    label: 'GitHub',
+    value: 'github.com/jryther',
+    href: 'https://github.com/jryther',
+    external: true,
+    icon: 'M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4M9 18c-4.51 2-5-2-7-2',
+  },
+  {
+    label: 'Location',
+    value: 'Portland, Oregon',
+    href: undefined,
+    external: false,
+    icon: 'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0ZM12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',
+  },
+]
 </script>
+
+<style scoped>
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  padding: 1.2rem 1.4rem;
+  margin-inline: -1.4rem;
+  border-radius: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.contact-row.is-link:hover {
+  background-color: color-mix(in srgb, var(--color-snow) 4%, transparent);
+}
+
+.contact-value {
+  transition: color 0.2s ease;
+}
+
+.contact-row.is-link:hover .contact-value {
+  color: var(--color-amber);
+}
+
+.contact-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  flex-shrink: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+  background-color: var(--color-surface);
+  color: var(--color-amber);
+}
+
+.contact-icon svg {
+  width: 2rem;
+  height: 2rem;
+}
+</style>

@@ -1,94 +1,185 @@
 <template>
-  <header class="header-fixed">
-    <div class="logo" />
+  <header
+    class="header-fixed"
+    :class="{ scrolled: isScrolled || isMenuOpen }"
+  >
+    <div class="wrap flex items-center justify-between h-full">
+      <a
+        href="#home"
+        class="flex items-center gap-3 text-snow font-semibold text-[1.6rem] tracking-[-0.01em]"
+        aria-label="Josh Ryther — home"
+        @click="isMenuOpen = false"
+      >
+        <svg
+          viewBox="0 0 32 32"
+          class="w-[2.8rem] h-[2.8rem]"
+          aria-hidden="true"
+        >
+          <rect
+            width="32"
+            height="32"
+            rx="8"
+            fill="var(--color-surface-2)"
+            stroke="var(--color-line-strong)"
+          />
+          <path
+            d="M5 24 13.5 11l2.5 3 3-5.5L27 24Z"
+            fill="var(--color-amber)"
+          />
+          <path
+            d="m16 14 3-5.5 2.6 4.8-1.8-.9-1.3 1.6-1.1-.9Z"
+            fill="#F4F1EA"
+          />
+        </svg>
+        <span>Josh Ryther</span>
+      </a>
 
-    <!-- Hamburger — lives in the header bar, hidden on desktop -->
-    <button
-      class="menu"
-      :class="{ active: isMenuOpen }"
-      aria-label="Toggle menu"
-      @click="isMenuOpen = !isMenuOpen"
-    >
-      <span />
-      <span />
-      <span />
-    </button>
+      <div class="flex items-center gap-3 md:order-last md:ml-6">
+        <SceneToggle />
+        <ThemeToggle />
 
-    <!-- Nav links — inline on desktop, dropdown below header on mobile -->
-    <nav
-      class="nav"
-      :class="{ active: isMenuOpen }"
-    >
-      <ul>
-        <li>
-          <a
-            href="#home"
-            class="text-snow font-medium transition-colors duration-300 hover:text-amber"
-            @click="isMenuOpen = false"
-          >Home</a>
-        </li>
-        <li>
-          <a
-            href="#about"
-            class="text-snow font-medium transition-colors duration-300 hover:text-amber"
-            @click="isMenuOpen = false"
-          >About</a>
-        </li>
-        <li>
-          <a
-            href="#projects"
-            class="text-snow font-medium transition-colors duration-300 hover:text-amber"
-            @click="isMenuOpen = false"
-          >Projects</a>
-        </li>
-        <li>
-          <a
-            href="#contact"
-            class="text-snow font-medium transition-colors duration-300 hover:text-amber"
-            @click="isMenuOpen = false"
-          >Contact</a>
-        </li>
-      </ul>
-    </nav>
+        <!-- Hamburger — hidden on desktop -->
+        <button
+          class="menu"
+          :class="{ active: isMenuOpen }"
+          aria-label="Toggle menu"
+          :aria-expanded="isMenuOpen"
+          @click="isMenuOpen = !isMenuOpen"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+      </div>
+
+      <!-- Nav links — inline on desktop, dropdown below header on mobile -->
+      <nav
+        class="nav"
+        :class="{ active: isMenuOpen }"
+      >
+        <ul>
+          <li
+            v-for="link in links"
+            :key="link.id"
+          >
+            <a
+              :href="`#${link.id}`"
+              class="nav-link"
+              :class="{ current: activeId === link.id }"
+              :aria-current="activeId === link.id ? 'true' : undefined"
+              @click="isMenuOpen = false"
+            >{{ link.label }}</a>
+          </li>
+          <li class="nav-resume">
+            <a
+              :href="resumeUrl"
+              target="_blank"
+              rel="noreferrer"
+              class="button-ghost py-[0.9rem] px-[1.4rem] text-[1.4rem]"
+            >Resume</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import resumeUrl from '../assets/Resume.pdf'
+import ThemeToggle from './ThemeToggle.vue'
+import SceneToggle from './SceneToggle.vue'
+
+const links = [
+  { id: 'about',    label: 'About' },
+  { id: 'projects', label: 'Work' },
+  { id: 'contact',  label: 'Contact' },
+]
+
 const isMenuOpen = ref<boolean>(false)
+const isScrolled = ref<boolean>(false)
+const activeId   = ref<string>('')
+
+let sectionObserver: IntersectionObserver | null = null
+
+function onScroll() {
+  isScrolled.value = window.scrollY > 8
+}
+
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+
+  // Highlight the nav link for whichever section crosses the upper-middle of the viewport
+  sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) activeId.value = entry.target.id
+    })
+  }, { rootMargin: '-40% 0px -55% 0px' })
+
+  ;['home', ...links.map(l => l.id)].forEach(id => {
+    const el = document.getElementById(id)
+    if (el) sectionObserver?.observe(el)
+  })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+  sectionObserver?.disconnect()
+})
 </script>
 
 <style scoped>
 .header-fixed {
   position: fixed;
-  width: 100%;
-  left: 0;
-  top: 0;
+  inset: 0 0 auto 0;
   z-index: 100;
-  background-color: rgba(15, 20, 25, 0.92);
-  padding: 0 5%;
-  min-height: 6.4rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: background 0.5s;
+  height: 6.8rem;
+  border-bottom: 1px solid transparent;
+  transition: background-color 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
 }
 
-.logo { color: #D4A574; font-size: 1.8rem; font-weight: 700; }
+.header-fixed.scrolled {
+  background-color: color-mix(in srgb, var(--color-charcoal) 72%, transparent);
+  border-bottom-color: var(--color-line);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
 
 /* Desktop nav — inline links, hamburger hidden */
-.nav          { display: flex; align-items: center; }
-.nav ul       { display: flex; gap: 2rem; list-style: none; margin: 0; padding: 0; }
-.menu         { display: none; }
+.nav     { display: flex; align-items: center; margin-left: auto; }
+.nav ul  { display: flex; align-items: center; gap: 3.2rem; }
+.menu    { display: none; }
+
+.nav-link {
+  position: relative;
+  font-size: 1.45rem;
+  font-weight: 500;
+  color: var(--color-mist);
+  transition: color 0.2s ease;
+}
+.nav-link:hover,
+.nav-link.current { color: var(--color-snow); }
+
+/* Small amber dot under the active link */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -0.9rem;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-amber);
+  transform: translateX(-50%) scale(0);
+  transition: transform 0.2s ease;
+}
+.nav-link.current::after { transform: translateX(-50%) scale(1); }
 
 /* ── Mobile ── */
 @media (max-width: 768px) {
-  .header-fixed {
-    padding: 0 2rem;
-    min-height: 5.6rem;
-  }
+  .header-fixed { height: 6rem; }
 
-  /* Hamburger sits in the header bar */
   .menu {
     display: flex;
     flex-direction: column;
@@ -96,14 +187,15 @@ const isMenuOpen = ref<boolean>(false)
     cursor: pointer;
     background: none;
     border: none;
-    padding: 0;
+    padding: 0.8rem;
+    margin-right: -0.8rem;
     z-index: 101;
   }
-  .menu span { width: 25px; height: 2px; background-color: #fff; transition: all 0.3s; display: block; }
+  .menu span { width: 22px; height: 2px; border-radius: 2px; background-color: var(--color-snow); transition: all 0.3s; display: block; }
 
-  .menu.active span:nth-child(1) { transform: rotate(45deg)  translate(5px,  7px); }
+  .menu.active span:nth-child(1) { transform: rotate(45deg)  translate(5px,  5px); }
   .menu.active span:nth-child(2) { opacity: 0; }
-  .menu.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -7px); }
+  .menu.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
 
   /* Nav is a dropdown panel that slides below the header bar */
   .nav {
@@ -111,30 +203,32 @@ const isMenuOpen = ref<boolean>(false)
     top: 100%;
     left: 0;
     width: 100%;
-    background-color: rgba(15, 20, 25, 0.97);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    flex-direction: column;
+    background-color: color-mix(in srgb, var(--color-charcoal) 96%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease;
   }
-  .nav.active { max-height: 400px; }
+  .nav.active { max-height: 400px; border-bottom: 1px solid var(--color-line); }
 
   .nav ul {
     flex-direction: column;
+    align-items: stretch;
     gap: 0;
-    padding: 1rem 2rem 1.5rem;
+    padding: 0.8rem 2.4rem 2rem;
   }
 
-  .nav ul li a {
+  .nav-link {
     display: block;
-    padding: 1rem 0;
+    padding: 1.4rem 0;
     font-size: 1.8rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--color-line);
   }
+  .nav-link::after { display: none; }
+  .nav-link.current { color: var(--color-amber); }
 
-  .nav ul li:last-child a {
-    border-bottom: none;
-  }
+  .nav-resume { padding-top: 1.6rem; }
+  .nav-resume a { width: 100%; }
 }
 </style>

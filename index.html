@@ -1,24 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <link rel="icon" href="/favicon.ico" />
-    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <title>Josh Ryther | Full-Stack Software Engineer</title>
+    <!-- Apply a saved light theme before first paint (dark is the default) -->
+    <script>try{if(localStorage.getItem("theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta property="og:title" content="Josh Ryther | Full-Stack Software Engineer">
-    <meta name="keywords" content="Josh Ryther, Full-Stack Developer, Software Engineer, React, Vue, Node.js, TypeScript, Pearson Education, Web Development">
-    <meta property="og:description" content="Josh Ryther - Full-Stack Software Engineer specializing in React, Vue, Node.js, and TypeScript. Building robust, high-quality software with a foundation in precision and user-centric design. Experienced at Pearson Education.">
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <title>Josh Ryther | Full-Stack Software Engineer</title>
+    <meta name="description" content="Josh Ryther - Portland, Oregon based Full-Stack Software Engineer specializing in React, Vue, Node.js, and TypeScript. Building robust, accessible, high-quality software.">
+    <meta name="keywords" content="Josh Ryther, Full-Stack Developer, Software Engineer, Portland Oregon, React, Vue, Node.js, TypeScript, Web Development">
+    <meta name="theme-color" content="#0B1012">
     <meta property="og:type" content="website">
-    <meta name="theme-color" content="#212121">
-    <meta name="description" content="Josh Ryther - Full-Stack Software Engineer specializing in React, Vue, Node.js, and TypeScript. Building robust, high-quality software with a foundation in precision and user-centric design.">
-    <meta property="og:image" content="https://your-domain.com/og-image.png">
+    <meta property="og:title" content="Josh Ryther | Full-Stack Software Engineer">
+    <meta property="og:description" content="Portland, Oregon based Full-Stack Software Engineer specializing in React, Vue, Node.js, and TypeScript. Building robust, accessible, high-quality software.">
+    <meta property="og:url" content="https://portfolio-v3.jryther91.workers.dev/">
 </head>
 <body>
     <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

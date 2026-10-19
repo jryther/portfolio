@@ -1,50 +1,71 @@
 <template>
   <form
-    class="max-w-[600px] mx-auto my-12 flex flex-col gap-6 max-md:my-8 max-md:gap-4"
+    class="flex flex-col gap-6"
     @submit.prevent="handleSubmit"
   >
-    <div class="flex flex-col">
-      <input
-        v-model="formData.name"
-        type="text"
-        placeholder="Your Name"
-        required
-        class="p-4 border border-forest/40 bg-forest/[.08] rounded-lg text-snow text-body transition-all duration-300 focus:outline-none focus:border-amber focus:bg-forest/15 focus:shadow-[0_0_10px_rgba(212,165,116,0.2)] placeholder:text-smoke max-md:text-base max-md:p-[0.8rem]"
-      >
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <label class="flex flex-col gap-2">
+        <span class="field-label">Name</span>
+        <input
+          v-model="formData.name"
+          type="text"
+          name="name"
+          autocomplete="name"
+          placeholder="Jane Doe"
+          required
+          class="field"
+        >
+      </label>
+
+      <label class="flex flex-col gap-2">
+        <span class="field-label">Email</span>
+        <input
+          v-model="formData.email"
+          type="email"
+          name="email"
+          autocomplete="email"
+          placeholder="jane@company.com"
+          required
+          class="field"
+        >
+      </label>
     </div>
 
-    <div class="flex flex-col">
-      <input
-        v-model="formData.email"
-        type="email"
-        placeholder="Your Email"
-        required
-        class="p-4 border border-forest/40 bg-forest/[.08] rounded-lg text-snow text-body transition-all duration-300 focus:outline-none focus:border-amber focus:bg-forest/15 focus:shadow-[0_0_10px_rgba(212,165,116,0.2)] placeholder:text-smoke max-md:text-base max-md:p-[0.8rem]"
-      >
-    </div>
-
-    <div class="flex flex-col">
+    <label class="flex flex-col gap-2">
+      <span class="field-label">Message</span>
       <textarea
         v-model="formData.message"
-        placeholder="Your Message"
+        name="message"
+        placeholder="What would you like to talk about?"
         rows="5"
         required
-        class="p-4 border border-forest/40 bg-forest/[.08] rounded-lg text-snow text-body resize-y min-h-[150px] transition-all duration-300 focus:outline-none focus:border-amber focus:bg-forest/15 focus:shadow-[0_0_10px_rgba(212,165,116,0.2)] placeholder:text-smoke max-md:text-base max-md:p-[0.8rem]"
+        class="field resize-y min-h-[15rem]"
       />
-    </div>
+    </label>
 
     <button
       type="submit"
-      class="button py-[1.2rem] px-8 mt-4 text-body"
+      class="button self-start py-[1.3rem] px-[2.4rem] max-xs:self-stretch"
     >
       Send Message
     </button>
 
     <p
       v-if="submitted"
-      class="success-message p-4 bg-forest/20 border border-amber rounded-lg text-amber text-center text-base"
+      class="success-message flex items-center gap-3 p-4 bg-moss/10 border border-moss/40 rounded-lg text-snow text-base"
+      role="status"
     >
-      ✅ Message sent successfully! I'll get back to you soon.
+      <svg
+        viewBox="0 0 16 16"
+        class="w-[1.6rem] h-[1.6rem] flex-shrink-0 text-moss"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      ><path d="m3 8.5 3 3 7-7" /></svg>
+      Message sent successfully! I'll get back to you soon.
     </p>
   </form>
 </template>
@@ -81,6 +102,14 @@ const handleSubmit = async (): Promise<void> => {
 </script>
 
 <style scoped>
+.field-label {
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ash);
+}
+
 .success-message {
   animation: slideIn 0.3s ease-in-out;
 }
