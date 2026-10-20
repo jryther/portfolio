@@ -395,7 +395,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import resumeUrl from '../assets/Resume.pdf'
-import { gamePlaying } from '../composables/useAiState'
 import { theme } from '../composables/useTheme'
 import { scenePaused, heroInView } from '../composables/useScene'
 
@@ -686,7 +685,7 @@ function initRain(canvas: HTMLCanvasElement, startRaining: boolean): RainControl
   }
 
   let animationId: number | null = null
-  let active      = true                    // false while paused (offscreen / gameplay / scene paused)
+  let active      = true                    // false while paused (offscreen / scene paused)
   let intensity   = startRaining ? 1 : 0    // eased toward target so the rain tapers off
   let target      = intensity
 
@@ -761,7 +760,6 @@ function canFlash() {
   return theme.value === 'dark'
     && heroVisible
     && !scenePaused.value
-    && !gamePlaying.value
     && !prefersReducedMotion
     && document.visibilityState === 'visible'
 }
@@ -809,7 +807,7 @@ function resumeHeroAnims() {
 }
 
 function syncHeroAnims() {
-  if (heroVisible && !gamePlaying.value) resumeHeroAnims()
+  if (heroVisible) resumeHeroAnims()
   else pauseHeroAnims()
   scheduleFlash(3000, 9000)
 }
@@ -830,9 +828,6 @@ onMounted(() => {
     syncHeroAnims()
   }, { threshold: 0.05 })
   heroIntersectionObserver.observe(heroSection.value!)
-
-  // ── Pause animations only during active gameplay (not idle/dead screens) ──
-  watch(gamePlaying, syncHeroAnims)
 
   // ── Visitor-controlled pause (header control) ──
   watch(scenePaused, (paused) => {

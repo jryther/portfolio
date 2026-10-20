@@ -2,7 +2,7 @@
   <footer class="border-t border-line">
     <div class="wrap flex flex-wrap items-center justify-between gap-6 py-10 max-md:flex-col max-md:items-start">
       <p class="text-sm text-ash">
-        &copy; {{ year }} Josh Ryther <span class="text-smoke">·</span> Built with Vue, Vite &amp; WebLLM <span class="text-smoke">·</span> Made in Portland, OR
+        &copy; {{ year }} Josh Ryther <span class="text-smoke">·</span> Built with Vue, Vite &amp; wllama <span class="text-smoke">·</span> Made in Portland, OR
       </p>
 
       <div class="flex items-center gap-1">

@@ -19,6 +19,12 @@ export default tseslint.config(
     ],
   },
 
+  // Node scripts
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: { ...globals.node } },
+  },
+
   // Base JS recommended rules
   js.configs.recommended,
 

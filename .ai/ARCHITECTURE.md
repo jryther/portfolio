@@ -20,10 +20,13 @@ App.vue
 │   ├── Hero.vue            (id="home",  full viewport height)
 │   ├── About.vue           (id="about")
 │   ├── Project.vue         (id="projects")
+│   ├── ChatSection.vue     (id="chat", full-page chat + how it works)
+│   │   └── AiChat/ChatPanel.vue
 │   └── Contact.vue         (id="contact")
 │       └── ContactForm.vue
 ├── Footer.vue
 └── AiChat/AiChat.vue       (fixed overlay, z-index 9999)
+    └── AiChat/ChatPanel.vue
 ```
 
 Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padding-top: 10rem` in CSS offsets scrolling for the fixed header.
@@ -75,37 +78,39 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - Trademark disclaimer at bottom (`TestNav is a trademark of Pearson Education, Inc.`)
 - No `<style>` block — 100% Tailwind
 
-### `AiChat/AiChat.vue`
-- Renders only if `navigator.gpu` is truthy (WebGPU guard checked on `onMounted`)
-- Fixed bottom-right wrapper, `z-index: 9999`
-- Toggle button always at natural DOM position in flex column; panel is `position: absolute`
-- Three views: pre-load CTA → loading progress → chat messages
-- Streaming responses: empty assistant message pushed first, tokens appended via callback
-- `firstQuestion` / `firstResponseStarted` flags drive the first-response performance warning
-- Chat panel slide-up transition uses Vue `<Transition name="chat-panel">` with scoped CSS
-- `meta-badge`, `spin-gear`, `dot` (typing indicator) kept in `<style scoped>` for animation keyframes and `nth-child` delays
+### Chat: `composables/useChat.ts`, `AiChat/ChatPanel.vue`, `AiChat/AiChat.vue`, `ChatSection.vue`
+- **`useChat.ts`** holds the one conversation (messages, follow-up chips, input, model status) and its actions (`openChat`, `startModel`, `sendMessage`, `askQuestion`, `askTopic`, `clearChat`). The popup and the section share it, so a chat started in one continues in the other
+- `modelStatus`: `idle` → `loading` → `ready` | `error`. `openChat()` greets once and auto-loads the model if it's already cached
+- Replies come from `chatTree.ts`, routed by `chatRouter.ts` (keywords) then `wllama.ts` (embeddings), and type out word by word
+- **`ChatPanel.vue`** is one view of that conversation: messages, chips, the model status strip, input. `large` prop = roomier type for the section. Each instance scrolls its own message list
+- **`AiChat.vue`** = the floating button + popup (fixed bottom-right, `z-index: 9999`) wrapping a ChatPanel. Shows on every device (wllama runs on the CPU)
+- **`ChatSection.vue`** (`#chat`, "05 — Ask", nav link "Ask") = a full-page ChatPanel plus how it works, "try asking in your own words" examples (click to fill the chat input, not send) and model facts. Its IntersectionObserver (middle 30% of the viewport) sets `chatSectionInView` and greets on first view
+- While `chatSectionInView`, the floating button steps aside: an open popup closes first (280 ms leave transition), then the button fades out (`<Transition name="fab">` + `v-show`); it fades back when the section leaves
+- On desktop the section's top padding is trimmed so landing from the nav (scroll-padding 8rem) shows the whole chat card
+- The loading mini-game was removed once loading got fast; it is kept on the `mini-game` branch
 
 ---
 
-## Services & Workers
+## Services & Data
 
-### `services/webllm.ts`
-- Exports: `loadModel(progressCallback)`, `askQuestion(question, context, tokenCallback)`, `clearHistory()`
-- Creates a `webllm.worker.ts` Web Worker via Vite's worker URL import
-- Communicates via `postMessage` / `onmessage`
-- System prompt embedded here — **do not expose to users**
+### `data/chatTree.ts`
+- The chat's decision tree: topics with labels, keywords, example questions, pre-written answers, and follow-ups. See FEATURES.md §3
 
-### `workers/webllm.worker.ts`
-- Runs `@mlc-ai/web-llm` entirely off main thread
-- Uses `SharedArrayBuffer` (requires COOP/COEP headers)
-- Model: Llama-3.2-1B-Instruct-q4f16_1-MLC (cached in browser after first download)
+### `data/topicVectors.json`
+- Precomputed embeddings of every topic label and example (`npm run embed:topics`). Don't edit by hand
 
-### `data/resumeContext.ts`
-- Exports a single template literal string containing Josh's resume and cover letter context
-- This string is passed as context to every AI query
+### `services/chatRouter.ts`
+- Pure functions: `matchKeywords` (instant routing + confidence), `resolveReply` ("tell me more" handling), `isConversational`
 
-### `composables/useAiState.ts`
-- Shared reactive state for AI loading/ready status (used if multiple components need to know AI state)
+### `services/topicIndex.ts`
+- Pure functions: `buildDocs`, `docsHash`, int8 `encodeVectors`/`decodeVectors`, `rankTopics` (cosine), `pickTopic` (similarity floor)
+
+### `services/chatModel.ts`
+- Model name, pinned URL, size label, task prefix, dimensions. Separate so the UI can show them without loading wllama
+
+### `services/wllama.ts`
+- `loadModel(onProgress)`, `isModelCached()`, `routeWithModel(question)`, `embed(text)`, `computeTopicVectors()`, `loadWeights()`
+- wllama runs inference in its own worker; this module is lazy-loaded by AiChat
 
 ---
 
@@ -116,14 +121,12 @@ base: '/'                       // Cloudflare Pages serves from domain root
 plugins: [tailwindcss(), vue()] // Tailwind MUST be first plugin
 assetsInclude: ['**/*.docx']    // .docx treated as static asset
 server.host: 'localhost'        // Required for COOP/COEP to work locally
-server.headers: {               // Required for SharedArrayBuffer (WebLLM) in dev
+server.headers: {               // SharedArrayBuffer for wllama multi-threading in dev
   'Cross-Origin-Opener-Policy': 'same-origin',
   'Cross-Origin-Embedder-Policy': 'credentialless'
 }
-worker.format: 'es'             // ESM workers for WebLLM compatibility
-optimizeDeps.exclude: ['@mlc-ai/web-llm']  // Skip pre-bundling (huge)
-build.manualChunks: { 'web-llm': ['@mlc-ai/web-llm'] }  // Separate chunk
-build.chunkSizeWarningLimit: 3000  // Suppress warning for WebLLM chunk (~6MB)
+worker.format: 'es'             // ESM workers
+build.chunkSizeWarningLimit: 3000  // The lazy wllama chunk is ~540 kB
 ```
 
 Production COOP/COEP headers are served via `public/_headers` (Cloudflare Pages).

@@ -13,7 +13,7 @@ Live at **[https://portfolio-v3.jryther91.workers.dev](https://portfolio-v3.jryt
 | Build tool | Vite 7 |
 | Styling | Tailwind CSS v4 + scoped `<style>` for animations |
 | Animations | AOS (Animate On Scroll) + Canvas 2D |
-| AI chat | `@mlc-ai/web-llm` — runs entirely in the browser via WebGPU |
+| AI chat | Decision tree of pre-written answers + [wllama](https://github.com/ngxson/wllama) (llama.cpp in WebAssembly) running Google EmbeddingGemma in the browser |
 | Testing | Vitest + `@vue/test-utils` |
 | Deployment | Cloudflare Pages (auto-deploy on push to `main`) |
 
@@ -25,7 +25,7 @@ Live at **[https://portfolio-v3.jryther91.workers.dev](https://portfolio-v3.jryt
 - **SVG Mount Hood hero** — Layered ridgelines with procedurally generated fir treelines and alpenglow
 - **Dark / light mode** — Toggle in the header (dark by default, choice remembered). Dark is a rainy dusk with ambient lightning; light is a clear summer day with the sun rising behind Hood
 - **Bigfoot easter egg** — Watch the treeline during a lightning flash, or look closely in the sun
-- **AI chat modal** — Floating button (bottom-right) that opens a chat powered by a quantized LLM. Only renders if the browser supports WebGPU. The model answers questions about Josh's professional background
+- **AI chat** — A full-page "Ask" section plus a floating popup (which steps aside while the section is on screen), sharing one conversation about Josh's professional background. Answers are pre-written in a decision tree; questions are matched by keyword, or by a small in-browser embedding model the visitor can load (~330 MB, CPU only, works on any device)
 - **Experience timeline & skills grid** — Work and education on one timeline; skills grouped by category
 - **Responsive** — Full mobile/tablet/desktop support with hamburger nav
 
@@ -39,7 +39,9 @@ npm run dev
 # App available at http://localhost:5173/
 ```
 
-> **Note:** The dev server requires `localhost` (not `127.0.0.1`) due to [COOP/COEP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy) required by the WebLLM/SharedArrayBuffer AI model.
+> **Note:** The dev server requires `localhost` (not `127.0.0.1`) due to [COOP/COEP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy) that let the in-browser AI model use `SharedArrayBuffer` for multi-threading.
+
+**Testing on other devices (phone, tablet):** run `npm run dev:lan` and open the **Network** URL it prints (`https://192.168.x.x:5173/`). It uses a self-signed certificate, so accept the browser warning once. HTTPS is required there: over plain HTTP on a network IP, browsers turn off the model cache and multi-threading the AI chat needs. If other devices can't connect, allow Node.js through Windows Firewall for your network.
 
 ---
 
@@ -62,13 +64,11 @@ src/
 │   ├── components/
 │   │   └── ContactForm.spec.ts
 │   ├── composables/
-│   │   ├── useAiState.spec.ts
 │   │   ├── useTheme.spec.ts
 │   │   └── useScene.spec.ts
-│   ├── data/
-│   │   └── resumeContext.spec.ts
 │   └── services/
-│       └── webllm.spec.ts
+│       ├── chatRouter.spec.ts
+│       └── topicIndex.spec.ts
 │
 ├── styles/
 │   └── main.css              # Tailwind v4 entry — @theme, @layer base/components
@@ -88,28 +88,34 @@ src/
 │   ├── SceneToggle.vue       # Pause/play the hero animation
 │   ├── About.vue             # Bio, timeline, skills grid, documents
 │   ├── Project.vue           # Professional work cards + app store links
+│   ├── ChatSection.vue       # Full-page "Ask" chat + how it works
 │   ├── Contact.vue           # Contact links + form card
 │   ├── ContactForm.vue       # Formspree-backed email form
 │   ├── Footer.vue            # One-line footer + trademark disclaimer
 │   └── AiChat/
-│       └── AiChat.vue        # Floating AI chat modal
+│       ├── AiChat.vue        # Floating chat button + popup
+│       └── ChatPanel.vue     # Messages, chips, model status, input (used by both)
 │
 ├── composables/
-│   ├── useAiState.ts         # Shared AI loading/ready state
+│   ├── useChat.ts            # The shared chat conversation and model state
 │   ├── useTheme.ts           # Dark/light theme state + persistence
 │   └── useScene.ts           # Hero animation pause state
 │
 ├── data/
-│   └── resumeContext.ts      # Resume/cover letter context string fed to the LLM
+│   ├── chatTree.ts           # Chat decision tree: topics, keywords, examples, answers
+│   └── topicVectors.json     # Precomputed topic embeddings (npm run embed:topics)
 │
 ├── services/
-│   └── webllm.ts             # loadModel / askQuestion / clearHistory API
-│
-├── workers/
-│   └── webllm.worker.ts      # Web Worker that runs the LLM off the main thread
+│   ├── chatRouter.ts         # Keyword routing + "tell me more"
+│   ├── topicIndex.ts         # Embedding similarity, vector storage
+│   ├── chatModel.ts          # Model name, URL, size
+│   └── wllama.ts             # Loads the model, embeds questions
 │
 ├── App.vue                   # Root — composes all sections
 └── main.ts                   # App entry, AOS init
+
+scripts/
+└── embed-topics.mjs          # Regenerates src/data/topicVectors.json in headless Chrome
 ```
 
 ---
@@ -126,18 +132,18 @@ All personalizable content lives in the Vue components. Key locations:
 | Contact email / phone | `Contact.vue` |
 | Form submission endpoint | `ContactForm.vue` → `formspreeEndpoint` |
 | Footer links | `Footer.vue` |
-| AI context (resume/cover letter text) | `data/resumeContext.ts` |
+| AI chat answers, keywords, example questions | `data/chatTree.ts` (then `npm run embed:topics`) |
 | Design tokens (colors, type scale) | `src/styles/main.css` → `@theme` |
 
 ---
 
 ## AI Chat — Important Notes
 
-- Only appears when `navigator.gpu` is available (Chrome/Edge with WebGPU enabled)
-- Downloads ~740 MB on first use; cached by the browser after that
-- Model: Llama-3.2-1B-Instruct (quantized, WASM/WebGPU)
-- Runs in a Web Worker to keep the UI responsive
-- Prompted to only answer questions relevant to Josh's professional background
+- Nothing is generated: every reply is written in `src/data/chatTree.ts`, so it can't make things up
+- Topic chips and keyword matching work instantly, with no download
+- For free-form questions, visitors can load Google EmbeddingGemma 300M (~330 MB, cached after the first visit). It runs on the CPU through wllama in a worker, so there's no GPU shader compile and no WebGPU requirement
+- **After changing topic labels or example questions, run `npm run embed:topics`** (needs Node 22+ and Chrome; set `CHROME_PATH` if Chrome isn't in the default location). A test fails if the stored vectors are out of date
+- The answers are written from a private source document kept outside the repo and reviewed before publishing, since `chatTree.ts` ships publicly
 
 ---
 
@@ -171,15 +177,14 @@ src/__tests__/
 ├── components/
 │   └── ContactForm.spec.ts   # mount/submit/validation behaviour
 ├── composables/
-│   ├── useAiState.spec.ts    # shared ref initialisation and mutation
+│   ├── useScene.spec.ts      # hero pause state
 │   └── useTheme.spec.ts      # default/restore/toggle/persist behaviour
-├── data/
-│   └── resumeContext.spec.ts # content sanity checks
 └── services/
-    └── webllm.spec.ts        # buildSystemPrompt, clearHistory, askQuestion guard
+    ├── chatRouter.spec.ts    # tree integrity, keyword routing, "tell me more"
+    └── topicIndex.spec.ts    # vector storage, similarity ranking, stale-vector check
 ```
 
-> **Note:** `webllm.ts` and `webllm.worker.ts` are excluded from coverage because they depend on WebGPU/Worker APIs not available in jsdom. `@mlc-ai/web-llm` is mocked in the service tests.
+> **Note:** `services/wllama.ts` is excluded from coverage because it needs WebAssembly workers and a real model, which jsdom can't run. The routing logic it relies on lives in `chatRouter.ts` and `topicIndex.ts`, which are tested.
 
 ---
 

@@ -45,7 +45,6 @@ Rule of thumb: if more than one or two things per screen are amber, something sh
 - `<html data-theme="dark|light">` — set before first paint by an inline script in `index.html`, then managed by `src/composables/useTheme.ts` (`theme`, `setTheme`, `toggleTheme`; persisted under `localStorage['theme']`). Dark is always the default; the OS preference is intentionally ignored
 - The values above are the dark palette (`@theme`). `:root[data-theme="light"]` in `main.css` remaps the **same token names by role** — `snow` is still "primary text" (now `#13201C`), `charcoal` is still "page background" (`#F5F3EC`), `amber` is still the accent (`#9A4F0E`, AA on the light background), `ink` becomes white
 - So: **never hard-code a colour that should flip**. Use tokens, or `color-mix(in srgb, var(--color-snow) 5%, transparent)` / `bg-snow/[.05]` for translucent tints (not `rgb(232 238 234 / x)` or `bg-white/x`)
-- `.force-dark` re-declares the dark tokens on a subtree (used to keep the mini-game dark in both themes)
 - `useTheme` adds `.theme-transition` to `<html>` for ~900ms while switching, which fades background/colour/border changes everywhere except the hero (the hero runs its own 1.8s scene transition)
 - In scoped component styles, target light mode with `:root[data-theme="light"] .my-class { … }` — **not** `:global(...)`, which makes Vue drop the rest of the selector
 
@@ -60,7 +59,7 @@ Loaded from Google Fonts in `index.html` (Inter 400–700, JetBrains Mono 400–
 
 ### Typography Scale
 
-`html { font-size: 62.5% }` makes `1rem = 10px` (kept because AiChat/MiniGame sizing depends on it). There is **no** extra font shrink on mobile — use `clamp()` for fluid display sizes instead.
+`html { font-size: 62.5% }` makes `1rem = 10px` (kept because AiChat sizing depends on it). There is **no** extra font shrink on mobile — use `clamp()` for fluid display sizes instead.
 
 | Token | Value | Pixels |
 |---|---|---|
@@ -124,7 +123,7 @@ Utilities override these freely (components layer has lower precedence), e.g. `c
 </section>
 ```
 
-Content is left-aligned. Sections are numbered 01–05 in page order.
+Content is left-aligned. Sections are numbered 01–06 in page order (05 — Ask is the chat section).
 
 ---
 
@@ -146,4 +145,6 @@ Content is left-aligned. Sections are numbered 01–05 in page order.
 | `About.vue` | Timeline rail/dots, skill-chip icon desaturate → colour hover | Structural pseudo-borders, filters |
 | `Contact.vue` | Contact row hover, icon tile | Hover on descendant |
 | `ContactForm.vue` | Mono field labels, `.success-message` slide-in | `@keyframes` |
-| `AiChat.vue` | `.meta-badge`, spinners, typing dots, Vue transition classes | `@keyframes`, `<Transition>` hooks |
+| `AiChat/ChatPanel.vue` | `.topic-chip`, typing dots, `.is-large` sizes | `@keyframes`, prop-driven sizing |
+| `AiChat/AiChat.vue` | Popup and floating-button transitions | `<Transition>` hooks |
+| `ChatSection.vue` | Responsive grid areas (intro/chat/details), viewport-fitted chat card, steps, facts list | Grid areas, `clamp()` heights |

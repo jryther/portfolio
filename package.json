@@ -6,17 +6,19 @@
   "repository": "https://github.com/jryther/portfolio-v3",
   "scripts": {
     "dev": "vite",
+    "dev:lan": "vite --mode lan",
     "build": "npm run lint && npm run test:run && vite build",
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "embed:topics": "node scripts/embed-topics.mjs"
   },
   "dependencies": {
-    "@mlc-ai/web-llm": "^0.2.81",
     "@tailwindcss/vite": "^4.2.4",
+    "@wllama/wllama": "3.8.1",
     "aos": "^2.3.4",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.2.4",
@@ -26,6 +28,7 @@
     "@eslint/js": "^10.0.1",
     "@types/aos": "^3.0.7",
     "@types/node": "^25.6.0",
+    "@vitejs/plugin-basic-ssl": "2.3.0",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vitest/coverage-v8": "^4.1.5",
     "@vue/test-utils": "^2.4.10",

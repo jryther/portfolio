@@ -44,3 +44,6 @@ build-out.txt
 # Temporary reference images
 mount hood image.jpg
 
+
+# Private notes: keep any local copy out of git
+*Career Master File*.md

@@ -6,7 +6,7 @@
     <div class="wrap grid grid-cols-1 gap-16 lg:grid-cols-[1fr_1.15fr] lg:gap-24">
       <div data-aos="fade-up">
         <p class="eyebrow">
-          05 — Contact
+          06 — Contact
         </p>
         <h2 class="section-title mt-6 mb-8">
           Let's connect

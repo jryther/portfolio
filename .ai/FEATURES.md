@@ -34,7 +34,7 @@ Hero content and the summit coordinates sit at `z-index: 5`.
 - `dayMix` blends the two caches each frame; when paused (reduced motion / offscreen) `setDay` jumps straight to the target and redraws one frame
 
 ### Ambient lightning (dark mode only)
-- `scheduleFlash()` fires every 9–20s (first at 4–7s) while `canFlash()`: dark theme, hero visible, scene not paused, no active gameplay, tab visible, no reduced motion
+- `scheduleFlash()` fires every 9–20s (first at 4–7s) while `canFlash()`: dark theme, hero visible, scene not paused, tab visible, no reduced motion
 - Each strike is a single soft `PULSE` (~120ms rise, ~1.4s fade — no flicker) on `.sky-flash`; 60% chance of a bolt (`makeBolt()`), drawn **behind** the Hood body so the mountain occludes the strike
 - **Photosensitivity (WCAG 2.3.1 / 2.3.2):** measured peak change in sky relative luminance is ≈ 0.04 (dusk sky ≈ 0.008 → ≈ 0.05), below the 0.1 that counts as a flash. The bolt and lit Bigfoot are far smaller than the 25%-of-10° area threshold. If you change `.sky-flash` colours or `PULSE`, keep the peak ΔL < 0.1, keep it to one pulse per strike, and avoid saturated red
 
@@ -61,44 +61,45 @@ Hero content and the summit coordinates sit at `z-index: 5`.
 
 ---
 
-## 3. AI Chat Modal (AiChat.vue)
+## 3. AI Chat (popup + "Ask" section)
 
-### Visibility Guard
-```js
-onMounted(() => { webGpuSupported.value = !!navigator.gpu })
-```
-The entire widget (`v-if="webGpuSupported"`) only mounts if `navigator.gpu` is available. Not present on Firefox, Safari, or devices without a compatible GPU.
+The chat doesn't generate text. Every reply is pre-written in a decision tree (`src/data/chatTree.ts`), and the only job is picking which topic answers the visitor's question. That keeps it fast and accurate, and it can't make up facts.
 
-### UI States
-1. **Pre-load CTA** (`!modelStarted`) — Sparkle icon, description, meta badges, "Start Chat" button
-2. **Loading** (`modelStarted && !modelReady`) — Spinning gear, loading bar with `%`, performance warning
-3. **Chat** (`modelReady`) — Scrollable message history + input area
+### Decision tree (`data/chatTree.ts`)
+- Each topic has an `id`, a chip `label`, `keywords`, `examples` (sample questions for the embedding model), an `answer`, and `followUps` (child topic IDs shown as chips after the answer)
+- Conversational nodes: `greeting`, `thanks`, `off_topic`, `unknown`. "Tell me more" (`MORE_KEYWORDS`) continues with the first unseen follow-up of the previous topic
+- Content comes from a private source document that isn't copied into the repo. The tree ships publicly, so every answer is reviewed before publishing; `chatRouter.spec.ts` checks some of this
 
-### Toggle Behavior
-- Toggle button is always in the DOM at the bottom of the flex column
-- Chat panel is `position: absolute; bottom: 0; right: 0` — it sits on top of the button via `z-index: 1`
-- When panel closes, button naturally reappears from behind
-- Vue `<Transition name="chat-panel">` handles slide-up/fade on open/close
+### Routing a question
+1. **Chips** go straight to their topic
+2. **Keywords** (`services/chatRouter.ts` `matchKeywords`) answer instantly when the match is clear: best score ≥ 1 and at least double the runner-up. Hub topics (`hub: true`) score half so specific topics win ties. Works before any model loads
+3. **Embedding model** (`services/wllama.ts` `routeWithModel`) handles everything else once loaded: the question is embedded and compared (cosine) against every topic label and example (`services/topicIndex.ts`). A best match below `MIN_SIMILARITY` (0.6) becomes `unknown` if the question mentions Josh/he/his, else `off_topic`
+4. Without the model, an unclear question falls back to the best keyword match or `unknown`
 
-### Message Streaming
-```js
-messages.value.push({ role: 'assistant', text: '' })  // placeholder
-const liveIndex = messages.value.length - 1
-await askQuestion(question, resumeContext, (chunk) => {
-  messages.value[liveIndex].text += chunk  // token streaming
-})
-```
+### Model
+- **Google EmbeddingGemma 300M** (Q8_0 GGUF, ~330 MB, pinned commit on Hugging Face) via **wllama** (llama.cpp compiled to WebAssembly, running in its own worker)
+- CPU only (`n_gpu_layers: 0`): no GPU shader compile, and it works without WebGPU, so the chat shows on every device. Multi-threading uses `SharedArrayBuffer`, which needs the COOP/COEP headers
+- ~50 ms to embed a question on a desktop CPU
+- wllama and the vectors are lazy-loaded (`import('../../services/wllama')`) so the main bundle doesn't pay for them
+- Chosen by measurement on a 30-question routing test: IBM Granite 4.0 1B (a chat model choosing a topic ID) got 9/26 and needed a ~1 GB download plus ~16 s of prompt processing; Nomic Embed v1.5 got 16/30; EmbeddingGemma gets 28/30
 
-### First-Response Warning
-Shown only when: `thinking && !firstQuestion && !firstResponseStarted && userMessageCount === 1`
-Disappears as soon as `firstResponseStarted` becomes true (first token arrives).
+### Topic vectors (`data/topicVectors.json`)
+- Every label and example is embedded ahead of time by `npm run embed:topics` (`scripts/embed-topics.mjs` starts Vite, runs the site's own `computeTopicVectors()` in headless Chrome, and writes the JSON). Stored as int8 base64
+- The file carries a hash of the model, prefix, and every doc. `topicIndex.spec.ts` fails when the tree changes without re-running the script, and at runtime a stale file falls back to embedding in the browser (~10 s) with a console warning
+- **After editing labels or examples in `chatTree.ts`, run `npm run embed:topics`**
 
-### Relevance Filtering
-The system prompt in `services/webllm.js` includes two-layer filtering:
-1. The model is instructed to check if the question is relevant to hiring Josh as a software engineer
-2. If irrelevant, it responds with a canned redirect message
-3. If relevant, it answers using only the provided resume context
-The system prompt is **not exposed to users**.
+### UI
+- Two views of one shared conversation (`composables/useChat.ts`): the floating popup (`AiChat.vue`) and the full-page `#chat` section (`ChatSection.vue`), both rendering `ChatPanel.vue`
+- While the section covers the middle of the screen the floating button hides, closing an open popup first; it comes back when the section scrolls away
+- The section adds "How it works", three "try asking in your own words" examples (clicking one replaces the chat input with it and focuses the input, without sending), and model facts
+- Opening the panel shows a welcome message and topic chips immediately; free text works from the start (keywords)
+- A status strip above the input offers "Load AI · ~330 MB". Returning visitors with the model cached load it automatically on open
+- While loading: progress bar in the strip
+- While loading, the text input and Send are disabled (chips still work), so free-text answers never switch from keyword-only to model routing mid-conversation. Otherwise Send stays enabled; an empty input just does nothing
+- The input uses `:value` + `@input` instead of `v-model` so it updates during phone-keyboard composition; Enter is ignored while an IME is composing
+- Replies get a short "thinking" beat (500 ms minimum), then type out a few words at a time; both are skipped for `prefers-reduced-motion`
+- Follow-up chips show the topic's unseen children (all children once every one has been seen)
+- Panel width is capped at `calc(100vw - 2rem)` inline, because the inline width beats Tailwind's `max-xs:` class
 
 ---
 
@@ -171,7 +172,7 @@ npm run build
 
 `npm run build` runs lint → tests → `vite build` in sequence. Cloudflare Pages auto-deploys on every push to `main`.
 
-`public/_headers` sets the required COOP/COEP headers for `SharedArrayBuffer` (WebLLM):
+`public/_headers` sets the COOP/COEP headers that let wllama use `SharedArrayBuffer` for multi-threading:
 ```
 /*
   Cross-Origin-Opener-Policy: same-origin

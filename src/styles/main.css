@@ -65,30 +65,6 @@
     --color-line-strong: rgb(19 32 28 / 0.2);
   }
 
-  /* Pin a subtree to the dark palette (used for the mini-game) */
-  .force-dark {
-    color-scheme: dark;
-    --color-charcoal:  #0B1012;
-    --color-surface:   #121A1C;
-    --color-surface-2: #18221F;
-    --color-panel:     #111819;
-    --color-forest:    #1F3D33;
-    --color-slate-pnw: #1A2C2E;
-    --color-moss:      #5E8C6A;
-    --color-amber:     #E3A867;
-    --color-golden:    #EEBD82;
-    --color-ember:     #D99A5B;
-    --color-snow:      #E8EEEA;
-    --color-mist:      #9FB0AA;
-    --color-ash:       #7F918B;
-    --color-smoke:     #5F706A;
-    --color-ink:       #0B1012;
-    --color-line:        rgb(232 238 234 / 0.08);
-    --color-line-strong: rgb(232 238 234 / 0.16);
-    background-color: var(--color-panel);
-    color: var(--color-snow);
-  }
-
   /* Added by useTheme for ~1s while switching so colours fade rather than snap */
   .theme-transition,
   .theme-transition *:not(.hero, .hero *),

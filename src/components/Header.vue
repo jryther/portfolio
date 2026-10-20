@@ -93,6 +93,7 @@ import SceneToggle from './SceneToggle.vue'
 const links = [
   { id: 'about',    label: 'About' },
   { id: 'projects', label: 'Work' },
+  { id: 'chat',     label: 'Ask' },
   { id: 'contact',  label: 'Contact' },
 ]
 
