@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { TOPICS, WELCOME, UNKNOWN_ID } from '../data/chatTree'
 import { matchKeywords, resolveReply, isConversational, type Reply } from '../services/chatRouter'
 
@@ -34,6 +34,24 @@ export const loadingText  = computed(() => loadingProgress.value < 100
   ? 'Downloading AI model… this only happens once.'
   : 'Starting the AI model…')
 
+// Only suggest the game when loading is actually slow. A first-time download gets the hint
+// soon; a load from the browser cache usually finishes in a couple of seconds, so it only
+// gets one if it drags on (a hint that flashes up and vanishes would just be noise)
+const SLOW_DOWNLOAD_MS = 1500
+const SLOW_CACHED_MS = 4000
+let loadingFromCache = false
+
+/** True once the model has been loading for a noticeable while */
+export const slowLoad = ref<boolean>(false)
+let slowTimer: ReturnType<typeof setTimeout> | undefined
+watch(modelStatus, (status) => {
+  clearTimeout(slowTimer)
+  if (status === 'loading') {
+    slowTimer = setTimeout(() => { slowLoad.value = true }, loadingFromCache ? SLOW_CACHED_MS : SLOW_DOWNLOAD_MS)
+  }
+  else slowLoad.value = false
+})
+
 const prefersReducedMotion = typeof window !== 'undefined'
   && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
@@ -58,7 +76,10 @@ async function autoLoadIfCached() {
   if (cacheChecked || modelStatus.value !== 'idle') return
   cacheChecked = true
   const { isModelCached } = await modelService()
-  if (await isModelCached()) startModel()
+  if (await isModelCached()) {
+    loadingFromCache = true
+    startModel()
+  }
 }
 
 export async function startModel() {

@@ -28,29 +28,61 @@
             <SparkleIcon class="w-[1.8rem] h-[1.8rem] text-amber" />
             <span class="ml-1 text-lg">Ask About Josh</span>
           </div>
-          <button
-            class="bg-transparent border-none text-smoke text-[1.6rem] cursor-pointer leading-none w-9 h-9 flex items-center justify-center rounded transition-[color,background] duration-200 hover:text-snow hover:bg-snow/[.06]"
-            aria-label="Close chat"
-            @click="toggleModal"
-          >
-            ✕
-          </button>
+          <div class="flex items-center gap-1">
+            <button
+              class="header-btn"
+              :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
+              :aria-pressed="showGame"
+              :aria-label="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
+              :title="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
+              @click="showGame = !showGame"
+            >
+              <UiIcon name="game" />
+              <span
+                v-if="slowLoad && !showGame"
+                class="hint-dot"
+              />
+            </button>
+            <button
+              class="header-btn"
+              aria-label="Close chat"
+              title="Close"
+              @click="toggleModal"
+            >
+              <UiIcon name="close" />
+            </button>
+          </div>
         </div>
 
-        <ChatPanel class="flex-1" />
+        <MiniGame
+          v-if="showGame"
+          class="flex-1"
+        />
+        <ChatPanel
+          v-else
+          class="flex-1"
+          @play-game="showGame = true"
+        />
       </div>
     </Transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, defineAsyncComponent } from 'vue'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import ChatPanel from './ChatPanel.vue'
-import { openChat, chatSectionInView } from '../../composables/useChat'
+import UiIcon from '../icons/UiIcon.vue'
+import { openChat, chatSectionInView, slowLoad } from '../../composables/useChat'
+import { prefetchWhenIdle } from '../../composables/useGame'
+
+// The game's code downloads in the background once the chat opens, so the game icon is instant
+const loadGame = () => import('./MiniGame.vue')
+const MiniGame = defineAsyncComponent(loadGame)
 
 const isOpen     = ref<boolean>(false)
 const fabVisible = ref<boolean>(true)
+const showGame   = ref<boolean>(false)
 
 // Matches the .chat-panel-leave-active duration below
 const PANEL_LEAVE_MS = 280
@@ -64,7 +96,12 @@ const modalStyle = {
 
 function toggleModal() {
   isOpen.value = !isOpen.value
-  if (isOpen.value) openChat()
+  if (isOpen.value) {
+    openChat()
+    prefetchWhenIdle(loadGame)
+  } else {
+    showGame.value = false   // reopening starts back on the chat
+  }
 }
 
 // The full chat section is on screen: close the popup first, then let the button go
@@ -77,6 +114,7 @@ watch(chatSectionInView, (inView) => {
   }
   if (isOpen.value) {
     isOpen.value = false
+    showGame.value = false
     hideTimer = setTimeout(() => { fabVisible.value = !chatSectionInView.value }, PANEL_LEAVE_MS)
   } else {
     fabVisible.value = false
@@ -85,6 +123,58 @@ watch(chatSectionInView, (inView) => {
 </script>
 
 <style scoped>
+.header-btn {
+  width: 3.2rem;
+  height: 3.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.8rem;
+  background: transparent;
+  color: var(--color-ash);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.header-btn:hover {
+  color: var(--color-snow);
+  background: color-mix(in srgb, var(--color-snow) 6%, transparent);
+}
+.header-btn.is-active {
+  color: var(--color-amber);
+  background: color-mix(in srgb, var(--color-amber) 12%, transparent);
+}
+.header-btn {
+  position: relative;
+}
+/* The AI is still loading: point at the game */
+.header-btn.is-hinting {
+  color: var(--color-amber);
+  animation: hint-pulse 1.8s ease-out infinite;
+}
+.hint-dot {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--color-amber);
+  box-shadow: 0 0 0 2px var(--color-panel);
+}
+@keyframes hint-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-amber) 45%, transparent); }
+  70%  { box-shadow: 0 0 0 0.8rem color-mix(in srgb, var(--color-amber) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-amber) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .header-btn.is-hinting { animation: none; }
+}
+.header-btn svg {
+  width: 1.8rem;
+  height: 1.8rem;
+}
+
 /* ── Panel slide-up transition ── */
 .chat-panel-enter-active,
 .chat-panel-leave-active {

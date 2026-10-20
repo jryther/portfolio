@@ -94,12 +94,27 @@ The chat doesn't generate text. Every reply is pre-written in a decision tree (`
 - The section adds "How it works", three "try asking in your own words" examples (clicking one replaces the chat input with it and focuses the input, without sending), and model facts
 - Opening the panel shows a welcome message and topic chips immediately; free text works from the start (keywords)
 - A status strip above the input offers "Load AI · ~330 MB". Returning visitors with the model cached load it automatically on open
-- While loading: progress bar in the strip
+- While loading: progress bar in the strip. If loading is slow (`slowLoad` in useChat: after 1.5 s for a first download, 4 s for a load from cache), a "Play a game while you wait" pill appears under the bar (opens the game via the `play-game` event) and the header game icon gets an amber dot and pulse ring (no pulse with reduced motion). Both clear when the model is ready or the game is open
 - While loading, the text input and Send are disabled (chips still work), so free-text answers never switch from keyword-only to model routing mid-conversation. Otherwise Send stays enabled; an empty input just does nothing
 - The input uses `:value` + `@input` instead of `v-model` so it updates during phone-keyboard composition; Enter is ignored while an IME is composing
 - Replies get a short "thinking" beat (500 ms minimum), then type out a few words at a time; both are skipped for `prefers-reduced-motion`
 - Follow-up chips show the topic's unseen children (all children once every one has been seen)
 - Panel width is capped at `calc(100vw - 2rem)` inline, because the inline width beats Tailwind's `max-xs:` class
+
+---
+
+## 3b. Mini-game (MiniGame.vue)
+
+A Flappy-style game behind the game icon in both chat headers (popup and `#chat` section). It swaps in for the chat panel; the same header icon is the only toggle back. Lazy-loaded (`defineAsyncComponent`), and prefetched with `requestIdleCallback` once the popup opens or the section comes into view, so the icon opens it instantly.
+
+- **`game/flappySim.ts`** — pure simulation, no DOM. World is `WORLD_H` = 600 units tall, width follows the canvas aspect. Physics run in fixed 1/120 s ticks from real elapsed time (accumulator, long stalls capped at 0.25 s), so it plays the same at 30/60/144 fps and any size. Seeded PRNG for column openings. Tests prove frame-rate independence, determinism, and that an autopilot can clear 15 columns
+- **`game/flappyRender.ts`** — canvas renderer at device-pixel resolution (DPR capped at 2, or 1.5 when `navigator.deviceMemory` ≤ 4 GB). Sky, clouds, two mountain ridges (snow on the far one), two fir treelines and the ground are painted once into seamless offscreen tiles (rebuilt on resize/theme; each tile is only as tall as the band it draws in, 1.25× the view wide, and a repeated ResizeObserver size is skipped) and scrolled with parallax; columns and the bird are drawn per frame with interpolation between ticks
+- Look: cut trees as obstacles (a sawn log hanging from above, a stump with flared roots below, both showing ring faces at the opening, bark grooves, a branch stub and moss patch varied per obstacle), flat two-tone clouds, palettes taken from the hero's night/day scene. Dark = dusk with stars, light = summer day with sun. Follows `useTheme` live
+- Input: pointer anywhere on the stage, or Space / ↑ / W **only while the game has focus** (it takes focus on open), so typing elsewhere is never captured
+- The loop stops once a round ends and restarts on Play again. While a round is in play `gamePlaying` (`composables/useGame.ts`) pauses the hero's weather and lightning
+- Top bar: best score (localStorage `flappyHighScore`), AI loading progress if the model is downloading, mute toggle (sound off by default). Game-over card: score, best, Play again
+- **`game/flappyAudio.ts`** — procedural Web Audio, no files. Dark: 66 BPM night track (Fmaj7–Em7–Dm7–Cmaj7 pads, sparse electric-piano notes, sine bass, faint filtered-noise rain, long reverb). Light: 112 BPM summer track (G–D/F#–Em–C plucked arpeggios, bouncing bass, soft kick and hats). A theme change while music plays stops the current track at once (0.3 s fade; each track has its own reverb so the tail stops too) and starts the other from bar one; changed while muted, the right track starts on unmute. SFX: noise-whoosh flap, key-matched bell chime that climbs with the score, thud + falling third on crash, rising flourish for a new best. Generated-impulse reverb and a compressor on the master. The context is created on first unmute and suspended while muted or the tab is hidden
+- Saved original (pre-redesign) version: `mini-game` branch
 
 ---
 

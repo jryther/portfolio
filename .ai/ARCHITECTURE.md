@@ -87,7 +87,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - **`ChatSection.vue`** (`#chat`, "05 — Ask", nav link "Ask") = a full-page ChatPanel plus how it works, "try asking in your own words" examples (click to fill the chat input, not send) and model facts. Its IntersectionObserver (middle 30% of the viewport) sets `chatSectionInView` and greets on first view
 - While `chatSectionInView`, the floating button steps aside: an open popup closes first (280 ms leave transition), then the button fades out (`<Transition name="fab">` + `v-show`); it fades back when the section leaves
 - On desktop the section's top padding is trimmed so landing from the nav (scroll-padding 8rem) shows the whole chat card
-- The loading mini-game was removed once loading got fast; it is kept on the `mini-game` branch
+- Both chat headers have a game icon that swaps the ChatPanel for `MiniGame.vue` (lazy-loaded). See FEATURES.md §3b
 
 ---
 
@@ -104,6 +104,12 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 
 ### `services/topicIndex.ts`
 - Pure functions: `buildDocs`, `docsHash`, int8 `encodeVectors`/`decodeVectors`, `rankTopics` (cosine), `pickTopic` (similarity floor)
+
+### `game/flappySim.ts`, `game/flappyRender.ts`
+- Mini-game simulation (fixed-step, world units, seeded) and canvas renderer (cached parallax tiles, DPR-aware, themed)
+
+### `composables/useGame.ts`
+- `gamePlaying`: true during a round; Hero pauses its scene then
 
 ### `services/chatModel.ts`
 - Model name, pinned URL, size label, task prefix, dimensions. Separate so the UI can show them without loading wllama

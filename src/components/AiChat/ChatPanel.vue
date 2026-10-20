@@ -102,6 +102,19 @@
             :style="{ width: loadingProgress + '%' }"
           />
         </div>
+        <Transition name="hint">
+          <button
+            v-if="slowLoad"
+            class="play-hint"
+            @click="emit('play-game')"
+          >
+            <UiIcon
+              name="game"
+              class="w-[1.6rem] h-[1.6rem]"
+            />
+            Play a game while you wait
+          </button>
+        </Transition>
       </div>
       <p
         v-else
@@ -136,10 +149,14 @@
         </p>
         <div class="flex items-center gap-3">
           <button
-            class="bg-transparent border-none text-ash text-base cursor-pointer p-0 transition-colors duration-200 hover:text-amber font-[inherit]"
+            class="inline-flex items-center gap-[0.4rem] bg-transparent border-none text-ash text-base cursor-pointer p-0 transition-colors duration-200 hover:text-amber font-[inherit]"
             @click="clearChat"
           >
-            ↺ Clear
+            <UiIcon
+              name="refresh"
+              class="w-[1.4rem] h-[1.4rem]"
+            />
+            Clear
           </button>
           <button
             :disabled="busy || modelLoading"
@@ -157,15 +174,17 @@
 <script setup lang="ts">
 import { ref, nextTick, watch, onMounted } from 'vue'
 import SparkleIcon from '../icons/SparkleIcon.vue'
+import UiIcon from '../icons/UiIcon.vue'
 import { TOPICS } from '../../data/chatTree'
 import { MODEL } from '../../services/chatModel'
 import {
-  messages, followUps, userInput, thinking, busy, modelStatus, modelLoading, loadingProgress, loadingText,
+  messages, followUps, userInput, thinking, busy, modelStatus, modelLoading, loadingProgress, loadingText, slowLoad,
   startModel, sendMessage, askTopic, clearChat,
 } from '../../composables/useChat'
 
 // The conversation itself lives in useChat; this is one view of it (popup or full section)
 defineProps<{ large?: boolean }>()
+const emit = defineEmits<{ 'play-game': [] }>()
 
 const messagesEl = ref<HTMLElement | null>(null)
 
@@ -223,6 +242,31 @@ function onEnter(e: KeyboardEvent) {
 .is-large .topic-chip {
   font-size: 1.35rem;
 }
+
+/* ── "Play a game while you wait" ── */
+.play-hint {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.4rem;
+  font: inherit;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--color-amber);
+  background: color-mix(in srgb, var(--color-amber) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber) 35%, transparent);
+  border-radius: 2rem;
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.play-hint:hover {
+  background: color-mix(in srgb, var(--color-amber) 18%, transparent);
+  border-color: var(--color-amber);
+}
+.hint-enter-active { transition: opacity 0.3s ease, transform 0.3s ease; }
+.hint-enter-from { opacity: 0; transform: translateY(0.4rem); }
 
 /* ── Follow-up topic chips ── */
 .topic-chip {

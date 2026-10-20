@@ -46,6 +46,7 @@ Rule of thumb: if more than one or two things per screen are amber, something sh
 - The values above are the dark palette (`@theme`). `:root[data-theme="light"]` in `main.css` remaps the **same token names by role** — `snow` is still "primary text" (now `#13201C`), `charcoal` is still "page background" (`#F5F3EC`), `amber` is still the accent (`#9A4F0E`, AA on the light background), `ink` becomes white
 - So: **never hard-code a colour that should flip**. Use tokens, or `color-mix(in srgb, var(--color-snow) 5%, transparent)` / `bg-snow/[.05]` for translucent tints (not `rgb(232 238 234 / x)` or `bg-white/x`)
 - `useTheme` adds `.theme-transition` to `<html>` for ~900ms while switching, which fades background/colour/border changes everywhere except the hero (the hero runs its own 1.8s scene transition)
+- Icons: `components/icons/UiIcon.vue` (paths in `uiIcons.ts`) — line icons on a 24px grid, round caps, `currentColor`, matching the contact icons. Use these instead of emoji or text glyphs
 - In scoped component styles, target light mode with `:root[data-theme="light"] .my-class { … }` — **not** `:global(...)`, which makes Vue drop the rest of the selector
 
 ### Fonts
@@ -146,5 +147,6 @@ Content is left-aligned. Sections are numbered 01–06 in page order (05 — Ask
 | `Contact.vue` | Contact row hover, icon tile | Hover on descendant |
 | `ContactForm.vue` | Mono field labels, `.success-message` slide-in | `@keyframes` |
 | `AiChat/ChatPanel.vue` | `.topic-chip`, typing dots, `.is-large` sizes | `@keyframes`, prop-driven sizing |
-| `AiChat/AiChat.vue` | Popup and floating-button transitions | `<Transition>` hooks |
+| `AiChat/AiChat.vue` | Popup and floating-button transitions, header icon buttons | `<Transition>` hooks |
+| `AiChat/MiniGame.vue` | Stage focus ring, icon buttons, start hint, game-over card | Canvas overlay layout |
 | `ChatSection.vue` | Responsive grid areas (intro/chat/details), viewport-fitted chat card, steps, facts list | Grid areas, `clamp()` heights |

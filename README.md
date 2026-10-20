@@ -26,6 +26,7 @@ Live at **[https://portfolio-v3.jryther91.workers.dev](https://portfolio-v3.jryt
 - **Dark / light mode** — Toggle in the header (dark by default, choice remembered). Dark is a rainy dusk with ambient lightning; light is a clear summer day with the sun rising behind Hood
 - **Bigfoot easter egg** — Watch the treeline during a lightning flash, or look closely in the sun
 - **AI chat** — A full-page "Ask" section plus a floating popup (which steps aside while the section is on screen), sharing one conversation about Josh's professional background. Answers are pre-written in a decision tree; questions are matched by keyword, or by a small in-browser embedding model the visitor can load (~330 MB, CPU only, works on any device)
+- **Mini-game** — A Flappy-style game in the chat, styled like the site (cut-tree stumps and logs, firs, Mt. Hood ridgelines), dark and light themed, and frame-rate independent
 - **Experience timeline & skills grid** — Work and education on one timeline; skills grouped by category
 - **Responsive** — Full mobile/tablet/desktop support with hamburger nav
 
@@ -94,10 +95,16 @@ src/
 │   ├── Footer.vue            # One-line footer + trademark disclaimer
 │   └── AiChat/
 │       ├── AiChat.vue        # Floating chat button + popup
-│       └── ChatPanel.vue     # Messages, chips, model status, input (used by both)
+│       ├── ChatPanel.vue     # Messages, chips, model status, input (used by both)
+│       └── MiniGame.vue      # Flappy-style mini-game behind the chat's game icon
+│
+├── game/
+│   ├── flappySim.ts          # Fixed-step game simulation (frame-rate independent)
+│   └── flappyRender.ts       # Themed canvas renderer with cached parallax layers
 │
 ├── composables/
 │   ├── useChat.ts            # The shared chat conversation and model state
+│   ├── useGame.ts            # "A round is in play" flag (pauses the hero scene)
 │   ├── useTheme.ts           # Dark/light theme state + persistence
 │   └── useScene.ts           # Hero animation pause state
 │

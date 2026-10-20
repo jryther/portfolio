@@ -397,6 +397,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import resumeUrl from '../assets/Resume.pdf'
 import { theme } from '../composables/useTheme'
 import { scenePaused, heroInView } from '../composables/useScene'
+import { gamePlaying } from '../composables/useGame'
 
 interface Puff           { x: number; y: number; r: number }
 interface Cloud          { x: number; y: number; speed: number; depth: number; nightCache: HTMLCanvasElement; dayCache: HTMLCanvasElement }
@@ -685,7 +686,7 @@ function initRain(canvas: HTMLCanvasElement, startRaining: boolean): RainControl
   }
 
   let animationId: number | null = null
-  let active      = true                    // false while paused (offscreen / scene paused)
+  let active      = true                    // false while paused (offscreen / gameplay / scene paused)
   let intensity   = startRaining ? 1 : 0    // eased toward target so the rain tapers off
   let target      = intensity
 
@@ -760,6 +761,7 @@ function canFlash() {
   return theme.value === 'dark'
     && heroVisible
     && !scenePaused.value
+    && !gamePlaying.value
     && !prefersReducedMotion
     && document.visibilityState === 'visible'
 }
@@ -807,7 +809,7 @@ function resumeHeroAnims() {
 }
 
 function syncHeroAnims() {
-  if (heroVisible) resumeHeroAnims()
+  if (heroVisible && !gamePlaying.value) resumeHeroAnims()
   else pauseHeroAnims()
   scheduleFlash(3000, 9000)
 }
@@ -830,6 +832,9 @@ onMounted(() => {
   heroIntersectionObserver.observe(heroSection.value!)
 
   // ── Visitor-controlled pause (header control) ──
+  // ── Give the mini-game the frame budget while a round is in play ──
+  watch(gamePlaying, syncHeroAnims)
+
   watch(scenePaused, (paused) => {
     if (paused) { pauseHeroAnims(); scheduleFlash() }
     else syncHeroAnims()

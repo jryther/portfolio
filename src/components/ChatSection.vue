@@ -35,17 +35,39 @@
             <SparkleIcon class="w-[1.8rem] h-[1.8rem] text-amber" />
             Ask About Josh
           </div>
-          <span
-            class="status-pill"
-            :class="{ 'is-ready': modelReady }"
-          >
-            <span class="status-dot" />
-            {{ statusLabel }}
-          </span>
+          <div class="flex items-center gap-3">
+            <span
+              class="status-pill"
+              :class="{ 'is-ready': modelReady }"
+            >
+              <span class="status-dot" />
+              {{ statusLabel }}
+            </span>
+            <button
+              class="header-btn"
+              :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
+              :aria-pressed="showGame"
+              :aria-label="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
+              :title="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
+              @click="showGame = !showGame"
+            >
+              <UiIcon name="game" />
+              <span
+                v-if="slowLoad && !showGame"
+                class="hint-dot"
+              />
+            </button>
+          </div>
         </div>
+        <MiniGame
+          v-if="showGame"
+          class="flex-1"
+        />
         <ChatPanel
+          v-else
           large
           class="flex-1"
+          @play-game="showGame = true"
         />
       </div>
 
@@ -116,21 +138,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import SparkleIcon from './icons/SparkleIcon.vue'
 import ChatPanel from './AiChat/ChatPanel.vue'
+import UiIcon from './icons/UiIcon.vue'
 import { AI_EXAMPLES } from '../data/chatTree'
 import { MODEL } from '../services/chatModel'
+import { prefetchWhenIdle } from '../composables/useGame'
 import {
-  openChat, chatSectionInView, modelStatus, modelReady, loadingProgress, userInput,
+  openChat, chatSectionInView, modelStatus, modelReady, loadingProgress, userInput, slowLoad,
 } from '../composables/useChat'
+
+// The game's code downloads in the background once the section is in view, so the game icon is instant
+const loadGame = () => import('./AiChat/MiniGame.vue')
+const MiniGame = defineAsyncComponent(loadGame)
 
 const sectionEl  = ref<HTMLElement | null>(null)
 const chatCardEl = ref<HTMLElement | null>(null)
+const showGame   = ref<boolean>(false)
 
 
 // Put an example in the chat box (replacing whatever was there) for the visitor to send
 async function fillInput(question: string) {
+  showGame.value = false
   userInput.value = question
   await nextTick()
   const input = chatCardEl.value?.querySelector('input')
@@ -153,7 +183,10 @@ onMounted(() => {
   // chat button steps aside, and the first time it greets the visitor
   observer = new IntersectionObserver(([entry]) => {
     chatSectionInView.value = entry.isIntersecting
-    if (entry.isIntersecting) openChat()
+    if (entry.isIntersecting) {
+      openChat()
+      prefetchWhenIdle(loadGame)
+    }
   }, { rootMargin: '-35% 0px -35% 0px' })
   if (sectionEl.value) observer.observe(sectionEl.value)
 })
@@ -203,6 +236,58 @@ onUnmounted(() => {
   border: 1px solid var(--color-line-strong);
   border-radius: 1.4rem;
   box-shadow: 0 8px 40px rgb(0 0 0 / 0.18);
+}
+
+.header-btn {
+  width: 3.4rem;
+  height: 3.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 0.8rem;
+  background: transparent;
+  color: var(--color-ash);
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.header-btn:hover {
+  color: var(--color-snow);
+  background: color-mix(in srgb, var(--color-snow) 6%, transparent);
+}
+.header-btn.is-active {
+  color: var(--color-amber);
+  background: color-mix(in srgb, var(--color-amber) 12%, transparent);
+}
+.header-btn {
+  position: relative;
+}
+/* The AI is still loading: point at the game */
+.header-btn.is-hinting {
+  color: var(--color-amber);
+  animation: hint-pulse 1.8s ease-out infinite;
+}
+.hint-dot {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--color-amber);
+  box-shadow: 0 0 0 2px var(--color-panel);
+}
+@keyframes hint-pulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-amber) 45%, transparent); }
+  70%  { box-shadow: 0 0 0 0.8rem color-mix(in srgb, var(--color-amber) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-amber) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .header-btn.is-hinting { animation: none; }
+}
+.header-btn svg {
+  width: 1.9rem;
+  height: 1.9rem;
 }
 
 .status-pill {
