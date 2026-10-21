@@ -29,7 +29,7 @@
         </a>
       </div>
     </div>
-    <p class="wrap pb-8 text-2xs text-smoke">
+    <p class="wrap pb-8 text-2xs text-ash">
       TestNav is a trademark of Pearson Education, Inc. All product names are used for identification purposes only.
     </p>
   </footer>

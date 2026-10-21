@@ -8,7 +8,7 @@
       ref="messagesEl"
       class="flex-1 min-h-0 overflow-y-auto px-4 py-[1.2rem] flex flex-col gap-2"
       style="scrollbar-width:thin; scrollbar-color:var(--color-line-strong) transparent"
-      aria-live="polite"
+      :aria-live="live ? 'polite' : 'off'"
     >
       <template
         v-for="(msg, i) in messages"
@@ -139,17 +139,17 @@
         aria-label="Ask a question about Josh"
         :disabled="busy || modelLoading"
         maxlength="400"
-        class="chat-input block w-full box-border bg-snow/[.06] border border-snow/10 rounded-[0.75rem] py-3 px-4 text-snow font-[inherit] outline-none transition-[border-color] duration-200 resize-none mb-[0.6rem] focus:border-amber disabled:opacity-50 placeholder:text-smoke"
+        class="chat-input block w-full box-border bg-snow/[.06] border border-snow/10 rounded-[0.75rem] py-3 px-4 text-snow font-[inherit] transition-[border-color] duration-200 resize-none mb-[0.6rem] focus:border-amber disabled:opacity-50 placeholder:text-ash"
         @input="userInput = ($event.target as HTMLInputElement).value"
         @keydown.enter="onEnter"
       >
       <div class="flex items-center justify-between">
-        <p class="text-base text-smoke m-0">
+        <p class="text-base text-ash m-0">
           {{ userInput.length }}/400
         </p>
         <div class="flex items-center gap-3">
           <button
-            class="inline-flex items-center gap-[0.4rem] bg-transparent border-none text-ash text-base cursor-pointer p-0 transition-colors duration-200 hover:text-amber font-[inherit]"
+            class="inline-flex items-center gap-[0.4rem] min-h-[2.4rem] bg-transparent border-none text-ash text-base cursor-pointer p-0 transition-colors duration-200 hover:text-amber font-[inherit]"
             @click="clearChat"
           >
             <UiIcon
@@ -183,7 +183,8 @@ import {
 } from '../../composables/useChat'
 
 // The conversation itself lives in useChat; this is one view of it (popup or full section)
-defineProps<{ large?: boolean }>()
+// live: announce new messages to screen readers (off for a copy of the chat that's off screen)
+withDefaults(defineProps<{ large?: boolean, live?: boolean }>(), { live: true })
 const emit = defineEmits<{ 'play-game': [] }>()
 
 const messagesEl = ref<HTMLElement | null>(null)

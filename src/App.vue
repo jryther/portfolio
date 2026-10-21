@@ -1,7 +1,14 @@
 <template>
   <div id="app">
+    <a
+      href="#main"
+      class="skip-link"
+    >Skip to content</a>
     <Header />
-    <main>
+    <main
+      id="main"
+      tabindex="-1"
+    >
       <Hero />
       <About />
       <Project />

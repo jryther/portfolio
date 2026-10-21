@@ -34,28 +34,27 @@
         <span>Josh Ryther</span>
       </a>
 
-      <div class="flex items-center gap-3 md:order-last md:ml-6">
-        <SceneToggle />
-        <ThemeToggle />
-
-        <!-- Hamburger — hidden on desktop -->
-        <button
-          class="menu"
-          :class="{ active: isMenuOpen }"
-          aria-label="Toggle menu"
-          :aria-expanded="isMenuOpen"
-          @click="isMenuOpen = !isMenuOpen"
-        >
-          <span />
-          <span />
-          <span />
-        </button>
-      </div>
+      <!-- Hamburger — phones only; shown at the far right, but first in Tab order so its links follow it -->
+      <button
+        ref="menuBtn"
+        class="menu"
+        :class="{ active: isMenuOpen }"
+        aria-label="Toggle menu"
+        :aria-expanded="isMenuOpen"
+        aria-controls="site-nav"
+        @click="isMenuOpen = !isMenuOpen"
+      >
+        <span />
+        <span />
+        <span />
+      </button>
 
       <!-- Nav links — inline on desktop, dropdown below header on mobile -->
       <nav
+        id="site-nav"
         class="nav"
         :class="{ active: isMenuOpen }"
+        @focusout="onNavFocusOut"
       >
         <ul>
           <li
@@ -80,6 +79,12 @@
           </li>
         </ul>
       </nav>
+
+      <!-- Background animation + theme toggles: after the links on desktop, beside the menu button on phones -->
+      <div class="header-controls flex items-center gap-3 md:ml-6">
+        <SceneToggle />
+        <ThemeToggle />
+      </div>
     </div>
   </header>
 </template>
@@ -98,10 +103,23 @@ const links = [
 ]
 
 const isMenuOpen = ref<boolean>(false)
+const menuBtn    = ref<HTMLButtonElement | null>(null)
 const isScrolled = ref<boolean>(false)
 const activeId   = ref<string>('')
 
 let sectionObserver: IntersectionObserver | null = null
+
+function onKeyDown(e: KeyboardEvent) {
+  if (e.key !== 'Escape' || !isMenuOpen.value) return
+  isMenuOpen.value = false
+  menuBtn.value?.focus()
+}
+
+// Tabbing out of the open menu closes it, so it never covers what has focus
+function onNavFocusOut(e: FocusEvent) {
+  const next = e.relatedTarget as Node | null
+  if (isMenuOpen.value && next && !(e.currentTarget as HTMLElement).contains(next) && next !== menuBtn.value) isMenuOpen.value = false
+}
 
 function onScroll() {
   isScrolled.value = window.scrollY > 8
@@ -110,6 +128,7 @@ function onScroll() {
 onMounted(() => {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('keydown', onKeyDown)
 
   // Highlight the nav link for whichever section crosses the upper-middle of the viewport
   sectionObserver = new IntersectionObserver((entries) => {
@@ -180,8 +199,10 @@ onUnmounted(() => {
 /* ── Mobile ── */
 @media (max-width: 768px) {
   .header-fixed { height: 6rem; }
+  .header-controls { order: 2; margin-left: auto; margin-right: 1.2rem; }
 
   .menu {
+    order: 3;
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -209,9 +230,10 @@ onUnmounted(() => {
     -webkit-backdrop-filter: blur(12px);
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
+    visibility: hidden;
+    transition: max-height 0.3s ease, visibility 0s linear 0.3s;
   }
-  .nav.active { max-height: 400px; border-bottom: 1px solid var(--color-line); }
+  .nav.active { max-height: 400px; visibility: visible; transition: max-height 0.3s ease; border-bottom: 1px solid var(--color-line); }
 
   .nav ul {
     flex-direction: column;

@@ -25,7 +25,7 @@
           </p>
         </div>
 
-        <aside
+        <div
           class="card p-8 self-start"
           data-aos="fade-up"
           data-aos-delay="100"
@@ -71,7 +71,7 @@
               Cover letter
             </a>
           </div>
-        </aside>
+        </div>
       </div>
 
       <!-- ── Experience & education timeline ── -->

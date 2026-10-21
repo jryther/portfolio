@@ -15,6 +15,24 @@
       </button>
     </Transition>
 
+    <!-- Back to top: slides in below the chat button once the visitor is past the first screen.
+         Hidden while the popup is open, since the popup covers this corner -->
+    <Transition name="backtop">
+      <div
+        v-if="pastFirstScreen && !isOpen"
+        class="backtop-slot"
+      >
+        <button
+          class="backtop pointer-events-auto"
+          aria-label="Back to top"
+          title="Back to top"
+          @click="backToTop"
+        >
+          <UiIcon name="arrow-up" />
+        </button>
+      </div>
+    </Transition>
+
     <!-- Modal panel -->
     <Transition name="chat-panel">
       <div
@@ -25,6 +43,7 @@
         aria-label="Ask about Josh"
         class="pointer-events-auto absolute bottom-0 right-0 bg-panel border border-line-strong rounded-[1.4rem] flex flex-col overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.35)] z-[1] max-xs:w-[calc(100vw-2rem)] max-xs:max-h-[70vh]"
         :style="modalStyle"
+        @keydown.esc.stop="toggleModal"
       >
         <!-- Header -->
         <div class="flex items-center justify-between px-[1.2rem] py-5 bg-snow/[.04] border-b border-snow/[.06] font-semibold text-lg text-snow flex-shrink-0">
@@ -73,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, defineAsyncComponent } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import ChatPanel from './ChatPanel.vue'
 import UiIcon from '../icons/UiIcon.vue'
@@ -113,6 +132,25 @@ async function toggleModal() {
   await nextTick()
   if (isOpen.value) panelEl.value?.focus({ preventScroll: true })
   else if (fabVisible.value) fabEl.value?.focus({ preventScroll: true })
+}
+
+// Back to top shows once the visitor has scrolled a full screen down
+const pastFirstScreen = ref<boolean>(false)
+function onScroll() {
+  pastFirstScreen.value = window.scrollY > window.innerHeight
+}
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+onUnmounted(() => window.removeEventListener('scroll', onScroll))
+
+function backToTop() {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' })
+  // Keyboard focus goes to the top too (the header's home link), so the next Tab continues from
+  // there instead of from the bottom of the page
+  document.querySelector<HTMLElement>('header a')?.focus({ preventScroll: true })
 }
 
 // The full chat section is on screen: close the popup first, then let the button go
@@ -210,5 +248,51 @@ watch(chatSectionInView, (inView) => {
 .fab-leave-to {
   opacity: 0;
   transform: translateY(1rem) scale(0.85);
+}
+
+/* ── Back to top ── */
+/* As wide as the chat button, so the smaller button sits centred under it */
+.backtop-slot {
+  width: 5.6rem;
+  height: 4.4rem;
+  display: flex;
+  justify-content: center;
+}
+.backtop {
+  width: 4.4rem;
+  height: 4.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1.2rem;
+  background: var(--color-panel);
+  border: 1px solid var(--color-line-strong);
+  color: var(--color-mist);
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.backtop:hover {
+  color: var(--color-amber);
+  border-color: var(--color-amber);
+}
+.backtop svg {
+  width: 2rem;
+  height: 2rem;
+}
+/* The slot grows from nothing (taking the gap with it), so the chat button glides up to make room */
+.backtop-enter-active,
+.backtop-leave-active {
+  transition: height 0.25s ease, margin-top 0.25s ease, opacity 0.25s ease;
+}
+.backtop-enter-from,
+.backtop-leave-to {
+  height: 0;
+  margin-top: -0.75rem;   /* cancels the container's gap-3 */
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .backtop-enter-active,
+  .backtop-leave-active { transition: none; }
 }
 </style>

@@ -295,7 +295,7 @@
           Full-Stack Software Engineer
         </p>
         <p
-          class="font-mono text-[1.35rem] text-ash mt-3"
+          class="font-mono text-[1.35rem] text-mist mt-3"
           data-aos="fade-up"
           data-aos-delay="160"
         >
@@ -373,7 +373,7 @@
 
     <!-- Coordinates of the summit -->
     <p class="coords wrap">
-      45.3736° N, 121.6960° W <span class="opacity-50">·</span> Mt. Hood <span class="opacity-50">·</span> 11,249 ft
+      <span class="coords-text">45.3736° N, 121.6960° W <span class="opacity-50">·</span> Mt. Hood <span class="opacity-50">·</span> 11,249 ft</span>
     </p>
   </section>
 </template>
@@ -1106,7 +1106,15 @@ onUnmounted(() => {
   color: #9FB0AA;
   pointer-events: none;
 }
-:root[data-theme="light"] .coords { color: #E2ECE5; }
+/* Light mode: the forest behind is a mid-tone green no text color can contrast with, so the
+   caption sits on a soft dark-green backing */
+:root[data-theme="light"] .coords { color: #F1F5F2; }
+:root[data-theme="light"] .coords-text {
+  margin-left: -0.8rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, #12291C 62%, transparent);
+}
 
 @media (max-width: 768px) {
   .hero { align-items: flex-start; }

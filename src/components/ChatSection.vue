@@ -21,11 +21,56 @@
         </p>
       </div>
 
+      <!-- How it works + examples: before the chat, since the examples fill its text box -->
+      <div
+        class="chat-guide"
+        data-aos="fade-up"
+        data-aos-delay="80"
+      >
+        <h3 class="detail-heading">
+          How it works
+        </h3>
+        <ol class="steps">
+          <li>
+            <span class="step-num">1</span>
+            <p><strong>Every answer is written ahead of time</strong> from my career notes, so the chat never makes anything up.</p>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <p><strong>Clear questions match instantly</strong> by keyword, and topic buttons jump straight to an answer. No download needed.</p>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <p><strong>For questions in your own words</strong>, a small AI model running in your browser finds the answer closest in meaning.</p>
+          </li>
+        </ol>
+
+        <h3 class="detail-heading mt-12">
+          Try asking in your own words
+        </h3>
+        <div class="flex flex-col items-start gap-3">
+          <button
+            v-for="q in AI_EXAMPLES"
+            :key="q"
+            class="example"
+            @click="fillInput(q)"
+          >
+            “{{ q }}”
+          </button>
+        </div>
+        <p
+          v-if="!modelReady"
+          class="text-sm text-ash mt-4"
+        >
+          Tip: load the AI model in the chat first, so it understands questions like these.
+        </p>
+      </div>
+
       <!-- Chat, with a pointer to the mini-game above it -->
       <div
         class="chat-column"
         data-aos="fade-up"
-        data-aos-delay="80"
+        data-aos-delay="120"
       >
         <p class="game-note">
           <UiIcon
@@ -83,57 +128,20 @@
           <ChatPanel
             v-else
             large
+            :live="chatSectionInView"
             class="flex-1"
             @play-game="showGame = true"
           />
         </div>
       </div>
 
-      <!-- How it works -->
+      <!-- Under the hood -->
       <div
-        class="chat-details"
+        class="chat-hood"
         data-aos="fade-up"
         data-aos-delay="120"
       >
         <h3 class="detail-heading">
-          How it works
-        </h3>
-        <ol class="steps">
-          <li>
-            <span class="step-num">1</span>
-            <p><strong>Every answer is written ahead of time</strong> from my career notes, so the chat never makes anything up.</p>
-          </li>
-          <li>
-            <span class="step-num">2</span>
-            <p><strong>Clear questions match instantly</strong> by keyword, and topic buttons jump straight to an answer. No download needed.</p>
-          </li>
-          <li>
-            <span class="step-num">3</span>
-            <p><strong>For questions in your own words</strong>, a small AI model running in your browser finds the answer closest in meaning.</p>
-          </li>
-        </ol>
-
-        <h3 class="detail-heading mt-12">
-          Try asking in your own words
-        </h3>
-        <div class="flex flex-col items-start gap-3">
-          <button
-            v-for="q in AI_EXAMPLES"
-            :key="q"
-            class="example"
-            @click="fillInput(q)"
-          >
-            “{{ q }}”
-          </button>
-        </div>
-        <p
-          v-if="!modelReady"
-          class="text-sm text-ash mt-4"
-        >
-          Tip: load the AI model in the chat first, so it understands questions like these.
-        </p>
-
-        <h3 class="detail-heading mt-12">
           Under the hood
         </h3>
         <dl class="facts">
@@ -216,16 +224,18 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* Phones: heading, chat, details. Desktop: heading + details on the left, chat on the right */
+/* Page (and Tab) order: heading, how it works + examples, chat, under the hood.
+   Phones stack them; desktop puts the text on the left and the chat on the right */
 .chat-layout {
   display: grid;
   gap: 4rem;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: "intro" "chat" "details";
+  grid-template-areas: "intro" "guide" "chat" "hood";
 }
 .chat-intro   { grid-area: intro; }
+.chat-guide   { grid-area: guide; }
 .chat-column  { grid-area: chat; }
-.chat-details { grid-area: details; }
+.chat-hood    { grid-area: hood; }
 
 .chat-column {
   display: flex;
@@ -249,8 +259,8 @@ onUnmounted(() => {
   }
   .chat-layout {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
-    grid-template-rows: auto 1fr;
-    grid-template-areas: "intro chat" "details chat";
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "intro chat" "guide chat" "hood chat";
     column-gap: 6.4rem;
     row-gap: 4rem;
   }

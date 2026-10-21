@@ -128,6 +128,28 @@
 
 /* ── Shared components ── */
 @layer components {
+  /* Hidden until a keyboard user tabs to it */
+  .skip-link {
+    position: absolute;
+    top: 1.2rem;
+    left: 1.2rem;
+    z-index: 10000;
+    padding: 1rem 1.6rem;
+    border-radius: 0.8rem;
+    background: var(--color-amber);
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: 1.5rem;
+    transform: translateY(-200%);
+    transition: transform 0.15s ease;
+  }
+  .skip-link:focus {
+    transform: none;
+  }
+  main:focus {
+    outline: none;
+  }
+
   /* Centered content column */
   .wrap {
     width: 100%;
@@ -286,7 +308,7 @@
   }
 
   .field::placeholder {
-    color: var(--color-smoke);
+    color: var(--color-ash);
   }
 
   .field:focus {

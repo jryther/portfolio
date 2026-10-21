@@ -45,6 +45,14 @@
       </button>
     </div>
 
+    <!-- Screen reader announcement of each round's result -->
+    <p
+      class="sr-only"
+      aria-live="polite"
+    >
+      {{ phase === 'dead' ? `Game over. Score ${score}. ${newBest ? 'New best!' : `Best ${highScore}.`}` : '' }}
+    </p>
+
     <!-- Play area -->
     <div
       ref="stageEl"
