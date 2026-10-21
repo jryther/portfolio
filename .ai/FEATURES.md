@@ -39,7 +39,7 @@ Hero content and the summit coordinates sit at `z-index: 5`.
 - **Photosensitivity (WCAG 2.3.1 / 2.3.2):** measured peak change in sky relative luminance is ≈ 0.04 (dusk sky ≈ 0.008 → ≈ 0.05), below the 0.1 that counts as a flash. The bolt and lit Bigfoot are far smaller than the 25%-of-10° area threshold. If you change `.sky-flash` colours or `PULSE`, keep the peak ΔL < 0.1, keep it to one pulse per strike, and avoid saturated red
 
 ### Scene pause (WCAG 2.2.2)
-- `SceneToggle.vue` — a quiet icon-only pause/play button in the header, beside the theme toggle (hidden under reduced motion, where the scene is already still). Stops rain, clouds and lightning
+- `SceneToggle.vue` — a pause/play button in the header, styled like the theme toggle and Resume button (bordered, 3.8rem, amber on hover), beside the theme toggle (hidden under reduced motion, where the scene is already still). Stops rain, clouds and lightning
 - Only present while the hero is on screen: the hero's IntersectionObserver sets `heroInView`, and once the hero scrolls away (the scene auto-pauses anyway) the button collapses to zero width, fades out, and becomes `visibility: hidden` so it leaves the tab order — no dead control and no gap in the header
 - State lives in `composables/useScene.ts` (`scenePaused`, `toggleScene`, `heroInView`), persisted in `localStorage['scene-paused']`
 
@@ -172,10 +172,14 @@ Buttons use `<a :href="url" download="filename">` — browser-native download.
 
 ## 8. Professional Work Section (Project.vue)
 
-- TestNav app store links appear above the work cards with Apple and Microsoft SVG icons styled to match the amber theme
-- Four work cards — layout only, no interactive links (all `link` and `github` values are `'#'`)
-- Cards have no hover lift/transform effect — intentionally informational only
-- Achievements use `before:content-['✓']` Tailwind pseudo-element utility
+Laid out like an experience entry rather than a project grid, in order of emphasis:
+
+- **Role line** under the heading: Software Engineer · Pearson · dates · Remote
+- **Featured case study: TestNav** (the client, first-class work): what it is and its scale, five impact bullets in tier order (Playwright + agent skill first, then WCAG, screen reader module, keyword dialog, component conversion), App Store / Microsoft Store links, and four amber **stat tiles** (`stats` array: scale first, then the Playwright results and WCAG) with a "Percentages are my own estimates" note
+- **"Around the platform"**: four compact cards for second-tier work (native apps, AI feature service, content service, simulations), each one or two lines plus one highlighted result
+- **No tech chips.** Cards describe what each system does, not what it's built on, so the section doesn't map out Pearson's architecture. The skills list lives in About
+- Stat values are kept short (`Millions`, `WCAG AA`) with the detail in the label, so they stay on one line in the two-column tile grid on phones
+- Cards have no hover lift; `.spotlight` glow only
 
 ---
 

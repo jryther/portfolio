@@ -195,12 +195,12 @@
       <g class="night-only">
         <path
           fill="url(#hood-snow-night)"
-          d="M872 204 L905 165 L935 120 L958 88 L972 72 L980 66 L990 74 L1004 92 L1030 128 L1062 168 L1082 192 L1070 196 L1060 230 L1046 205 L1030 214 L1018 262 L1004 222 L990 236 L978 290 L966 232 L952 226 L940 270 L930 214 L914 206 L896 236 L892 198 Z"
+          :d="SNOW_NIGHT.cap"
         />
         <path
           fill="#0B1012"
           fill-opacity="0.3"
-          d="M980 66 L990 74 L1004 92 L1030 128 L1062 168 L1082 192 L1070 196 L1060 230 L1046 205 L1030 214 L1018 262 L1004 222 L990 236 L984 150 Z"
+          :d="SNOW_NIGHT.shade"
         />
       </g>
 
@@ -208,12 +208,12 @@
       <g class="day-only">
         <path
           fill="url(#hood-snow-day)"
-          d="M905 165 L935 120 L958 88 L972 72 L980 66 L990 74 L1004 92 L1030 128 L1046 150 L1036 152 L1028 176 L1018 158 L1010 168 L1002 206 L994 172 L986 180 L978 236 L970 178 L960 172 L950 204 L944 166 L932 162 L922 186 L918 158 Z"
+          :d="SNOW_DAY.cap"
         />
         <path
           fill="#3E5A66"
           fill-opacity="0.22"
-          d="M980 66 L990 74 L1004 92 L1030 128 L1046 150 L1036 152 L1028 176 L1018 158 L1010 168 L1002 206 L994 172 L986 180 L984 130 Z"
+          :d="SNOW_DAY.shade"
         />
       </g>
 
@@ -270,7 +270,7 @@
           data-aos="fade-up"
         >
           <span class="status-dot" />
-          Portland, OR · Open to opportunities
+          Salem, OR · Open to opportunities
         </p>
 
         <p
@@ -299,14 +299,14 @@
           data-aos="fade-up"
           data-aos-delay="160"
         >
-          React · Vue · Node.js · TypeScript
+          Vue · React · TypeScript · Node.js
         </p>
         <p
           class="hero-summary"
           data-aos="fade-up"
           data-aos-delay="200"
         >
-          Building robust, high-quality web applications with a foundation in precision and zero-error-tolerance workflows. Specialized in modernizing legacy systems, architecting scalable solutions, and delivering accessible, user-centric software.
+          I build and maintain high-stakes software that delivers millions of secure exams each year. I work across the full stack, from accessible, cross-browser interfaces to the services and APIs behind them, and I modernize legacy code along the way. My workflow is AI-forward: coding agents, automated tests, and careful review catch bugs before they ship.
         </p>
 
         <div
@@ -353,20 +353,6 @@
                 viewBox="0 0 640 640"
                 aria-hidden="true"
               ><!--!Font Awesome Free v7.2.0 by @fontawesome--><path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 160C544 124.7 515.3 96 480 96L160 96zM165 266.2L231.5 266.2L231.5 480L165 480L165 266.2zM236.7 198.5C236.7 219.8 219.5 237 198.2 237C176.9 237 159.7 219.8 159.7 198.5C159.7 177.2 176.9 160 198.2 160C219.5 160 236.7 177.2 236.7 198.5zM413.9 480L413.9 376C413.9 351.2 413.4 319.3 379.4 319.3C344.8 319.3 339.5 346.3 339.5 374.2L339.5 480L273.1 480L273.1 266.2L336.8 266.2L336.8 295.4L337.7 295.4C346.6 278.6 368.3 260.9 400.6 260.9C467.8 260.9 480.3 305.2 480.3 362.8L480.3 480L413.9 480z" /></svg>
-            </a>
-            <a
-              href="https://github.com/jryther"
-              target="_blank"
-              rel="noreferrer"
-              class="social-link"
-              aria-label="GitHub"
-              title="GitHub"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 640 640"
-                aria-hidden="true"
-              ><!--!Font Awesome Free v7.2.0--><path d="M544 160C544 124.7 515.3 96 480 96L160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 160zM361.8 471.7C361.8 469.9 361.8 465.7 361.9 460.1C362 448.7 362 431.3 362 416.4C362 400.8 356.8 390.9 350.7 385.7C387.7 381.6 426.7 376.5 426.7 312.6C426.7 294.4 420.2 285.3 409.6 273.6C411.3 269.3 417 251.6 407.9 228.6C394 224.3 362.2 246.5 362.2 246.5C335.6 239 305.6 239 279 246.5C279 246.5 247.2 224.3 233.3 228.6C224.2 251.5 229.8 269.2 231.6 273.6C221 285.3 216 294.4 216 312.6C216 376.2 253.3 381.6 290.3 385.7C285.5 390 281.2 397.4 279.7 408C270.2 412.3 245.9 419.7 231.4 394.1C222.3 378.3 205.9 377 205.9 377C189.7 376.8 204.8 387.2 204.8 387.2C215.6 392.2 223.2 411.4 223.2 411.4C232.9 441.1 279.3 431.1 279.3 431.1C279.3 440.1 279.4 452.8 279.4 461.7C279.4 466.5 279.5 470.3 279.5 471.7C279.5 476 276.5 481.2 268 479.7C202 457.6 155.8 394.8 155.8 321.4C155.8 229.6 226 159.9 317.8 159.9C409.6 159.9 484 229.6 484 321.4C484.1 394.8 439.3 457.7 373.3 479.7C364.9 481.2 361.8 476 361.8 471.7z" /></svg>
             </a>
             <a
               href="mailto:jryther91@gmail.com"
@@ -419,6 +405,65 @@ const prefersReducedMotion = typeof window !== 'undefined'
   && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 // ── Static mountain geometry ─────────────────────────────────────────────────
+
+type Pt = [number, number]
+
+/** Cubic Bézier segments for a smooth curve through the points (uniform Catmull-Rom) */
+function smoothSegments(pts: Pt[]): string[] {
+  const out: string[] = []
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)]
+    const c1: Pt = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6]
+    const c2: Pt = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6]
+    out.push(`C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0]} ${p2[1]}`)
+  }
+  return out
+}
+
+/**
+ * A snowcap: straight along the mountain's silhouette (left → right), then back along a soft,
+ * irregular snowline (right → left) where tongues of snow run down the gullies. The shaded
+ * right half reuses the same snowline segments up to the central tongue, so its edge matches
+ * the cap exactly.
+ */
+function snowcap(silhouette: Pt[], snowline: Pt[], shadeUntil: number, ridgeTop: Pt) {
+  const segs = smoothSegments(snowline)
+  const peakAt = silhouette.findIndex(([, y]) => y === Math.min(...silhouette.map(p => p[1])))
+  const line = (pts: Pt[]) => pts.map(([x, y]) => `L${x} ${y}`).join(' ')
+  const [sx, sy] = silhouette[0]
+  return {
+    cap: `M${sx} ${sy} ${line(silhouette.slice(1))} ${segs.join(' ')} Z`,
+    shade: `M${silhouette[peakAt][0]} ${silhouette[peakAt][1]} ${line(silhouette.slice(peakAt + 1))} ${segs.slice(0, shadeUntil).join(' ')} L${ridgeTop[0]} ${ridgeTop[1]} Z`,
+  }
+}
+
+// Winter: the cap reaches well down the slopes, longest tongue in the central gully
+const SNOW_NIGHT = snowcap(
+  [[880, 194.5], [905, 165], [935, 120], [958, 88], [972, 72], [980, 66], [990, 74], [1004, 92], [1030, 128], [1062, 168], [1074, 182.5]],
+  [
+    [1074, 182.5], [1066, 192], [1058, 205], [1052, 210], [1046, 203], [1040, 199],
+    [1032, 213], [1026, 233], [1020, 237], [1013, 224], [1006, 213],
+    [999, 221], [993, 246], [987, 262], [981, 259], [975, 238], [967, 221],
+    [959, 227], [951, 246], [945, 248], [939, 233], [931, 214],
+    [923, 218], [915, 230], [909, 228], [901, 211], [890, 203], [880, 194.5],
+  ],
+  14,
+  [983, 150],
+)
+
+// Late summer: a smaller cap, glaciers retreating into the gullies
+const SNOW_DAY = snowcap(
+  [[912, 154.5], [935, 120], [958, 88], [972, 72], [980, 66], [990, 74], [1004, 92], [1030, 128], [1042, 143]],
+  [
+    [1042, 143], [1036, 152], [1030, 165], [1025, 168], [1020, 159], [1014, 155],
+    [1008, 167], [1002, 186], [997, 188], [993, 175], [988, 169],
+    [984, 190], [980, 211], [975, 209], [971, 189], [965, 172],
+    [958, 177], [951, 192], [946, 192], [942, 177], [936, 166],
+    [928, 169], [921, 175], [916, 165], [912, 154.5],
+  ],
+  12,
+  [983, 130],
+)
 
 const HOOD_BODY = 'M-500 470 L200 452 L470 430 L560 392 L640 356 L700 326 L748 296 L778 276 L792 260 L806 264 L822 252 L846 232 L872 204 L905 165 L935 120 L958 88 L972 72 L980 66 L990 74 L1004 92 L1030 128 L1062 168 L1100 214 L1130 240 L1150 262 L1196 292 L1250 320 L1320 350 L1440 384 L1940 430 V520 H-500 Z'
 

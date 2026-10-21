@@ -1,9 +1,11 @@
 <template>
   <div class="fixed bottom-8 right-8 z-[9999] flex flex-col items-end gap-3 pointer-events-none max-xs:bottom-4 max-xs:right-4">
-    <!-- Floating toggle button; steps aside while the full chat section is on screen -->
+    <!-- Floating toggle button; steps aside while the popup is open (so its outline never
+         peeks out behind it) and while the full chat section is on screen -->
     <Transition name="fab">
       <button
-        v-show="fabVisible"
+        v-show="fabVisible && !isOpen"
+        ref="fabEl"
         class="pointer-events-auto w-[5.6rem] h-[5.6rem] rounded-2xl bg-amber border border-golden/40 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.3),0_0_0_6px_color-mix(in_srgb,var(--color-amber)_10%,transparent)] flex items-center justify-center transition-[background] duration-200 flex-shrink-0 hover:bg-golden"
         aria-label="Ask about Josh"
         title="Ask about Josh"
@@ -17,7 +19,9 @@
     <Transition name="chat-panel">
       <div
         v-if="isOpen"
+        ref="panelEl"
         role="dialog"
+        tabindex="-1"
         aria-label="Ask about Josh"
         class="pointer-events-auto absolute bottom-0 right-0 bg-panel border border-line-strong rounded-[1.4rem] flex flex-col overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.35)] z-[1] max-xs:w-[calc(100vw-2rem)] max-xs:max-h-[70vh]"
         :style="modalStyle"
@@ -69,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, defineAsyncComponent } from 'vue'
+import { ref, watch, nextTick, defineAsyncComponent } from 'vue'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import ChatPanel from './ChatPanel.vue'
 import UiIcon from '../icons/UiIcon.vue'
@@ -83,6 +87,8 @@ const MiniGame = defineAsyncComponent(loadGame)
 const isOpen     = ref<boolean>(false)
 const fabVisible = ref<boolean>(true)
 const showGame   = ref<boolean>(false)
+const fabEl      = ref<HTMLButtonElement | null>(null)
+const panelEl    = ref<HTMLElement | null>(null)
 
 // Matches the .chat-panel-leave-active duration below
 const PANEL_LEAVE_MS = 280
@@ -94,7 +100,7 @@ const modalStyle = {
   maxHeight: '56rem',
 }
 
-function toggleModal() {
+async function toggleModal() {
   isOpen.value = !isOpen.value
   if (isOpen.value) {
     openChat()
@@ -102,6 +108,11 @@ function toggleModal() {
   } else {
     showGame.value = false   // reopening starts back on the chat
   }
+  // The button hides while the popup is open, so hand keyboard focus across: into the popup
+  // (not the text box, which would pop the phone keyboard), and back to the button on close
+  await nextTick()
+  if (isOpen.value) panelEl.value?.focus({ preventScroll: true })
+  else if (fabVisible.value) fabEl.value?.focus({ preventScroll: true })
 }
 
 // The full chat section is on screen: close the popup first, then let the button go
@@ -123,6 +134,10 @@ watch(chatSectionInView, (inView) => {
 </script>
 
 <style scoped>
+[role="dialog"]:focus {
+  outline: none;   /* focus parks here on open; the controls inside show their own focus rings */
+}
+
 .header-btn {
   width: 3.2rem;
   height: 3.2rem;

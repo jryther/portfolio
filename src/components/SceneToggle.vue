@@ -37,44 +37,46 @@ const label = computed(() => scenePaused.value ? 'Play background animation' : '
 </script>
 
 <style scoped>
-/* Deliberately quieter than the theme toggle — icon only, no border */
+/* Matches the theme toggle and Resume button: bordered, same size, amber on hover */
 .scene-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.2rem;
-  height: 3.2rem;
+  width: 3.8rem;
+  height: 3.8rem;
   flex-shrink: 0;
-  border: none;
+  border: 1px solid var(--color-line-strong);
   border-radius: 0.8rem;
   background: transparent;
-  color: var(--color-ash);
+  color: var(--color-mist);
   cursor: pointer;
   overflow: hidden;
-  transition: color 0.2s ease, background-color 0.2s ease,
-    opacity 0.25s ease, width 0.3s ease, margin 0.3s ease, visibility 0s linear 0s;
+  transition: color 0.2s ease, border-color 0.2s ease,
+    opacity 0.25s ease, width 0.3s ease, margin 0.3s ease, border-width 0.3s ease, visibility 0s linear 0s;
+}
+
+.scene-toggle:hover {
+  color: var(--color-amber);
+  border-color: var(--color-amber);
 }
 
 /* Hero scrolled away — the scene is already paused, so collapse the control out of the
-   header (no dead button, no gap). visibility:hidden also drops it from tab order and the
-   accessibility tree once the fade finishes. */
+   header (no dead button, no gap). The border collapses too so no sliver is left behind.
+   visibility:hidden also drops it from tab order and the accessibility tree once the fade
+   finishes. */
 .scene-toggle.is-away {
   width: 0;
+  border-width: 0;
   margin-inline-end: calc(var(--spacing) * -3);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: color 0.2s ease, background-color 0.2s ease,
-    opacity 0.2s ease, width 0.3s ease, margin 0.3s ease, visibility 0s linear 0.3s;
-}
-
-.scene-toggle:hover {
-  color: var(--color-snow);
-  background-color: color-mix(in srgb, var(--color-snow) 6%, transparent);
+  transition: color 0.2s ease, border-color 0.2s ease,
+    opacity 0.2s ease, width 0.3s ease, margin 0.3s ease, border-width 0.3s ease, visibility 0s linear 0.3s;
 }
 
 .scene-toggle svg {
-  width: 1.3rem;
-  height: 1.3rem;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 </style>

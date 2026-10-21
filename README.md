@@ -1,6 +1,6 @@
 # Josh Ryther — Portfolio v3
 
-Personal portfolio website for Josh Ryther, Full-Stack Software Engineer based in Portland, Oregon.
+Personal portfolio website for Josh Ryther, Full-Stack Software Engineer based in Salem, Oregon.
 Live at **[https://portfolio-v3.jryther91.workers.dev](https://portfolio-v3.jryther91.workers.dev)**
 
 ---
@@ -88,7 +88,7 @@ src/
 │   ├── ThemeToggle.vue       # Sun/moon theme switch
 │   ├── SceneToggle.vue       # Pause/play the hero animation
 │   ├── About.vue             # Bio, timeline, skills grid, documents
-│   ├── Project.vue           # Professional work cards + app store links
+│   ├── Project.vue           # Professional work: TestNav case study + supporting work
 │   ├── ChatSection.vue       # Full-page "Ask" chat + how it works
 │   ├── Contact.vue           # Contact links + form card
 │   ├── ContactForm.vue       # Formspree-backed email form
@@ -135,7 +135,7 @@ All personalizable content lives in the Vue components. Key locations:
 |---|---|
 | Name, tagline, social links | `Hero.vue` |
 | Bio, education, experience, skills | `About.vue` |
-| Professional work cards, app store links | `Project.vue` |
+| Professional work (case study, stat tiles, supporting cards) | `Project.vue` |
 | Contact email / phone | `Contact.vue` |
 | Form submission endpoint | `ContactForm.vue` → `formspreeEndpoint` |
 | Footer links | `Footer.vue` |

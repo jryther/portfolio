@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A personal portfolio SPA for **Joshua Ryther**, a Full-Stack Software Engineer based in Portland, Oregon. It is hosted on Cloudflare Pages at `https://portfolio-v3.jryther91.workers.dev`.
+A personal portfolio SPA for **Joshua Ryther**, a Full-Stack Software Engineer based in Salem, Oregon. It is hosted on Cloudflare Pages at `https://portfolio-v3.jryther91.workers.dev`.
 
 The project was originally scaffolded as a Vue 3 SPA, then progressively personalized and extended through iterative AI-assisted development sessions.
 
@@ -12,10 +12,9 @@ The project was originally scaffolded as a Vue 3 SPA, then progressively persona
 
 - **Name:** Joshua (Josh) Ryther
 - **Role:** Software Engineer at Pearson Education (Remote), September 2022 – Present
-- **Location:** Portland, Oregon
+- **Location:** Salem, Oregon
 - **Email:** jryther91@gmail.com
 - **LinkedIn:** https://linkedin.com/in/joshua-ryther-121400109
-- **GitHub:** https://github.com/jryther
 
 ### Education
 - B.S. Computer Science — Southern New Hampshire University (2020–2022)

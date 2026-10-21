@@ -21,54 +21,72 @@
         </p>
       </div>
 
-      <!-- Chat -->
+      <!-- Chat, with a pointer to the mini-game above it -->
       <div
-        ref="chatCardEl"
-        class="chat-card"
-        role="region"
-        aria-label="Chat about Josh"
+        class="chat-column"
         data-aos="fade-up"
         data-aos-delay="80"
       >
-        <div class="flex items-center justify-between gap-4 px-[1.6rem] py-[1.2rem] bg-snow/[.04] border-b border-snow/[.06] flex-shrink-0">
-          <div class="flex items-center gap-3 text-snow font-semibold text-lg">
-            <SparkleIcon class="w-[1.8rem] h-[1.8rem] text-amber" />
-            Ask About Josh
-          </div>
-          <div class="flex items-center gap-3">
-            <span
-              class="status-pill"
-              :class="{ 'is-ready': modelReady }"
-            >
-              <span class="status-dot" />
-              {{ statusLabel }}
-            </span>
-            <button
-              class="header-btn"
-              :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
-              :aria-pressed="showGame"
-              :aria-label="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
-              :title="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
-              @click="showGame = !showGame"
-            >
-              <UiIcon name="game" />
+        <p class="game-note">
+          <UiIcon
+            name="game"
+            class="game-note-icon"
+          />
+          <span>There's a mini-game in the chat. Play it while the AI loads, or any time.</span>
+          <button
+            v-if="!showGame"
+            class="game-note-btn"
+            @click="showGame = true"
+          >
+            Play
+          </button>
+        </p>
+        <div
+          ref="chatCardEl"
+          class="chat-card"
+          role="region"
+          aria-label="Chat about Josh"
+        >
+          <div class="flex items-center justify-between gap-4 px-[1.6rem] py-[1.2rem] bg-snow/[.04] border-b border-snow/[.06] flex-shrink-0">
+            <div class="flex items-center gap-3 text-snow font-semibold text-lg">
+              <SparkleIcon class="w-[1.8rem] h-[1.8rem] text-amber" />
+              Ask About Josh
+            </div>
+            <div class="flex items-center gap-3">
               <span
-                v-if="slowLoad && !showGame"
-                class="hint-dot"
-              />
-            </button>
+                class="status-pill"
+                :class="{ 'is-ready': modelReady }"
+              >
+                <span class="status-dot" />
+                {{ statusLabel }}
+              </span>
+              <button
+                class="header-btn"
+                :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
+                :aria-pressed="showGame"
+                :aria-label="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
+                :title="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
+                @click="showGame = !showGame"
+              >
+                <UiIcon name="game" />
+                <span
+                  v-if="slowLoad && !showGame"
+                  class="hint-dot"
+                />
+              </button>
+            </div>
           </div>
+          <MiniGame
+            v-if="showGame"
+            class="flex-1"
+          />
+          <ChatPanel
+            v-else
+            large
+            class="flex-1"
+            @play-game="showGame = true"
+          />
         </div>
-        <MiniGame
-          v-if="showGame"
-          class="flex-1"
-        />
-        <ChatPanel
-          v-else
-          large
-          class="flex-1"
-          @play-game="showGame = true"
-        />
       </div>
 
       <!-- How it works -->
@@ -206,16 +224,28 @@ onUnmounted(() => {
   grid-template-areas: "intro" "chat" "details";
 }
 .chat-intro   { grid-area: intro; }
-.chat-card    { grid-area: chat; }
+.chat-column  { grid-area: chat; }
 .chat-details { grid-area: details; }
 
+.chat-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  min-width: 0;
+}
+
 @media (min-width: 1024px) {
-  /* Landing here from the nav (scroll-padding-top: 8rem) should show the whole chat */
+  /* Landing here from the nav (scroll-padding-top: 8rem) should show the whole chat, note included */
   .chat-section {
     padding-top: 3.2rem;
   }
+  .chat-column {
+    height: clamp(56rem, calc(100svh - 8rem - 3.2rem - 2.4rem), 84rem);
+  }
   .chat-card {
-    height: clamp(52rem, calc(100svh - 8rem - 3.2rem - 2.4rem), 80rem);
+    flex: 1;
+    height: auto;
+    min-height: 0;
   }
   .chat-layout {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
@@ -236,6 +266,46 @@ onUnmounted(() => {
   border: 1px solid var(--color-line-strong);
   border-radius: 1.4rem;
   box-shadow: 0 8px 40px rgb(0 0 0 / 0.18);
+}
+
+.game-note {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.9rem 1rem 0.9rem 1.4rem;
+  font-size: 1.4rem;
+  line-height: 1.45;
+  color: var(--color-mist);
+  background: color-mix(in srgb, var(--color-amber) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-amber) 25%, transparent);
+  border-radius: 1rem;
+}
+.game-note-icon {
+  flex-shrink: 0;
+  width: 1.8rem;
+  height: 1.8rem;
+  color: var(--color-amber);
+}
+.game-note > span {
+  flex: 1;
+}
+.game-note-btn {
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-amber);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--color-amber) 45%, transparent);
+  border-radius: 0.8rem;
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+.game-note-btn:hover {
+  background: color-mix(in srgb, var(--color-amber) 12%, transparent);
 }
 
 .header-btn {

@@ -18,10 +18,10 @@
             A little about me
           </h2>
           <p class="text-body leading-[1.8] text-mist mb-6">
-            I'm a full-stack software engineer with a unique foundation in precision-driven environments and a passion for building robust, high-quality software. My background combines rigorous attention to detail with technical expertise in React, Vue, Node.js, and TypeScript, enabling me to architect scalable solutions and deliver measurable impact.
+            I'm a full-stack software engineer who cares about getting the details right. I work mainly in JavaScript, TypeScript, HTML, and CSS, with Vue and React on the frontend and Java and Node.js on the backend. Before software, I spent nine years as a certified pharmacy technician, at a startup and at larger healthcare providers, where accuracy mattered on every task. That habit carries straight into how I build and test code.
           </p>
           <p class="text-body leading-[1.8] text-mist">
-            At Pearson Education, I've contributed to a diverse product ecosystem spanning web applications, content management systems, and cross-platform desktop clients. My approach emphasizes modernizing legacy systems, implementing accessibility standards, and maintaining code quality through comprehensive testing and security-focused design. Whether optimizing performance, championing WCAG compliance, or mentoring teammates, I'm committed to building software that users can trust.
+            At Pearson, I work on TestNav, the testing app behind millions of secure, high-stakes school exams each year. I introduced end-to-end testing to its codebase, brought it to WCAG 2.1 AA compliance, and work across the apps and services that support it. I lean on AI coding agents and automated tests to move quickly without letting quality slip, and I mentor teammates through code reviews and secure design.
           </p>
         </div>
 
@@ -214,11 +214,15 @@ interface TimelineItem {
   bullets?: string[]
 }
 
+// Whole years since starting at Pearson in September 2022, so this never goes stale
+const yearsInSoftware = Math.floor((Date.now() - Date.UTC(2022, 8, 1)) / (365.25 * 24 * 60 * 60 * 1000))
+
 const facts = [
-  { label: 'Based in',  value: 'Portland, Oregon' },
-  { label: 'Currently', value: 'Software Engineer at Pearson' },
-  { label: 'Focus',     value: 'Accessibility, legacy modernization, testing' },
-  { label: 'Education', value: 'B.S. Computer Science, SNHU' },
+  { label: 'Based in',   value: 'Salem, Oregon' },
+  { label: 'Currently',  value: 'Software Engineer at Pearson' },
+  { label: 'Experience', value: `${yearsInSoftware}+ years in software engineering` },
+  { label: 'Focus',      value: 'Full-stack web, testing, accessibility' },
+  { label: 'Education',  value: 'B.S. Computer Science, SNHU' },
 ]
 
 const downloadIcon = {
@@ -239,12 +243,12 @@ const timeline: TimelineItem[] = [
     org: 'Pearson Education',
     meta: 'Remote',
     bullets: [
-      'Engineered full-stack features across student-facing testing applications, content repositories, and cross-platform native applications',
-      'Modernized legacy codebase by integrating React and TypeScript, improving performance and maintainability',
-      'Championed accessibility with consultants to achieve WCAG 2.1 AA compliance for thousands of students',
-      'Architected reusable simulation framework reducing production time for new interactive test content',
-      'Executed comprehensive API testing ensuring zero regressions across consuming platforms',
-      'Contributed to code quality and security through peer reviews and team education',
+      "Converted most of the client's views from legacy JavaScript into reusable TypeScript components in React and Vue",
+      'Introduced end-to-end testing to the TestNav client, contributing to about 75% fewer bugs, and sped up development by about 50% using AI assistance and custom skills, including an AI agent skill',
+      'Brought TestNav to WCAG 2.1 AA compliance with accessibility consultants, and built a reusable screen reader component that cut development time on accessibility features from 3+ days to 1',
+      'Built AI-powered services end to end, including a backend feature with TypeScript, ESLint, and unit tests, and a support tool that allows the team to run multiple AI coding agents on the same project simultaneously',
+      'Architected reusable content templates that cut development time per test item by 50–75%',
+      'Raised code quality and security through code reviews and by teaching teammates secure design',
     ],
   },
   {
@@ -260,7 +264,7 @@ const timeline: TimelineItem[] = [
     org: 'Ro, Providence Health Plan, Walgreens',
     meta: 'Beaverton, OR',
     bullets: [
-      'Executed zero-error-tolerance workflows in team-based environments, including precise prescription data entry and rule-based prior authorizations',
+      'Handled accuracy-critical work in team-based environments, including precise prescription data entry and rule-based prior authorizations',
       'Managed inventory and supply chains to keep operations running under high-stress, time-sensitive conditions',
     ],
   },
@@ -277,8 +281,8 @@ const skillGroups: SkillGroup[] = [
   {
     name: 'Frontend',
     skills: [
-      { name: 'React',        svg: reactSvg },
       { name: 'Vue.js',       svg: vueSvg },
+      { name: 'React',        svg: reactSvg },
       { name: 'TypeScript',   svg: tsSvg },
       { name: 'JavaScript',   svg: jsSvg },
       { name: 'Tailwind CSS', svg: tailwindSvg },

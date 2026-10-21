@@ -58,9 +58,8 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - Resume and cover letter imported as asset URLs via Vite
 
 ### `Project.vue`
-- Four work cards rendered from a `const projects = [...]` array in `<script setup>`, in a bento grid (cards 1 and 4 span two columns on `lg`)
-- Each card has mono tech `tags` (taken from the resume) and a cursor-following `.spotlight` glow fed by `trackPointer`
-- Compact "TestNav ships on" row with App Store / Microsoft Store links beside the heading
+- Role line, a featured TestNav case study (`featured` bullets + `stats` tiles + store links), and four "around the platform" cards (`supporting`), all from arrays in `<script setup>`
+- No per-project tech tags, by design (see FEATURES.md §8); cursor-following `.spotlight` glow fed by `trackPointer`
 - No `coming-soon` badge (removed intentionally)
 - No hover lift effect on cards (removed intentionally — cards are informational, not interactive links)
 
@@ -85,6 +84,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - **`ChatPanel.vue`** is one view of that conversation: messages, chips, the model status strip, input. `large` prop = roomier type for the section. Each instance scrolls its own message list
 - **`AiChat.vue`** = the floating button + popup (fixed bottom-right, `z-index: 9999`) wrapping a ChatPanel. Shows on every device (wllama runs on the CPU)
 - **`ChatSection.vue`** (`#chat`, "05 — Ask", nav link "Ask") = a full-page ChatPanel plus how it works, "try asking in your own words" examples (click to fill the chat input, not send) and model facts. Its IntersectionObserver (middle 30% of the viewport) sets `chatSectionInView` and greets on first view
+- The floating button also hides while the popup is open (same `fab` transition), so its outline never shows behind the panel. Focus moves into the popup on open and back to the button on close
 - While `chatSectionInView`, the floating button steps aside: an open popup closes first (280 ms leave transition), then the button fades out (`<Transition name="fab">` + `v-show`); it fades back when the section leaves
 - On desktop the section's top padding is trimmed so landing from the nav (scroll-padding 8rem) shows the whole chat card
 - Both chat headers have a game icon that swaps the ChatPanel for `MiniGame.vue` (lazy-loaded). See FEATURES.md §3b

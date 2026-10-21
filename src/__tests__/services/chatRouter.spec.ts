@@ -21,10 +21,13 @@ describe('chatTree', () => {
 
   it('keeps private details out of the public answers', () => {
     const all = TOPIC_LIST.map(t => t.answer).join(' ')
-    expect(all).not.toMatch(/\(?\d{3}\)?[ .-]\d{3}-\d{4}/)           // no phone number
+    expect(all).not.toMatch(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]\d{4}/)   // any phone number
     // Skills Josh doesn't have are left out, never called out
     expect(all).not.toMatch(/graphql/i)
+    // Public-safe wording only
     expect(all).not.toMatch(/\$\d/)                      // no stray template $ before a number
+    // Framing settled on the site: current numbers and wording only
+    expect(all).not.toMatch(/full WCAG|parts of the release|25% faster development|50% fewer bugs|zero-error/i)
     // jQuery can be mentioned honestly, but an answer never leads with it
     for (const topic of TOPIC_LIST) expect(topic.answer.split('. ')[0], topic.id).not.toMatch(/jquery/i)
   })
@@ -38,7 +41,7 @@ describe('matchKeywords', () => {
     ['Has he used Redux?', 'skill_state'],
     ['Has he worked at a startup?', 'startup'],
     ['Does he know Vue?', 'skill_vue'],
-    ['What AI-powered services has he built?', 'proj_ai_feature'],
+    ['Has he built a serverless service?', 'proj_ai_feature'],
     ['What is his experience with Playwright?', 'proj_playwright'],
     ['Where did he go to college?', 'education'],
     ['How can I contact him?', 'contact'],

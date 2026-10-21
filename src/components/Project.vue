@@ -11,29 +11,67 @@
         04 — Work
       </p>
       <div
-        class="mt-6 mb-14 flex flex-wrap items-end justify-between gap-8"
+        class="mt-6 mb-14"
         data-aos="fade-up"
       >
-        <div>
-          <h2 class="section-title">
-            Professional work
-          </h2>
-          <p class="text-body text-mist mt-4 max-w-[56rem]">
-            Products I've helped build and maintain at Pearson Education — used by thousands of students on every major platform.
-          </p>
-        </div>
+        <h2 class="section-title">
+          Professional work
+        </h2>
+        <p class="role-line mt-5">
+          <span class="text-snow font-semibold">Software Engineer</span>
+          <span aria-hidden="true">·</span>
+          <span>Pearson</span>
+          <span aria-hidden="true">·</span>
+          <span>Sep 2022 – present</span>
+          <span aria-hidden="true">·</span>
+          <span>Remote</span>
+        </p>
+      </div>
 
-        <!-- Where TestNav ships -->
-        <div class="flex flex-col gap-3">
-          <p class="font-mono text-xs uppercase tracking-[0.12em] text-ash">
-            TestNav ships on
+      <!-- Featured: the main project -->
+      <article
+        class="card spotlight featured"
+        data-aos="fade-up"
+        @mousemove="trackPointer"
+      >
+        <div class="featured-main">
+          <p class="eyebrow-mini">
+            Main project
           </p>
-          <div class="flex flex-wrap gap-3">
+          <h3 class="text-3xl font-semibold text-snow mt-3 max-xs:text-2xl">
+            TestNav
+          </h3>
+          <p class="text-base text-mist leading-[1.75] mt-4">
+            Pearson's student testing app, delivering millions of secure, high-stakes school exams each year in every major browser and on Windows, macOS, Linux, iOS, and ChromeOS. I work across its full lifecycle, from new features to long-term maintenance, with a focus on reliability, security, and accessibility.
+          </p>
+
+          <ul class="mt-8 flex flex-col gap-4">
+            <li
+              v-for="point in featured"
+              :key="point"
+              class="flex gap-3 text-[1.45rem] leading-[1.65] text-mist"
+            >
+              <svg
+                viewBox="0 0 16 16"
+                class="w-[1.4rem] h-[1.4rem] mt-[0.4rem] flex-shrink-0 text-moss"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              ><path d="m3 8.5 3 3 7-7" /></svg>
+              {{ point }}
+            </li>
+          </ul>
+
+          <div class="mt-10 flex flex-wrap items-center gap-3">
+            <span class="font-mono text-xs uppercase tracking-[0.12em] text-ash mr-2">Available on</span>
             <a
               href="https://apps.apple.com/us/app/testnav/id818779127"
               target="_blank"
               rel="noreferrer"
-              class="button-ghost text-[1.35rem] py-[0.9rem] px-[1.3rem]"
+              class="button-ghost text-[1.35rem] py-[0.8rem] px-[1.2rem]"
             >
               <svg
                 class="w-[1.6rem] h-[1.6rem]"
@@ -49,7 +87,7 @@
               href="https://apps.microsoft.com/detail/9nd5fc7rppx1?hl=en-US&gl=US"
               target="_blank"
               rel="noreferrer"
-              class="button-ghost text-[1.35rem] py-[0.9rem] px-[1.3rem]"
+              class="button-ghost text-[1.35rem] py-[0.8rem] px-[1.2rem]"
             >
               <svg
                 class="w-[1.4rem] h-[1.4rem]"
@@ -62,88 +100,77 @@
               Microsoft Store
             </a>
           </div>
-          <p class="font-mono text-2xs text-ash">
-            Windows · macOS · Linux · iOS · ChromeOS
+        </div>
+
+        <!-- Results -->
+        <div class="featured-stats">
+          <dl class="stats">
+            <div
+              v-for="stat in stats"
+              :key="stat.label"
+              class="stat"
+            >
+              <dt class="stat-label">
+                {{ stat.label }}
+              </dt>
+              <dd class="stat-value">
+                {{ stat.value }}
+              </dd>
+            </div>
+          </dl>
+          <p class="font-mono text-2xs text-ash mt-4">
+            Percentages are my own estimates.
           </p>
         </div>
-      </div>
+      </article>
 
-      <!-- Project cards — bento layout: 2-wide, 1-wide / 1-wide, 2-wide -->
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <article
-          v-for="(project, index) in projects"
-          :key="project.name"
-          class="card spotlight p-10 flex flex-col max-xs:p-7"
-          :class="{ 'lg:col-span-2': index === 0 || index === 3 }"
-          data-aos="fade-up"
-          :data-aos-delay="(index % 2) * 80"
-          @mousemove="trackPointer"
-        >
-          <div class="flex items-start justify-between gap-6 mb-5">
-            <h3 class="text-2xl font-semibold text-snow max-xs:text-xl">
-              {{ project.name }}
-            </h3>
-            <span class="font-mono text-sm text-smoke">{{ String(index + 1).padStart(2, '0') }}</span>
-          </div>
-
-          <p class="text-base text-mist leading-[1.75] mb-6">
-            {{ project.description }}
-          </p>
-
-          <ul class="mb-8 flex flex-col gap-3">
-            <li
-              v-for="achievement in project.achievements"
-              :key="achievement"
-              class="flex gap-3 text-[1.4rem] leading-[1.6] text-mist"
-            >
-              <svg
-                viewBox="0 0 16 16"
-                class="w-[1.4rem] h-[1.4rem] mt-[0.35rem] flex-shrink-0 text-moss"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              ><path d="m3 8.5 3 3 7-7" /></svg>
-              {{ achievement }}
-            </li>
-          </ul>
-
-          <ul class="mt-auto flex flex-wrap gap-2">
-            <li
-              v-for="tag in project.tags"
-              :key="tag"
-              class="chip"
-            >
-              {{ tag }}
-            </li>
-          </ul>
-        </article>
-      </div>
-
+      <!-- Supporting work around the main project -->
       <p
-        class="text-base text-ash mt-12"
+        class="eyebrow-mini mt-16 mb-6"
         data-aos="fade-up"
       >
-        Personal projects and experiments live on
-        <a
-          href="https://github.com/jryther"
-          target="_blank"
-          rel="noreferrer"
-          class="text-amber underline decoration-amber/40 underline-offset-4 hover:decoration-amber"
-        >GitHub</a>.
+        Around the platform
       </p>
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <article
+          v-for="(item, index) in supporting"
+          :key="item.name"
+          class="card spotlight p-8 flex flex-col"
+          data-aos="fade-up"
+          :data-aos-delay="index * 60"
+          @mousemove="trackPointer"
+        >
+          <h3 class="text-xl font-semibold text-snow">
+            {{ item.name }}
+          </h3>
+          <p class="text-[1.4rem] text-mist leading-[1.65] mt-3 mb-6">
+            {{ item.description }}
+          </p>
+          <p class="result mt-auto">
+            <span class="result-value">{{ item.result }}</span>
+            <span class="result-label">{{ item.resultLabel }}</span>
+          </p>
+        </article>
+      </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-interface Project {
+// Work at Pearson, in order of emphasis: the TestNav client
+// first (testing, then accessibility), supporting systems second. Describes what each system
+// does, not what it's built on, so the section doesn't map out the employer's architecture.
+
+interface Stat {
+  value: string
+  label: string
+}
+
+interface Supporting {
   name: string
   description: string
-  achievements: string[]
-  tags: string[]
+  result: string
+  resultLabel: string
 }
 
 // Feed the cursor position to the .spotlight glow
@@ -154,44 +181,134 @@ function trackPointer(e: MouseEvent) {
   el.style.setProperty('--my', `${e.clientY - rect.top}px`)
 }
 
-const projects: Project[] = [
+// Scale comes first: it's the context that gives every other number its weight
+const stats: Stat[] = [
+  { value: 'Millions',    label: 'Of secure, high-stakes exams delivered each year' },
+  { value: '~50%',        label: 'Faster development using AI assistance and custom skills' },
+  { value: '~75%',        label: 'Fewer bugs after adding end-to-end testing' },
+  { value: 'WCAG AA',     label: 'WCAG 2.1 AA accessibility compliance' },
+]
+
+const featured = [
+  "Converted most of the client's views into reusable TypeScript components in React and Vue",
+  'Introduced Playwright end-to-end testing to the codebase on my own initiative, then built an AI agent skill that lets coding agents run the app and check their changes',
+  'Brought the client to WCAG 2.1 AA compliance with accessibility consultants, and built a reusable, cross-platform screen reader component that cut development time on accessibility features from 3+ days to 1',
+  'Modernized a complex legacy feature to remove a deprecated core dependency, making it more feature-rich while keeping it backward compatible',
+]
+
+const supporting: Supporting[] = [
   {
-    name: 'Test Delivery Client Application',
-    description: 'Student-facing web application delivering secure assessments to thousands of students. Contributed to modernizing the codebase, improving performance, and ensuring a reliable, accessible user experience.',
-    achievements: [
-      'Modernized a legacy jQuery codebase with React and TypeScript, improving performance and long-term maintainability',
-      'Achieved full WCAG 2.1 AA accessibility compliance in collaboration with accessibility consultants',
-      'Upheld security best practices to deliver a stable and trusted experience across diverse student populations',
-    ],
-    tags: ['React', 'TypeScript', 'JavaScript', 'jQuery', 'WCAG 2.1 AA'],
+    name: 'Native apps',
+    description: 'The apps that host TestNav on desktop, iOS, and ChromeOS. I fix complex cross-platform defects.',
+    result: '~50–75%',
+    resultLabel: 'faster iOS development after I restored local debugging for my team',
   },
   {
-    name: 'Interactive Simulation Test Content',
-    description: 'A reusable framework for interactive simulation experiences embedded within educational assessments, focused on portability, quality, and accessibility.',
-    achievements: [
-      'Architected a portable framework that significantly reduced production time for new interactive content',
-      'Delivered accessible experiences used by thousands of students with full QA verification',
-    ],
-    tags: ['JavaScript', 'HTML', 'CSS', 'Accessibility'],
+    name: 'AI-powered services',
+    description: 'I built an AI-powered feature end to end, plus support tools for the team.',
+    result: 'Parallel agents',
+    resultLabel: 'One support tool allows the team to run multiple AI coding agents on the same project simultaneously',
   },
   {
-    name: 'Content Repository & Delivery API',
-    description: 'A backend service delivering critical content across multiple consuming platforms, with a focus on stability, test coverage, and zero-regression library updates.',
-    achievements: [
-      'Managed critical library updates to improve reliability and performance',
-      'Executed comprehensive API test suites ensuring zero regressions across dependent platforms',
-    ],
-    tags: ['API Testing', 'Library Updates'],
+    name: 'Content repositories',
+    description: 'The backend services that supply test content to the client and other platforms. Library updates, improvements, and API testing.',
+    result: 'Zero',
+    resultLabel: 'regressions across consuming platforms',
   },
   {
-    name: 'Cross-Platform Desktop Application',
-    description: 'Native desktop client software deployed across multiple operating systems. Responsibilities included defect investigation, release coordination, and platform-specific deployment support.',
-    achievements: [
-      'Investigated and remediated complex defects across Windows, macOS, Linux, iOS, and ChromeOS',
-      'Managed parts of the release process, coordinating with third-party support and platform-specific portals',
-      'Deployed updates across platforms, ensuring quality and consistency at each release',
-    ],
-    tags: ['iOS', 'Desktop', 'Cross-platform'],
+    name: 'Interactive content',
+    description: 'Designed reusable test content templates to speed up development and QA.',
+    result: '50–75%',
+    resultLabel: 'less development time per item',
   },
 ]
 </script>
+
+<style scoped>
+.role-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  color: var(--color-ash);
+}
+
+.eyebrow-mini {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ash);
+}
+
+/* Featured card: story on the left, results on the right (stacked on small screens) */
+.featured {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 3.2rem;
+  padding: 4rem;
+}
+@media (min-width: 1024px) {
+  .featured {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 5.6rem;
+    padding: 4.8rem;
+  }
+}
+@media (max-width: 480px) {
+  .featured { padding: 2.8rem 2.2rem; }
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin: 0;
+}
+.stat {
+  display: flex;
+  flex-direction: column-reverse;   /* value reads first visually, label first for screen readers */
+  justify-content: flex-end;
+  gap: 0.8rem;
+  padding: 2rem 1.8rem;
+  border: 1px solid var(--color-line);
+  border-radius: 1.2rem;
+  background: color-mix(in srgb, var(--color-snow) 3%, transparent);
+}
+.stat-value {
+  margin: 0;
+  font-size: clamp(2.2rem, 2.4vw, 3rem);
+  font-weight: 650;
+  line-height: 1.05;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
+  color: var(--color-amber);
+}
+.stat-label {
+  font-size: 1.3rem;
+  line-height: 1.45;
+  color: var(--color-mist);
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--color-line);
+}
+.result-value {
+  font-size: 2.2rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--color-amber);
+}
+.result-label {
+  font-size: 1.3rem;
+  line-height: 1.45;
+  min-height: calc(1.3rem * 1.45 * 2);   /* two lines, so results line up across cards */
+  color: var(--color-ash);
+}
+</style>
