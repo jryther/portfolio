@@ -5,26 +5,26 @@
   >
     <div class="form-row">
       <label class="form-field">
-        <span class="field-label">Name</span>
+        <span class="field-label">{{ t('form.name') }}</span>
         <input
           v-model="formData.name"
           type="text"
           name="name"
           autocomplete="name"
-          placeholder="Jane Doe"
+          :placeholder="t('form.namePlaceholder')"
           required
           class="field"
         >
       </label>
 
       <label class="form-field">
-        <span class="field-label">Email</span>
+        <span class="field-label">{{ t('form.email') }}</span>
         <input
           v-model="formData.email"
           type="email"
           name="email"
           autocomplete="email"
-          placeholder="jane@company.com"
+          :placeholder="t('form.emailPlaceholder')"
           required
           class="field"
         >
@@ -32,11 +32,11 @@
     </div>
 
     <label class="form-field">
-      <span class="field-label">Message</span>
+      <span class="field-label">{{ t('form.message') }}</span>
       <textarea
         v-model="formData.message"
         name="message"
-        placeholder="What would you like to talk about?"
+        :placeholder="t('form.messagePlaceholder')"
         rows="5"
         required
         class="field message-field"
@@ -47,7 +47,7 @@
       type="submit"
       class="button submit-btn"
     >
-      Send Message
+      {{ t('form.submit') }}
     </button>
 
     <p
@@ -65,19 +65,22 @@
         stroke-linejoin="round"
         aria-hidden="true"
       ><path d="m3 8.5 3 3 7-7" /></svg>
-      Message sent successfully! I'll get back to you soon.
+      {{ t('form.success') }}
     </p>
   </form>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 interface FormData {
   name: string
   email: string
   message: string
 }
+
+const { t } = useI18n()
 
 const formData  = ref<FormData>({ name: '', email: '', message: '' })
 const submitted = ref<boolean>(false)

@@ -7,8 +7,8 @@
         v-show="fabVisible && !isOpen"
         ref="fabEl"
         class="fab"
-        aria-label="Ask about Josh"
-        title="Ask about Josh"
+        :aria-label="t('chat.open')"
+        :title="t('chat.open')"
         @click="toggleModal"
       >
         <SparkleIcon class="fab-icon" />
@@ -24,8 +24,8 @@
       >
         <button
           class="backtop"
-          aria-label="Back to top"
-          title="Back to top"
+          :aria-label="t('chat.backToTop')"
+          :title="t('chat.backToTop')"
           @click="backToTop"
         >
           <UiIcon name="arrow-up" />
@@ -40,7 +40,7 @@
         ref="panelEl"
         role="dialog"
         tabindex="-1"
-        aria-label="Ask about Josh"
+        :aria-label="t('chat.open')"
         class="chat-popup"
         @keydown.esc.stop="toggleModal"
       >
@@ -62,12 +62,15 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import ChatPanel from './ChatPanel.vue'
 import ChatHeader from './ChatHeader.vue'
 import UiIcon from '../icons/UiIcon.vue'
 import { openChat, chatSectionInView } from '../../composables/useChat'
 import { prefetchWhenIdle } from '../../composables/useGame'
+
+const { t } = useI18n()
 
 // The game's code downloads in the background once the chat opens, so the game icon is instant
 const loadGame = () => import('./MiniGame.vue')

@@ -6,22 +6,22 @@
     <div class="wrap contact-grid">
       <div data-aos="fade-up">
         <p class="eyebrow">
-          06 — Contact
+          {{ t('contact.eyebrow') }}
         </p>
         <h2 class="section-title contact-title">
-          Let's connect
+          {{ t('contact.title') }}
         </h2>
         <p class="lede">
-          I'm always interested in discussing new opportunities, technical challenges, and collaborations.
+          {{ t('contact.intro1') }}
         </p>
         <p class="lede">
-          Whether you're looking for a full-stack developer, need technical insights, or just want to chat about software engineering, feel free to reach out!
+          {{ t('contact.intro2') }}
         </p>
 
         <ul class="contact-list">
           <li
             v-for="item in contactLinks"
-            :key="item.label"
+            :key="item.key"
           >
             <component
               :is="item.href ? 'a' : 'div'"
@@ -43,8 +43,8 @@
                 ><path :d="item.icon" /></svg>
               </span>
               <span class="contact-text">
-                <span class="label is-small">{{ item.label }}</span>
-                <span class="contact-value">{{ item.value }}</span>
+                <span class="label is-small">{{ t(`contact.${item.key}`) }}</span>
+                <span class="contact-value">{{ item.value ?? t(`contact.${item.key}Value`) }}</span>
               </span>
             </component>
           </li>
@@ -57,10 +57,10 @@
         data-aos-delay="100"
       >
         <h3 class="form-title">
-          Send a message
+          {{ t('contact.formTitle') }}
         </h3>
         <p class="form-intro">
-          I usually reply within a day or two.
+          {{ t('contact.replyTime') }}
         </p>
         <ContactForm />
       </div>
@@ -69,27 +69,30 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import ContactForm from './ContactForm.vue'
 
-// Lucide-style 24px line icons
+const { t } = useI18n()
+
+// Lucide-style 24px line icons; labels are contact.<key> in the locale files
 const contactLinks = [
   {
-    label: 'Email',
+    key: 'email',
     value: 'jryther91@gmail.com',
     href: 'mailto:jryther91@gmail.com',
     external: false,
     icon: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm17 2-9 6-9-6',
   },
   {
-    label: 'LinkedIn',
+    key: 'linkedin',
     value: 'in/joshua-ryther',
     href: 'https://linkedin.com/in/joshua-ryther-121400109',
     external: true,
     icon: 'M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6ZM2 9h4v12H2zM4 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z',
   },
   {
-    label: 'Location',
-    value: 'Salem, Oregon',
+    key: 'location',
+    value: undefined,  // contact.locationValue: written per language
     href: undefined,
     external: false,
     icon: 'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0ZM12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z',

@@ -3,8 +3,8 @@
     type="button"
     class="theme-toggle"
     :class="{ light: isLight }"
-    :aria-label="isLight ? 'Switch to dark mode' : 'Switch to light mode'"
-    :title="isLight ? 'Switch to dark mode' : 'Switch to light mode'"
+    :aria-label="isLight ? t('toggles.toDark') : t('toggles.toLight')"
+    :title="isLight ? t('toggles.toDark') : t('toggles.toLight')"
     @click="toggleTheme"
   >
     <!-- Sun -->
@@ -42,7 +42,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { theme, toggleTheme } from '../composables/useTheme'
+
+const { t } = useI18n()
 
 const isLight = computed(() => theme.value === 'light')
 </script>

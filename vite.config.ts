@@ -16,6 +16,13 @@ export default defineConfig(({ mode }) => ({
     mode === 'lan' && basicSsl(),
   ],
   assetsInclude: ['**/*.docx'],
+  // vue-i18n feature flags: Composition API only (drops the legacy API from the bundle), no
+  // global <i18n-t> components, no devtools in production
+  define: {
+    __VUE_I18N_LEGACY_API__: 'false',
+    __VUE_I18N_FULL_INSTALL__: 'false',
+    __INTLIFY_PROD_DEVTOOLS__: 'false',
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

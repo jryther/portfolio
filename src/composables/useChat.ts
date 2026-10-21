@@ -1,9 +1,11 @@
 import { ref, computed, watch } from 'vue'
-import { TOPICS, WELCOME, UNKNOWN_ID } from '../data/chatTree'
+import { WELCOME, UNKNOWN_ID, topicLabel, topicAnswer, welcomeText } from '../data/chatTree'
 import { matchKeywords, resolveReply, isConversational, type Reply } from '../services/chatRouter'
+import { i18n, locale } from '../i18n'
 
 // One conversation shared by the floating popup and the full-page chat section, so a chat
-// started in one carries on in the other.
+// started in one carries on in the other. Replies come in the current UI language, and
+// switching language re-renders every pre-written message (not what the visitor typed).
 
 // wllama (~0.5 MB of JS plus its wasm) only loads once the chat needs the model
 const modelService = () => import('../services/wllama')
@@ -13,7 +15,12 @@ export type ModelStatus = 'idle' | 'loading' | 'ready' | 'error'
 export interface ChatMessage {
   role: 'user' | 'assistant'
   text: string
+  /** Set when the text is pre-written (a topic answer, a chip's label, the welcome), so it can
+   * be re-rendered in another language */
+  topicId?: string
 }
+
+const WELCOME_MESSAGE_ID = 'welcome'
 
 export const messages        = ref<ChatMessage[]>([])
 export const followUps       = ref<string[]>([])
@@ -31,8 +38,8 @@ export const modelReady   = computed(() => modelStatus.value === 'ready')
 export const modelLoading = computed(() => modelStatus.value === 'loading')
 export const busy         = computed(() => thinking.value || typing.value)
 export const loadingText  = computed(() => loadingProgress.value < 100
-  ? 'Downloading AI model… this only happens once.'
-  : 'Starting the AI model…')
+  ? i18n.global.t('chat.downloading')
+  : i18n.global.t('chat.starting'))
 
 // Only suggest the game when loading is actually slow. A first-time download gets the hint
 // soon; a load from the browser cache usually finishes in a couple of seconds, so it only
@@ -52,6 +59,13 @@ watch(modelStatus, (status) => {
   else slowLoad.value = false
 })
 
+/** Label for the chat header's game button, shared by the popup and the section */
+export function gameToggleLabel(showGame: boolean): string {
+  const { t } = i18n.global
+  if (showGame) return t('chat.backToChat')
+  return slowLoad.value ? t('chat.playWhileLoading') : t('chat.playGame')
+}
+
 const prefersReducedMotion = typeof window !== 'undefined'
   && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
@@ -60,10 +74,24 @@ let previousTopicId: string | null = null
 const visited = new Set<string>()
 let cacheChecked = false
 
+/** A pre-written message's text in the current language */
+function localizedText(msg: ChatMessage & { topicId: string }): string {
+  if (msg.topicId === WELCOME_MESSAGE_ID) return welcomeText(locale.value)
+  return msg.role === 'user' ? topicLabel(msg.topicId, locale.value) : topicAnswer(msg.topicId, locale.value)
+}
+
 function showWelcome() {
-  messages.value = [{ role: 'assistant', text: WELCOME.text }]
+  messages.value = [{ role: 'assistant', text: welcomeText(locale.value), topicId: WELCOME_MESSAGE_ID }]
   followUps.value = [...WELCOME.followUps]
 }
+
+// The message still typing out is skipped; typeOut settles it in the new language when done
+watch(locale, () => {
+  messages.value.forEach((msg, i) => {
+    const typingThis = typing.value && i === messages.value.length - 1
+    if (msg.topicId && !typingThis) msg.text = localizedText(msg as ChatMessage & { topicId: string })
+  })
+})
 
 /** Call when a chat view opens: greets once, and loads the model if it's already cached */
 export function openChat() {
@@ -118,13 +146,14 @@ const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
 
 async function ask(question: string, topicId?: string) {
   if (busy.value) return
-  messages.value.push({ role: 'user', text: question })
+  // A chip's question is its label, so it can be re-rendered like an answer
+  messages.value.push({ role: 'user', text: question, topicId })
   followUps.value = []
   thinking.value = true
 
   const started = performance.now()
   const routed = topicId ?? await route(question)
-  const reply = resolveReply(routed, previousTopicId, visited)
+  const reply = resolveReply(routed, previousTopicId, visited, locale.value)
   if (!isConversational(reply.topicId)) {
     previousTopicId = reply.topicId
     visited.add(reply.topicId)
@@ -141,14 +170,15 @@ async function ask(question: string, topicId?: string) {
 
 // Reveal the answer a few words at a time, like it's being typed
 async function typeOut(reply: Reply) {
-  messages.value.push({ role: 'assistant', text: '' })
-  const live = messages.value[messages.value.length - 1]
+  messages.value.push({ role: 'assistant', text: '', topicId: reply.topicId })
+  const live = messages.value[messages.value.length - 1] as ChatMessage & { topicId: string }
 
   if (prefersReducedMotion) {
-    live.text = reply.text
+    live.text = localizedText(live)
   } else {
     typing.value = true
-    const words = reply.text.split(/(?<=\s)/)
+    // Read the text now, not when the question was routed, in case the language changed meanwhile
+    const words = localizedText(live).split(/(?<=\s)/)
     const step = Math.max(1, Math.ceil(words.length / 40))  // ~40 frames, whatever the length
     for (let i = 0; i < words.length; i += step) {
       live.text += words.slice(i, i + step).join('')
@@ -156,6 +186,8 @@ async function typeOut(reply: Reply) {
     }
     typing.value = false
   }
+  // In case the language changed while it was typing (the watcher skips the message being typed)
+  live.text = localizedText(live)
 
   const unseen = reply.followUps.filter(id => !visited.has(id))
   followUps.value = unseen.length ? unseen : reply.followUps
@@ -169,7 +201,7 @@ export function sendMessage() {
 }
 
 export function askTopic(id: string) {
-  ask(TOPICS[id].label, id)
+  ask(topicLabel(id, locale.value), id)
 }
 
 export function clearChat() {

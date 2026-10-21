@@ -44,7 +44,7 @@
           class="topic-chip"
           @click="askTopic(id)"
         >
-          {{ TOPICS[id].label }}
+          {{ topicLabel(id, locale) }}
         </button>
       </div>
 
@@ -52,7 +52,7 @@
       <div
         v-if="thinking"
         class="message thinking"
-        aria-label="Thinking"
+        :aria-label="t('chat.thinking')"
       >
         <div class="avatar">
           <SparkleIcon class="avatar-icon" />
@@ -75,14 +75,14 @@
         class="model-offer"
       >
         <p class="status-text offer-text">
-          Want me to understand questions in your own words? Load a small AI model that runs in your browser.
+          {{ t('chat.loadPrompt') }}
         </p>
         <button
           class="button-ghost load-btn"
-          :title="`${MODEL.name}, ${MODEL.sizeLabel} one-time download`"
+          :title="t('chat.loadTitle', { name: MODEL.name, size: MODEL.sizeLabel })"
           @click="startModel"
         >
-          Load AI · {{ MODEL.sizeLabel }}
+          {{ t('chat.loadButton', { size: MODEL.sizeLabel }) }}
         </button>
       </div>
       <div
@@ -109,7 +109,7 @@
               name="game"
               class="play-hint-icon"
             />
-            Play a game while you wait
+            {{ t('chat.playWhileWait') }}
           </button>
         </Transition>
       </div>
@@ -117,12 +117,12 @@
         v-else
         class="status-text model-error"
       >
-        The AI model couldn't load on this device, but quick answers still work.
+        {{ t('chat.loadError') }}
         <button
           class="retry-btn"
           @click="startModel"
         >
-          Try again
+          {{ t('chat.tryAgain') }}
         </button>
       </p>
     </div>
@@ -132,8 +132,8 @@
       <!-- :value + @input rather than v-model, so phone keyboards update it mid-word -->
       <input
         :value="userInput"
-        :placeholder="modelLoading ? 'Loading the AI model… pick a topic above meanwhile' : 'Ask about Josh...'"
-        aria-label="Ask a question about Josh"
+        :placeholder="modelLoading ? t('chat.placeholderLoading') : t('chat.placeholder')"
+        :aria-label="t('chat.inputLabel')"
         :disabled="busy || modelLoading"
         maxlength="400"
         class="chat-input"
@@ -153,14 +153,14 @@
               name="refresh"
               class="clear-icon"
             />
-            Clear
+            {{ t('chat.clear') }}
           </button>
           <button
             :disabled="busy || modelLoading"
             class="button send-btn"
             @click="sendMessage"
           >
-            Send
+            {{ t('chat.send') }}
           </button>
         </div>
       </div>
@@ -170,9 +170,11 @@
 
 <script setup lang="ts">
 import { ref, nextTick, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import UiIcon from '../icons/UiIcon.vue'
-import { TOPICS } from '../../data/chatTree'
+import { topicLabel } from '../../data/chatTree'
+import { locale } from '../../i18n'
 import { MODEL } from '../../services/chatModel'
 import {
   messages, followUps, userInput, thinking, busy, modelStatus, modelLoading, loadingProgress, loadingText, slowLoad,
@@ -183,6 +185,8 @@ import {
 // live: announce new messages to screen readers (off for a copy of the chat that's off screen)
 withDefaults(defineProps<{ large?: boolean, live?: boolean }>(), { live: true })
 const emit = defineEmits<{ 'play-game': [] }>()
+
+const { t } = useI18n()
 
 const messagesEl = ref<HTMLElement | null>(null)
 

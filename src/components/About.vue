@@ -9,19 +9,19 @@
         class="eyebrow"
         data-aos="fade-up"
       >
-        01 — About
+        {{ t('about.eyebrow') }}
       </p>
 
       <div class="about-grid">
         <div data-aos="fade-up">
           <h2 class="section-title about-title">
-            A little about me
+            {{ t('about.title') }}
           </h2>
           <p class="lede">
-            I'm a full-stack software engineer who cares about getting the details right. I work mainly in JavaScript, TypeScript, HTML, and CSS, with Vue and React on the frontend and Java and Node.js on the backend. Before software, I spent nine years as a certified pharmacy technician, at a startup and at larger healthcare providers, where accuracy mattered on every task. That habit carries straight into how I build and test code.
+            {{ t('about.bio1') }}
           </p>
           <p class="lede">
-            At Pearson, I work on TestNav, the testing app behind millions of secure, high-stakes school exams each year. I introduced end-to-end testing to its codebase, brought it to WCAG 2.1 AA compliance, and work across the apps and services that support it. I lean on AI coding agents and automated tests to move quickly without letting quality slip, and I mentor teammates through code reviews and secure design.
+            {{ t('about.bio2') }}
           </p>
         </div>
 
@@ -31,7 +31,7 @@
           data-aos-delay="100"
         >
           <p class="label card-label">
-            At a glance
+            {{ t('about.atAGlance') }}
           </p>
           <dl class="facts">
             <div
@@ -57,7 +57,7 @@
                 v-bind="downloadIcon"
                 aria-hidden="true"
               ><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M2.5 13.5h11" /></svg>
-              Resume
+              {{ t('about.resume') }}
             </a>
             <a
               :href="coverLetterUrl"
@@ -68,7 +68,7 @@
                 v-bind="downloadIcon"
                 aria-hidden="true"
               ><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M2.5 13.5h11" /></svg>
-              Cover letter
+              {{ t('about.coverLetter') }}
             </a>
           </div>
         </div>
@@ -80,19 +80,19 @@
           class="eyebrow"
           data-aos="fade-up"
         >
-          02 — Experience
+          {{ t('about.experienceEyebrow') }}
         </p>
         <h2
           class="section-title subsection-title"
           data-aos="fade-up"
         >
-          Experience &amp; education
+          {{ t('about.experienceTitle') }}
         </h2>
 
         <ol class="timeline">
           <li
             v-for="item in timeline"
-            :key="item.title + item.org"
+            :key="item.key"
             class="timeline-item"
             data-aos="fade-up"
           >
@@ -102,11 +102,11 @@
             <div class="timeline-body">
               <span
                 class="timeline-dot"
-                :class="{ work: item.type === 'Work' }"
+                :class="{ work: item.type === 'work' }"
                 aria-hidden="true"
               />
               <p class="label is-small timeline-type">
-                {{ item.type }}
+                {{ t(`about.type.${item.type}`) }}
               </p>
               <h3 class="timeline-title">
                 {{ item.title }}
@@ -116,7 +116,7 @@
                 <span v-if="item.meta"> · {{ item.meta }}</span>
               </p>
               <ul
-                v-if="item.bullets"
+                v-if="item.bullets.length"
                 class="timeline-bullets"
               >
                 <li
@@ -138,25 +138,25 @@
           class="eyebrow"
           data-aos="fade-up"
         >
-          03 — Skills
+          {{ t('about.skillsEyebrow') }}
         </p>
         <h2
           class="section-title subsection-title"
           data-aos="fade-up"
         >
-          Tools I build with
+          {{ t('about.skillsTitle') }}
         </h2>
 
         <div class="skill-groups">
           <div
             v-for="(group, index) in skillGroups"
-            :key="group.name"
+            :key="group.key"
             class="card skill-group"
             data-aos="fade-up"
             :data-aos-delay="index * 80"
           >
             <p class="label card-label">
-              {{ group.name }}
+              {{ t(`about.skillGroups.${group.key}`) }}
             </p>
             <ul class="skill-list">
               <li
@@ -179,6 +179,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { messageList } from '../i18n'
 import reactSvg       from '../assets/techIcons/react.svg'
 import vueSvg         from '../assets/techIcons/vuejs.svg'
 import tsSvg          from '../assets/techIcons/typescript.svg'
@@ -200,29 +203,30 @@ interface Skill {
 }
 
 interface SkillGroup {
-  name: string
+  /** about.skillGroups.<key> in the locale files */
+  key: string
   skills: Skill[]
 }
 
-interface TimelineItem {
-  type: 'Work' | 'Education'
-  dates: string
-  title: string
+interface TimelineEntry {
+  /** about.timeline.<key> in the locale files holds its dates, title, meta and bullets */
+  key: string
+  type: 'work' | 'education'
   org: string
-  meta?: string
-  bullets?: string[]
 }
+
+const { t, te } = useI18n()
 
 // Whole years since starting at Pearson in September 2022, so this never goes stale
 const yearsInSoftware = Math.floor((Date.now() - Date.UTC(2022, 8, 1)) / (365.25 * 24 * 60 * 60 * 1000))
 
-const facts = [
-  { label: 'Based in',   value: 'Salem, Oregon' },
-  { label: 'Currently',  value: 'Software Engineer at Pearson' },
-  { label: 'Experience', value: `${yearsInSoftware}+ years in software engineering` },
-  { label: 'Focus',      value: 'Full-stack web, testing, accessibility' },
-  { label: 'Education',  value: 'B.S. Computer Science, SNHU' },
-]
+const facts = computed(() => [
+  { label: t('about.facts.basedIn'),    value: t('about.facts.basedInValue') },
+  { label: t('about.facts.currently'),  value: t('about.facts.currentlyValue') },
+  { label: t('about.facts.experience'), value: t('about.facts.experienceValue', { years: yearsInSoftware }) },
+  { label: t('about.facts.focus'),      value: t('about.facts.focusValue') },
+  { label: t('about.facts.education'),  value: t('about.facts.educationValue') },
+])
 
 const downloadIcon = {
   viewBox: '0 0 16 16',
@@ -234,51 +238,28 @@ const downloadIcon = {
   'stroke-linejoin': 'round',
 } as const
 
-const timeline: TimelineItem[] = [
-  {
-    type: 'Work',
-    dates: 'Sep 2022 — Present',
-    title: 'Software Engineer',
-    org: 'Pearson Education',
-    meta: 'Remote',
-    bullets: [
-      "Converted most of the client's views from legacy JavaScript into reusable TypeScript components in React and Vue",
-      'Introduced end-to-end testing to the TestNav client, contributing to about 75% fewer bugs, and sped up development by about 50% using AI assistance and custom skills, including an AI agent skill',
-      'Brought TestNav to WCAG 2.1 AA compliance with accessibility consultants, and built a reusable screen reader component that cut development time on accessibility features from 3+ days to 1',
-      'Built AI-powered services end to end, including a backend feature with TypeScript, ESLint, and unit tests, and a support tool that allows the team to run multiple AI coding agents on the same project simultaneously',
-      'Architected reusable content templates that cut development time per test item by 50–75%',
-      'Raised code quality and security through code reviews and by teaching teammates secure design',
-    ],
-  },
-  {
-    type: 'Education',
-    dates: '2020 — 2022',
-    title: 'B.S. Computer Science',
-    org: 'Southern New Hampshire University',
-  },
-  {
-    type: 'Work',
-    dates: 'Jun 2013 — Sep 2022',
-    title: 'Certified Pharmacy Technician',
-    org: 'Ro, Providence Health Plan, Walgreens',
-    meta: 'Beaverton, OR',
-    bullets: [
-      'Handled accuracy-critical work in team-based environments, including precise prescription data entry and rule-based prior authorizations',
-      'Managed inventory and supply chains to keep operations running under high-stress, time-sensitive conditions',
-    ],
-  },
-  {
-    type: 'Education',
-    dates: '2009 — 2014',
-    title: 'B.S. Economics',
-    org: 'University of Oregon',
-    meta: 'Minor: Business Administration',
-  },
+const entries: TimelineEntry[] = [
+  { key: 'pearson',  type: 'work',      org: 'Pearson Education' },
+  { key: 'snhu',     type: 'education', org: 'Southern New Hampshire University' },
+  { key: 'pharmacy', type: 'work',      org: 'Ro, Providence Health Plan, Walgreens' },
+  { key: 'uo',       type: 'education', org: 'University of Oregon' },
 ]
+
+// Each entry with its text in the current language; meta and bullets are optional
+const timeline = computed(() => entries.map((entry) => {
+  const base = `about.timeline.${entry.key}`
+  return {
+    ...entry,
+    dates: t(`${base}.dates`),
+    title: t(`${base}.title`),
+    meta: te(`${base}.meta`) ? t(`${base}.meta`) : undefined,
+    bullets: messageList(`${base}.bullets`),
+  }
+}))
 
 const skillGroups: SkillGroup[] = [
   {
-    name: 'Frontend',
+    key: 'frontend',
     skills: [
       { name: 'Vue.js',       svg: vueSvg },
       { name: 'React',        svg: reactSvg },
@@ -288,7 +269,7 @@ const skillGroups: SkillGroup[] = [
     ],
   },
   {
-    name: 'Backend & Data',
+    key: 'backend',
     skills: [
       { name: 'Node.js', svg: nodeSvg },
       { name: 'Java',    svg: javaSvg },
@@ -297,7 +278,7 @@ const skillGroups: SkillGroup[] = [
     ],
   },
   {
-    name: 'Testing & DevOps',
+    key: 'devops',
     skills: [
       { name: 'Jest',    svg: jestSvg },
       { name: 'Jenkins', svg: jenkinsSvg },

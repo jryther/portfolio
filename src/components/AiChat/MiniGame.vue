@@ -5,13 +5,13 @@
       <div class="game-stats">
         <span
           class="best"
-          title="Best score"
+          :title="t('game.bestTitle')"
         >
           <UiIcon
             name="trophy"
             class="trophy-icon"
           />
-          Best <span class="best-value">{{ highScore }}</span>
+          {{ t('game.best') }} <span class="best-value">{{ highScore }}</span>
         </span>
       </div>
 
@@ -21,7 +21,7 @@
           class="ai-progress"
           :title="loadingText"
         >
-          <span class="ai-progress-label">AI {{ loadingProgress }}%</span>
+          <span class="ai-progress-label">{{ t('game.aiProgress', { progress: loadingProgress }) }}</span>
           <div class="progress-track">
             <div
               class="progress-bar"
@@ -32,13 +32,13 @@
         <span
           v-else-if="modelReady && wasLoading"
           class="ai-ready"
-        >AI ready</span>
+        >{{ t('game.aiReady') }}</span>
       </div>
 
       <button
         class="icon-btn"
-        :aria-label="muted ? 'Turn sound on' : 'Turn sound off'"
-        :title="muted ? 'Turn sound on' : 'Turn sound off'"
+        :aria-label="muted ? t('game.soundOn') : t('game.soundOff')"
+        :title="muted ? t('game.soundOn') : t('game.soundOff')"
         @click="toggleMute"
       >
         <UiIcon :name="muted ? 'sound-off' : 'sound-on'" />
@@ -50,7 +50,7 @@
       class="sr-only"
       aria-live="polite"
     >
-      {{ phase === 'dead' ? `Game over. Score ${score}. ${newBest ? 'New best!' : `Best ${highScore}.`}` : '' }}
+      {{ phase === 'dead' ? `${t('game.overAnnouncement', { score })} ${newBest ? t('game.newBest') : t('game.bestScore', { score: highScore })}` : '' }}
     </p>
 
     <!-- Play area -->
@@ -59,7 +59,7 @@
       class="stage"
       tabindex="0"
       role="application"
-      aria-label="Flappy bird game. Press Space or tap to fly."
+      :aria-label="t('game.stage')"
       @pointerdown="onPress"
       @keydown="onKeyDown"
     >
@@ -79,7 +79,7 @@
               name="play"
               class="hint-icon"
             />
-            Tap, click, or press Space to fly
+            {{ t('game.hint') }}
           </span>
         </div>
       </Transition>
@@ -93,7 +93,7 @@
         >
           <div class="over-card">
             <p class="eyebrow-mini">
-              Game over
+              {{ t('game.over') }}
             </p>
             <p class="final-score">
               {{ score }}
@@ -102,7 +102,7 @@
               class="best-line"
               :class="{ 'is-new': newBest }"
             >
-              {{ newBest ? 'New best!' : `Best ${highScore}` }}
+              {{ newBest ? t('game.newBest') : t('game.bestScore', { score: highScore }) }}
             </p>
             <div class="over-actions">
               <button
@@ -114,7 +114,7 @@
                   name="refresh"
                   class="again-icon"
                 />
-                Play again
+                {{ t('game.playAgain') }}
               </button>
             </div>
           </div>
@@ -126,6 +126,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import UiIcon from '../icons/UiIcon.vue'
 import { FlappySim, type Phase } from '../../game/flappySim'
 import { FlappyRenderer } from '../../game/flappyRender'
@@ -133,6 +134,8 @@ import { GameAudio } from '../../game/flappyAudio'
 import { theme } from '../../composables/useTheme'
 import { gamePlaying } from '../../composables/useGame'
 import { modelStatus, modelReady, loadingProgress, loadingText } from '../../composables/useChat'
+
+const { t } = useI18n()
 
 const HIGH_SCORE_KEY = 'flappyHighScore'
 

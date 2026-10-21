@@ -7,19 +7,34 @@
 //
 // Answers are written from a private source document (never copied into the repo) and reviewed
 // before publishing, since this file ships publicly in the bundle.
+//
+// The English text is here; the Spanish is in chatTree.es.ts and merged in at the bottom.
+// Keywords and examples from both languages route every question, whatever the UI language,
+// and the reply comes back in the visitor's language.
+
+import type { Locale } from '../i18n/locales'
+import { esTopics, MORE_KEYWORDS_ES, AI_EXAMPLES_ES, WELCOME_ES } from './chatTree.es'
+
+export interface TopicText {
+  label: string
+  answer: string
+}
 
 export interface ChatTopic {
   id: string
   /** Chip text, phrased the way a visitor would ask */
   label: string
-  /** Lowercase words or phrases that route straight here */
+  /** Lowercase words or phrases that route straight here (English and Spanish) */
   keywords: string[]
-  /** Example questions the embedding model compares against (filled from EXAMPLES below) */
+  /** Example questions the embedding model compares against (filled from EXAMPLES below,
+   * plus the Spanish label and examples) */
   examples?: string[]
   /** Hub topics list other topics; their keyword matches count for less */
   hub?: boolean
   answer: string
   followUps: string[]
+  /** Label and answer in the other languages (filled from chatTree.es.ts) */
+  translations?: Partial<Record<Locale, TopicText>>
 }
 
 // Whole years since starting at Pearson in September 2022, so answers never go stale
@@ -373,7 +388,7 @@ topics.push(
   {
     id: GREETING_ID,
     label: 'Hello',
-    keywords: ['hi', 'hello', 'hey', 'howdy', 'hiya', 'good morning', 'good afternoon', 'good evening', 'yo', 'sup'],
+    keywords: ['hi', 'hello', 'hey', 'howdy', 'hiya', 'good morning', 'good afternoon', 'good evening', 'sup'],
     answer: "Hi there! I can tell you about Josh's experience, projects, skills, and how to reach him. What would you like to know?",
     followUps: ['overview', 'projects', 'skills', 'contact'],
   },
@@ -401,7 +416,7 @@ topics.push(
 )
 
 /** "Tell me more" isn't a topic of its own: it continues from whatever was discussed last */
-export const MORE_KEYWORDS = ['tell me more', 'more', 'go on', 'continue', 'elaborate', 'more detail', 'more details', 'what else', 'anything else', 'keep going']
+export const MORE_KEYWORDS = ['tell me more', 'more', 'go on', 'continue', 'elaborate', 'more detail', 'more details', 'what else', 'anything else', 'keep going', ...MORE_KEYWORDS_ES]
 
 // ── Example questions ────────────────────────────────────────────────────────
 // What the embedding model compares a visitor's question against. A few varied phrasings
@@ -460,10 +475,31 @@ const EXAMPLES: Record<string, string[]> = {
   unknown: ["What is Josh's favorite food?", 'Does Josh have kids?', "What is Josh's birthday?", 'What car does Josh drive?', 'How old is Josh?', 'What does Josh look like?'],
 }
 
-for (const topic of topics) topic.examples = EXAMPLES[topic.id] ?? []
+// Spanish: its label and examples join the embedding docs, its keywords join the English ones
+export const ES_TOPICS = esTopics(YEARS_AT_PEARSON)
+
+for (const topic of topics) {
+  const es = ES_TOPICS[topic.id]
+  topic.examples = [...(EXAMPLES[topic.id] ?? []), ...(es ? [es.label, ...es.examples] : [])]
+  if (!es) continue
+  topic.keywords = [...topic.keywords, ...es.keywords]
+  topic.translations = { es: { label: es.label, answer: es.answer } }
+}
 
 export const TOPICS: Record<string, ChatTopic> = Object.fromEntries(topics.map(t => [t.id, t]))
 export const TOPIC_LIST: readonly ChatTopic[] = topics
+
+/** A topic's chip label in the given language (English when there's no translation) */
+export function topicLabel(id: string, locale: Locale = 'en'): string {
+  const topic = TOPICS[id]
+  return topic.translations?.[locale]?.label ?? topic.label
+}
+
+/** A topic's answer in the given language (English when there's no translation) */
+export function topicAnswer(id: string, locale: Locale = 'en'): string {
+  const topic = TOPICS[id]
+  return topic.translations?.[locale]?.answer ?? topic.answer
+}
 
 /** The chat section's "try asking in your own words" prompts. They must match no keyword (a test
  * checks), so only the AI model can answer them and they show what it adds */
@@ -473,7 +509,19 @@ export const AI_EXAMPLES = [
   'How did he get local development on iPad working again for everyone?',
 ]
 
+const AI_EXAMPLES_BY_LOCALE: Record<Locale, string[]> = { en: AI_EXAMPLES, es: AI_EXAMPLES_ES }
+
+export function aiExamples(locale: Locale): string[] {
+  return AI_EXAMPLES_BY_LOCALE[locale]
+}
+
 export const WELCOME = {
   text: "Hi! I'm Josh's assistant. Ask me about his experience, projects, or skills, or pick a topic below.",
   followUps: ['overview', 'proj_web_client', 'skills', 'impact', 'contact'],
+}
+
+const WELCOME_BY_LOCALE: Record<Locale, string> = { en: WELCOME.text, es: WELCOME_ES }
+
+export function welcomeText(locale: Locale): string {
+  return WELCOME_BY_LOCALE[locale]
 }

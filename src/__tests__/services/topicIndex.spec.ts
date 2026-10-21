@@ -49,6 +49,17 @@ describe('topicIndex', () => {
     const weak = [{ id: 'skills', score: MIN_SIMILARITY - 0.1 }]
     expect(pickTopic('How tall is Josh?', weak)).toBe(UNKNOWN_ID)
     expect(pickTopic('What is the capital of France?', weak)).toBe(OFF_TOPIC_ID)
+    expect(pickTopic('¿Cuánto mide él?', weak)).toBe(UNKNOWN_ID)
+    expect(pickTopic('¿Cuál es su comida favorita?', weak)).toBe(UNKNOWN_ID)
+    expect(pickTopic('¿Cuál es la capital de Francia?', weak)).toBe(OFF_TOPIC_ID)
+    expect(pickTopic('¿Qué es el sol?', weak)).toBe(OFF_TOPIC_ID)   // "el" (the) is not "él" (he)
     expect(pickTopic('anything', [{ id: 'skills', score: MIN_SIMILARITY + 0.1 }])).toBe('skills')
+  })
+
+  it('sends weak questions without a pronoun to whichever of unknown and off topic is closer', () => {
+    const personal = [{ id: UNKNOWN_ID, score: 0.5 }, { id: OFF_TOPIC_ID, score: 0.4 }]
+    const general  = [{ id: OFF_TOPIC_ID, score: 0.5 }, { id: UNKNOWN_ID, score: 0.4 }]
+    expect(pickTopic('¿Tiene hijos?', personal)).toBe(UNKNOWN_ID)
+    expect(pickTopic('¿Qué tiempo hace?', general)).toBe(OFF_TOPIC_ID)
   })
 })

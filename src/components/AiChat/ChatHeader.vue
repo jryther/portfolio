@@ -5,7 +5,7 @@
   >
     <div class="chat-header-title">
       <SparkleIcon class="sparkle" />
-      <span class="chat-header-text">Ask About Josh</span>
+      <span class="chat-header-text">{{ t('chat.title') }}</span>
     </div>
     <div class="chat-header-actions">
       <!-- Extra status (e.g. the full section's AI status pill) sits before the buttons -->
@@ -27,8 +27,8 @@
       <button
         v-if="closable"
         class="header-btn"
-        aria-label="Close chat"
-        title="Close"
+        :aria-label="t('chat.close')"
+        :title="t('chat.closeShort')"
         @click="emit('close')"
       >
         <UiIcon name="close" />
@@ -39,9 +39,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import UiIcon from '../icons/UiIcon.vue'
-import { slowLoad } from '../../composables/useChat'
+import { slowLoad, gameToggleLabel } from '../../composables/useChat'
 
 // Header bar shared by the floating popup and the full chat section.
 // large: the section's roomier version. closable: show a close button (popup only)
@@ -49,10 +50,8 @@ defineProps<{ large?: boolean, closable?: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const showGame = defineModel<boolean>('showGame', { required: true })
 
-const gameLabel = computed(() => {
-  if (showGame.value) return 'Back to chat'
-  return slowLoad.value ? 'Play a game while the AI loads' : 'Play a game'
-})
+const { t } = useI18n()
+const gameLabel = computed(() => gameToggleLabel(showGame.value))
 </script>
 
 <style scoped>

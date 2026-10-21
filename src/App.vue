@@ -3,7 +3,7 @@
     <a
       href="#main"
       class="skip-link"
-    >Skip to content</a>
+    >{{ t('app.skipLink') }}</a>
     <Header />
     <main
       id="main"
@@ -30,4 +30,7 @@ import Project from './components/Project.vue'
 import ChatSection from './components/ChatSection.vue'
 import Contact from './components/Contact.vue'
 import Footer from './components/Footer.vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 </script>

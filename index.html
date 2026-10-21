@@ -3,6 +3,8 @@
 <head>
     <!-- Apply a saved light theme before first paint (dark is the default) -->
     <script>try{if(localStorage.getItem("theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
+    <!-- Same language choice as src/i18n/locales.ts, so <html lang> is right before the app loads -->
+    <script>try{var l=localStorage.getItem("locale");if(l!=="en"&&l!=="es")l=/^es/i.test(navigator.language)?"es":"en";document.documentElement.lang=l}catch(e){}</script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
