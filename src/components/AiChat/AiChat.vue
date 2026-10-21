@@ -7,8 +7,8 @@
         v-show="fabVisible && !isOpen"
         ref="fabEl"
         class="pointer-events-auto w-[5.6rem] h-[5.6rem] rounded-2xl bg-amber border border-golden/40 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.3),0_0_0_6px_color-mix(in_srgb,var(--color-amber)_10%,transparent)] flex items-center justify-center transition-[background] duration-200 flex-shrink-0 hover:bg-golden"
-        aria-label="Ask about Josh"
-        title="Ask about Josh"
+        :aria-label="t('chat.open')"
+        :title="t('chat.open')"
         @click="toggleModal"
       >
         <SparkleIcon class="w-[2.4rem] h-[2.4rem] text-ink" />
@@ -24,8 +24,8 @@
       >
         <button
           class="backtop pointer-events-auto"
-          aria-label="Back to top"
-          title="Back to top"
+          :aria-label="t('chat.backToTop')"
+          :title="t('chat.backToTop')"
           @click="backToTop"
         >
           <UiIcon name="arrow-up" />
@@ -40,7 +40,7 @@
         ref="panelEl"
         role="dialog"
         tabindex="-1"
-        aria-label="Ask about Josh"
+        :aria-label="t('chat.open')"
         class="pointer-events-auto absolute bottom-0 right-0 bg-panel border border-line-strong rounded-[1.4rem] flex flex-col overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.35)] z-[1] max-xs:w-[calc(100vw-2rem)] max-xs:max-h-[70vh]"
         :style="modalStyle"
         @keydown.esc.stop="toggleModal"
@@ -49,15 +49,15 @@
         <div class="flex items-center justify-between px-[1.2rem] py-5 bg-snow/[.04] border-b border-snow/[.06] font-semibold text-lg text-snow flex-shrink-0">
           <div class="flex items-center gap-3">
             <SparkleIcon class="w-[1.8rem] h-[1.8rem] text-amber" />
-            <span class="ml-1 text-lg">Ask About Josh</span>
+            <span class="ml-1 text-lg">{{ t('chat.title') }}</span>
           </div>
           <div class="flex items-center gap-1">
             <button
               class="header-btn"
               :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
               :aria-pressed="showGame"
-              :aria-label="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
-              :title="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
+              :aria-label="gameLabel"
+              :title="gameLabel"
               @click="showGame = !showGame"
             >
               <UiIcon name="game" />
@@ -68,8 +68,8 @@
             </button>
             <button
               class="header-btn"
-              aria-label="Close chat"
-              title="Close"
+              :aria-label="t('chat.close')"
+              :title="t('chat.closeShort')"
               @click="toggleModal"
             >
               <UiIcon name="close" />
@@ -92,12 +92,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import ChatPanel from './ChatPanel.vue'
 import UiIcon from '../icons/UiIcon.vue'
-import { openChat, chatSectionInView, slowLoad } from '../../composables/useChat'
+import { openChat, chatSectionInView, slowLoad, gameToggleLabel } from '../../composables/useChat'
 import { prefetchWhenIdle } from '../../composables/useGame'
+
+const { t } = useI18n()
 
 // The game's code downloads in the background once the chat opens, so the game icon is instant
 const loadGame = () => import('./MiniGame.vue')
@@ -106,6 +109,7 @@ const MiniGame = defineAsyncComponent(loadGame)
 const isOpen     = ref<boolean>(false)
 const fabVisible = ref<boolean>(true)
 const showGame   = ref<boolean>(false)
+const gameLabel  = computed(() => gameToggleLabel(showGame.value))
 const fabEl      = ref<HTMLButtonElement | null>(null)
 const panelEl    = ref<HTMLElement | null>(null)
 

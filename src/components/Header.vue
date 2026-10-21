@@ -7,7 +7,7 @@
       <a
         href="#home"
         class="flex items-center gap-3 text-snow font-semibold text-[1.6rem] tracking-[-0.01em]"
-        aria-label="Josh Ryther — home"
+        :aria-label="t('header.home')"
         @click="isMenuOpen = false"
       >
         <svg
@@ -31,7 +31,7 @@
             fill="#F4F1EA"
           />
         </svg>
-        <span>Josh Ryther</span>
+        <span class="brand-name whitespace-nowrap">Josh Ryther</span>
       </a>
 
       <!-- Hamburger — phones only; shown at the far right, but first in Tab order so its links follow it -->
@@ -39,7 +39,7 @@
         ref="menuBtn"
         class="menu"
         :class="{ active: isMenuOpen }"
-        aria-label="Toggle menu"
+        :aria-label="t('header.toggleMenu')"
         :aria-expanded="isMenuOpen"
         aria-controls="site-nav"
         @click="isMenuOpen = !isMenuOpen"
@@ -67,7 +67,7 @@
               :class="{ current: activeId === link.id }"
               :aria-current="activeId === link.id ? 'true' : undefined"
               @click="isMenuOpen = false"
-            >{{ link.label }}</a>
+            >{{ t(`header.nav.${link.id}`) }}</a>
           </li>
           <li class="nav-resume">
             <a
@@ -75,14 +75,15 @@
               target="_blank"
               rel="noreferrer"
               class="button-ghost py-[0.9rem] px-[1.4rem] text-[1.4rem]"
-            >Resume</a>
+            >{{ t('header.resume') }}</a>
           </li>
         </ul>
       </nav>
 
-      <!-- Background animation + theme toggles: after the links on desktop, beside the menu button on phones -->
+      <!-- Background animation, language and theme toggles: after the links on desktop, beside the menu button on phones -->
       <div class="header-controls flex items-center gap-3 md:ml-6">
         <SceneToggle />
+        <LanguageToggle />
         <ThemeToggle />
       </div>
     </div>
@@ -91,15 +92,20 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import resumeUrl from '../assets/Resume.pdf'
 import ThemeToggle from './ThemeToggle.vue'
 import SceneToggle from './SceneToggle.vue'
+import LanguageToggle from './LanguageToggle.vue'
 
+const { t } = useI18n()
+
+// Labels are header.nav.<id> in the locale files
 const links = [
-  { id: 'about',    label: 'About' },
-  { id: 'projects', label: 'Work' },
-  { id: 'chat',     label: 'Ask' },
-  { id: 'contact',  label: 'Contact' },
+  { id: 'about' },
+  { id: 'projects' },
+  { id: 'chat' },
+  { id: 'contact' },
 ]
 
 const isMenuOpen = ref<boolean>(false)
@@ -253,5 +259,11 @@ onUnmounted(() => {
 
   .nav-resume { padding-top: 1.6rem; }
   .nav-resume a { width: 100%; }
+}
+
+/* The smallest phones can't fit the name beside three toggles and the menu: the mountain
+   mark stands alone (the link keeps its aria-label) */
+@media (max-width: 359px) {
+  .brand-name { display: none; }
 }
 </style>

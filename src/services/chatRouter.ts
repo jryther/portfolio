@@ -1,7 +1,8 @@
 import {
-  TOPICS, TOPIC_LIST, MORE_KEYWORDS,
+  TOPICS, TOPIC_LIST, MORE_KEYWORDS, topicAnswer,
   MORE_ID, OFF_TOPIC_ID, UNKNOWN_ID, GREETING_ID, THANKS_ID,
 } from '../data/chatTree'
+import type { Locale } from '../i18n/locales'
 
 // Routes a visitor's question to a topic in the decision tree.
 //
@@ -28,6 +29,7 @@ const SMALL_TALK_MAX_WORDS = 4
 export function normalize(text: string): string {
   return text
     .toLowerCase()
+    .normalize('NFD').replace(/\p{M}/gu, '')   // "educación" matches "educacion", "ñ" matches "n"
     .replace(/[’']/g, '')
     .replace(/[^a-z0-9+#]+/g, ' ')
     .trim()
@@ -90,16 +92,18 @@ export interface Reply {
 
 /**
  * Resolves a routed ID to the reply to show. "more" continues the previous topic with the
- * first follow-up the visitor hasn't seen yet.
+ * first follow-up the visitor hasn't seen yet. The text is in the visitor's language.
  */
-export function resolveReply(routedId: string, previousTopicId: string | null, visited: ReadonlySet<string>): Reply {
+export function resolveReply(
+  routedId: string, previousTopicId: string | null, visited: ReadonlySet<string>, locale: Locale = 'en',
+): Reply {
   let id = routedId
   if (id === MORE_ID) {
     const previous = previousTopicId ? TOPICS[previousTopicId] : null
     id = previous?.followUps.find(f => !visited.has(f)) ?? previous?.followUps[0] ?? UNKNOWN_ID
   }
   const topic = TOPICS[id] ?? TOPICS[UNKNOWN_ID]
-  return { topicId: topic.id, text: topic.answer, followUps: topic.followUps }
+  return { topicId: topic.id, text: topicAnswer(topic.id, locale), followUps: topic.followUps }
 }
 
 /** Topics that don't move the conversation; "tell me more" after them uses the topic before */

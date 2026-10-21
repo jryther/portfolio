@@ -79,11 +79,16 @@ export function rankTopics(query: Float32Array, index: TopicIndex): { id: string
   return [...best].map(([id, score]) => ({ id, score })).sort((a, b) => b.score - a.score)
 }
 
-const ABOUT_JOSH = /\b(josh|ryther|he|him|his)\b/i
+// English pronouns, or Spanish "él" / "su" / "sus" (\b doesn't work next to accented letters)
+const ABOUT_JOSH = /\b(josh|ryther|he|him|his)\b|(?<!\p{L})(él|su|sus)(?!\p{L})/iu
 
 /** Topic for a question given its ranking; weak matches become "off topic" or "not sure" */
 export function pickTopic(question: string, ranked: readonly { id: string, score: number }[]): string {
   const top = ranked[0]
   if (top && top.score >= MIN_SIMILARITY) return top.id
-  return ABOUT_JOSH.test(question) ? UNKNOWN_ID : OFF_TOPIC_ID
+  if (ABOUT_JOSH.test(question)) return UNKNOWN_ID
+  // Spanish often drops the pronoun ("¿Tiene hijos?"), so otherwise go by which of the two
+  // the question is closer to: personal questions about Josh, or anything else
+  const score = (id: string) => ranked.find(r => r.id === id)?.score ?? -Infinity
+  return score(UNKNOWN_ID) > score(OFF_TOPIC_ID) ? UNKNOWN_ID : OFF_TOPIC_ID
 }

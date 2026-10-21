@@ -5,13 +5,13 @@
       <div class="flex items-center gap-5 text-sm text-ash font-mono">
         <span
           class="flex items-center gap-[0.4rem]"
-          title="Best score"
+          :title="t('game.bestTitle')"
         >
           <UiIcon
             name="trophy"
             class="w-[1.4rem] h-[1.4rem] text-amber"
           />
-          Best <span class="text-snow font-semibold">{{ highScore }}</span>
+          {{ t('game.best') }} <span class="text-snow font-semibold">{{ highScore }}</span>
         </span>
       </div>
 
@@ -21,7 +21,7 @@
           class="flex items-center gap-3 min-w-0 w-full max-w-[16rem]"
           :title="loadingText"
         >
-          <span class="text-xs text-ash font-mono whitespace-nowrap">AI {{ loadingProgress }}%</span>
+          <span class="text-xs text-ash font-mono whitespace-nowrap">{{ t('game.aiProgress', { progress: loadingProgress }) }}</span>
           <div class="flex-1 h-[0.4rem] bg-snow/[.08] rounded-full overflow-hidden">
             <div
               class="h-full bg-amber rounded-full transition-[width] duration-300 ease-out"
@@ -32,13 +32,13 @@
         <span
           v-else-if="modelReady && wasLoading"
           class="text-xs font-mono text-moss whitespace-nowrap"
-        >AI ready</span>
+        >{{ t('game.aiReady') }}</span>
       </div>
 
       <button
         class="icon-btn"
-        :aria-label="muted ? 'Turn sound on' : 'Turn sound off'"
-        :title="muted ? 'Turn sound on' : 'Turn sound off'"
+        :aria-label="muted ? t('game.soundOn') : t('game.soundOff')"
+        :title="muted ? t('game.soundOn') : t('game.soundOff')"
         @click="toggleMute"
       >
         <UiIcon :name="muted ? 'sound-off' : 'sound-on'" />
@@ -50,7 +50,7 @@
       class="sr-only"
       aria-live="polite"
     >
-      {{ phase === 'dead' ? `Game over. Score ${score}. ${newBest ? 'New best!' : `Best ${highScore}.`}` : '' }}
+      {{ phase === 'dead' ? `${t('game.overAnnouncement', { score })} ${newBest ? t('game.newBest') : t('game.bestScore', { score: highScore })}` : '' }}
     </p>
 
     <!-- Play area -->
@@ -59,7 +59,7 @@
       class="stage relative flex-1 min-h-0 overflow-hidden select-none"
       tabindex="0"
       role="application"
-      aria-label="Flappy bird game. Press Space or tap to fly."
+      :aria-label="t('game.stage')"
       @pointerdown="onPress"
       @keydown="onKeyDown"
     >
@@ -79,7 +79,7 @@
               name="play"
               class="w-[1.3rem] h-[1.3rem]"
             />
-            Tap, click, or press Space to fly
+            {{ t('game.hint') }}
           </span>
         </div>
       </Transition>
@@ -93,7 +93,7 @@
         >
           <div class="over-card">
             <p class="eyebrow-mini">
-              Game over
+              {{ t('game.over') }}
             </p>
             <p class="text-4xl font-semibold text-snow m-0 leading-none">
               {{ score }}
@@ -102,7 +102,7 @@
               class="text-sm m-0"
               :class="newBest ? 'text-amber font-semibold' : 'text-ash'"
             >
-              {{ newBest ? 'New best!' : `Best ${highScore}` }}
+              {{ newBest ? t('game.newBest') : t('game.bestScore', { score: highScore }) }}
             </p>
             <div class="flex flex-col gap-3 w-full mt-2">
               <button
@@ -114,7 +114,7 @@
                   name="refresh"
                   class="w-[1.5rem] h-[1.5rem]"
                 />
-                Play again
+                {{ t('game.playAgain') }}
               </button>
             </div>
           </div>
@@ -126,6 +126,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import UiIcon from '../icons/UiIcon.vue'
 import { FlappySim, type Phase } from '../../game/flappySim'
 import { FlappyRenderer } from '../../game/flappyRender'
@@ -133,6 +134,8 @@ import { GameAudio } from '../../game/flappyAudio'
 import { theme } from '../../composables/useTheme'
 import { gamePlaying } from '../../composables/useGame'
 import { modelStatus, modelReady, loadingProgress, loadingText } from '../../composables/useChat'
+
+const { t } = useI18n()
 
 const HIGH_SCORE_KEY = 'flappyHighScore'
 

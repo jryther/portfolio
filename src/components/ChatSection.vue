@@ -11,13 +11,13 @@
         data-aos="fade-up"
       >
         <p class="eyebrow">
-          05 — Ask
+          {{ t('ask.eyebrow') }}
         </p>
         <h2 class="section-title mt-6 mb-6">
-          Ask about my work
+          {{ t('ask.title') }}
         </h2>
         <p class="text-body leading-[1.8] text-mist">
-          Ask about my experience, projects, or skills and get an answer straight away, or pick a topic to explore.
+          {{ t('ask.intro') }}
         </p>
       </div>
 
@@ -28,29 +28,24 @@
         data-aos-delay="80"
       >
         <h3 class="detail-heading">
-          How it works
+          {{ t('ask.howItWorks') }}
         </h3>
         <ol class="steps">
-          <li>
-            <span class="step-num">1</span>
-            <p><strong>Every answer is written ahead of time</strong> from my career notes, so the chat never makes anything up.</p>
-          </li>
-          <li>
-            <span class="step-num">2</span>
-            <p><strong>Clear questions match instantly</strong> by keyword, and topic buttons jump straight to an answer. No download needed.</p>
-          </li>
-          <li>
-            <span class="step-num">3</span>
-            <p><strong>For questions in your own words</strong>, a small AI model running in your browser finds the answer closest in meaning.</p>
+          <li
+            v-for="(step, i) in steps"
+            :key="i"
+          >
+            <span class="step-num">{{ i + 1 }}</span>
+            <p><strong>{{ step.lead }}</strong>{{ step.rest }}</p>
           </li>
         </ol>
 
         <h3 class="detail-heading mt-12">
-          Try asking in your own words
+          {{ t('ask.tryAsking') }}
         </h3>
         <div class="flex flex-col items-start gap-3">
           <button
-            v-for="q in AI_EXAMPLES"
+            v-for="q in aiExamples"
             :key="q"
             class="example"
             @click="fillInput(q)"
@@ -62,7 +57,7 @@
           v-if="!modelReady"
           class="text-sm text-ash mt-4"
         >
-          Tip: load the AI model in the chat first, so it understands questions like these.
+          {{ t('ask.tip') }}
         </p>
       </div>
 
@@ -77,25 +72,25 @@
             name="game"
             class="game-note-icon"
           />
-          <span>There's a mini-game in the chat. Play it while the AI loads, or any time.</span>
+          <span>{{ t('ask.gameNote') }}</span>
           <button
             v-if="!showGame"
             class="game-note-btn"
             @click="showGame = true"
           >
-            Play
+            {{ t('ask.play') }}
           </button>
         </p>
         <div
           ref="chatCardEl"
           class="chat-card"
           role="region"
-          aria-label="Chat about Josh"
+          :aria-label="t('ask.chatRegion')"
         >
           <div class="flex items-center justify-between gap-4 px-[1.6rem] py-[1.2rem] bg-snow/[.04] border-b border-snow/[.06] flex-shrink-0">
             <div class="flex items-center gap-3 text-snow font-semibold text-lg">
               <SparkleIcon class="w-[1.8rem] h-[1.8rem] text-amber" />
-              Ask About Josh
+              {{ t('chat.title') }}
             </div>
             <div class="flex items-center gap-3">
               <span
@@ -109,8 +104,8 @@
                 class="header-btn"
                 :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
                 :aria-pressed="showGame"
-                :aria-label="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
-                :title="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
+                :aria-label="gameLabel"
+                :title="gameLabel"
                 @click="showGame = !showGame"
               >
                 <UiIcon name="game" />
@@ -142,20 +137,20 @@
         data-aos-delay="120"
       >
         <h3 class="detail-heading">
-          Under the hood
+          {{ t('ask.underTheHood') }}
         </h3>
         <dl class="facts">
           <div>
-            <dt>Model</dt>
-            <dd>{{ MODEL.name }}, {{ MODEL.sizeLabel }}, cached after the first visit</dd>
+            <dt>{{ t('ask.facts.model') }}</dt>
+            <dd>{{ t('ask.facts.modelValue', { name: MODEL.name, size: MODEL.sizeLabel }) }}</dd>
           </div>
           <div>
-            <dt>Runs on</dt>
-            <dd>Your CPU through wllama. No GPU needed</dd>
+            <dt>{{ t('ask.facts.runsOn') }}</dt>
+            <dd>{{ t('ask.facts.runsOnValue') }}</dd>
           </div>
           <div>
-            <dt>Privacy</dt>
-            <dd>Everything runs in your browser. Nothing you type leaves your device</dd>
+            <dt>{{ t('ask.facts.privacy') }}</dt>
+            <dd>{{ t('ask.facts.privacyValue') }}</dd>
           </div>
         </dl>
       </div>
@@ -165,15 +160,20 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SparkleIcon from './icons/SparkleIcon.vue'
 import ChatPanel from './AiChat/ChatPanel.vue'
 import UiIcon from './icons/UiIcon.vue'
-import { AI_EXAMPLES } from '../data/chatTree'
+import { aiExamples as examplesFor } from '../data/chatTree'
 import { MODEL } from '../services/chatModel'
+import { messageList } from '../i18n'
+import type { Locale } from '../i18n/locales'
 import { prefetchWhenIdle } from '../composables/useGame'
 import {
-  openChat, chatSectionInView, modelStatus, modelReady, loadingProgress, userInput, slowLoad,
+  openChat, chatSectionInView, modelStatus, modelReady, loadingProgress, userInput, slowLoad, gameToggleLabel,
 } from '../composables/useChat'
+
+const { t, locale } = useI18n()
 
 // The game's code downloads in the background once the section is in view, so the game icon is instant
 const loadGame = () => import('./AiChat/MiniGame.vue')
@@ -182,6 +182,9 @@ const MiniGame = defineAsyncComponent(loadGame)
 const sectionEl  = ref<HTMLElement | null>(null)
 const chatCardEl = ref<HTMLElement | null>(null)
 const showGame   = ref<boolean>(false)
+const gameLabel  = computed(() => gameToggleLabel(showGame.value))
+const aiExamples = computed(() => examplesFor(locale.value as Locale))
+const steps      = computed(() => messageList<{ lead: string, rest: string }>('ask.steps'))
 
 
 // Put an example in the chat box (replacing whatever was there) for the visitor to send
@@ -197,9 +200,9 @@ async function fillInput(question: string) {
 }
 
 const statusLabel = computed(() => {
-  if (modelStatus.value === 'ready') return 'AI ready'
-  if (modelStatus.value === 'loading') return `Loading AI · ${loadingProgress.value}%`
-  return 'Quick answers'
+  if (modelStatus.value === 'ready') return t('ask.status.ready')
+  if (modelStatus.value === 'loading') return t('ask.status.loading', { progress: loadingProgress.value })
+  return t('ask.status.quick')
 })
 
 let observer: IntersectionObserver | null = null

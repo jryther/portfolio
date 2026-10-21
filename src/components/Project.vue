@@ -8,23 +8,23 @@
         class="eyebrow"
         data-aos="fade-up"
       >
-        04 — Work
+        {{ t('work.eyebrow') }}
       </p>
       <div
         class="mt-6 mb-14"
         data-aos="fade-up"
       >
         <h2 class="section-title">
-          Professional work
+          {{ t('work.title') }}
         </h2>
         <p class="role-line mt-5">
-          <span class="text-snow font-semibold">Software Engineer</span>
+          <span class="text-snow font-semibold">{{ t('work.role') }}</span>
           <span aria-hidden="true">·</span>
           <span>Pearson</span>
           <span aria-hidden="true">·</span>
-          <span>Sep 2022 – present</span>
+          <span>{{ t('work.dates') }}</span>
           <span aria-hidden="true">·</span>
-          <span>Remote</span>
+          <span>{{ t('work.remote') }}</span>
         </p>
       </div>
 
@@ -36,13 +36,13 @@
       >
         <div class="featured-main">
           <p class="eyebrow-mini">
-            Main project
+            {{ t('work.mainProject') }}
           </p>
           <h3 class="text-3xl font-semibold text-snow mt-3 max-xs:text-2xl">
             TestNav
           </h3>
           <p class="text-base text-mist leading-[1.75] mt-4">
-            Pearson's student testing app, delivering millions of secure, high-stakes school exams each year in every major browser and on Windows, macOS, Linux, iOS, and ChromeOS. I work across its full lifecycle, from new features to long-term maintenance, with a focus on reliability, security, and accessibility.
+            {{ t('work.testnavSummary') }}
           </p>
 
           <ul class="mt-8 flex flex-col gap-4">
@@ -66,7 +66,7 @@
           </ul>
 
           <div class="mt-10 flex flex-wrap items-center gap-3">
-            <span class="font-mono text-xs uppercase tracking-[0.12em] text-ash mr-2">Available on</span>
+            <span class="font-mono text-xs uppercase tracking-[0.12em] text-ash mr-2">{{ t('work.availableOn') }}</span>
             <a
               href="https://apps.apple.com/us/app/testnav/id818779127"
               target="_blank"
@@ -119,7 +119,7 @@
             </div>
           </dl>
           <p class="font-mono text-2xs text-ash mt-4">
-            Percentages are my own estimates.
+            {{ t('work.estimates') }}
           </p>
         </div>
       </article>
@@ -129,7 +129,7 @@
         class="eyebrow-mini mt-16 mb-6"
         data-aos="fade-up"
       >
-        Around the platform
+        {{ t('work.aroundPlatform') }}
       </p>
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <article
@@ -157,9 +157,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { messageList } from '../i18n'
+
 // Work at Pearson, in order of emphasis: the TestNav client
 // first (testing, then accessibility), supporting systems second. Describes what each system
 // does, not what it's built on, so the section doesn't map out the employer's architecture.
+// The text lives under work.* in the locale files.
 
 interface Stat {
   value: string
@@ -173,6 +178,8 @@ interface Supporting {
   resultLabel: string
 }
 
+const { t } = useI18n()
+
 // Feed the cursor position to the .spotlight glow
 function trackPointer(e: MouseEvent) {
   const el   = e.currentTarget as HTMLElement
@@ -182,46 +189,9 @@ function trackPointer(e: MouseEvent) {
 }
 
 // Scale comes first: it's the context that gives every other number its weight
-const stats: Stat[] = [
-  { value: 'Millions',    label: 'Of secure, high-stakes exams delivered each year' },
-  { value: '~50%',        label: 'Faster development using AI assistance and custom skills' },
-  { value: '~75%',        label: 'Fewer bugs after adding end-to-end testing' },
-  { value: 'WCAG AA',     label: 'WCAG 2.1 AA accessibility compliance' },
-]
-
-const featured = [
-  "Converted most of the client's views into reusable TypeScript components in React and Vue",
-  'Introduced Playwright end-to-end testing to the codebase on my own initiative, then built an AI agent skill that lets coding agents run the app and check their changes',
-  'Brought the client to WCAG 2.1 AA compliance with accessibility consultants, and built a reusable, cross-platform screen reader component that cut development time on accessibility features from 3+ days to 1',
-  'Modernized a complex legacy feature to remove a deprecated core dependency, making it more feature-rich while keeping it backward compatible',
-]
-
-const supporting: Supporting[] = [
-  {
-    name: 'Native apps',
-    description: 'The apps that host TestNav on desktop, iOS, and ChromeOS. I fix complex cross-platform defects.',
-    result: '~50–75%',
-    resultLabel: 'faster iOS development after I restored local debugging for my team',
-  },
-  {
-    name: 'AI-powered services',
-    description: 'I built an AI-powered feature end to end, plus support tools for the team.',
-    result: 'Parallel agents',
-    resultLabel: 'One support tool allows the team to run multiple AI coding agents on the same project simultaneously',
-  },
-  {
-    name: 'Content repositories',
-    description: 'The backend services that supply test content to the client and other platforms. Library updates, improvements, and API testing.',
-    result: 'Zero',
-    resultLabel: 'regressions across consuming platforms',
-  },
-  {
-    name: 'Interactive content',
-    description: 'Designed reusable test content templates to speed up development and QA.',
-    result: '50–75%',
-    resultLabel: 'less development time per item',
-  },
-]
+const stats      = computed(() => messageList<Stat>('work.stats'))
+const featured   = computed(() => messageList('work.featured'))
+const supporting = computed(() => messageList<Supporting>('work.supporting'))
 </script>
 
 <style scoped>

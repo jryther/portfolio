@@ -24,6 +24,7 @@ This directory contains machine-readable documentation for AI coding agents work
 - **Styling:** Tailwind CSS v4 — `@import "tailwindcss"` in `main.css`, custom `@theme`, no `tailwind.config.js`
 - **Build:** Vite 7, base path `/`, deploys to Cloudflare Pages
 - **AI chat:** decision tree of pre-written answers (`data/chatTree.ts`); free text routed by keywords, then Google EmbeddingGemma 300M (~330 MB) via wllama on the CPU
+- **Languages:** English + Spanish via `vue-i18n` (Composition API). UI text in `src/i18n/en.ts` / `es.ts` (es is typed against en; a test checks key and list parity); chat answers in `data/chatTree.ts` + `data/chatTree.es.ts`. No hardcoded user-facing strings in components
 - **1 rem = 10 px** (html font-size: 62.5%)
 - **Primary accent color:** `#E3A867` (amber) — the only accent; use sparingly — token `--color-amber`
 - **Background:** `#0B1012` (charcoal) — token `--color-charcoal`

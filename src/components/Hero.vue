@@ -270,7 +270,7 @@
           data-aos="fade-up"
         >
           <span class="status-dot" />
-          Salem, OR · Open to opportunities
+          {{ t('hero.status') }}
         </p>
 
         <p
@@ -278,7 +278,7 @@
           data-aos="fade-up"
           data-aos-delay="80"
         >
-          Hey there, I'm
+          {{ t('hero.greeting') }}
         </p>
         <h1
           class="hero-name"
@@ -292,7 +292,7 @@
           data-aos="fade-up"
           data-aos-delay="160"
         >
-          Full-Stack Software Engineer
+          {{ t('hero.role') }}
         </p>
         <p
           class="font-mono text-[1.35rem] text-mist mt-3"
@@ -306,7 +306,7 @@
           data-aos="fade-up"
           data-aos-delay="200"
         >
-          I build and maintain high-stakes software that delivers millions of secure exams each year. I work across the full stack, from accessible, cross-browser interfaces to the services and APIs behind them, and I modernize legacy code along the way. My workflow is AI-forward: coding agents, automated tests, and careful review catch bugs before they ship.
+          {{ t('hero.summary') }}
         </p>
 
         <div
@@ -318,7 +318,7 @@
             href="#contact"
             class="button"
           >
-            Get in touch
+            {{ t('hero.getInTouch') }}
             <svg
               viewBox="0 0 16 16"
               class="w-[1.4rem] h-[1.4rem]"
@@ -337,7 +337,7 @@
             target="_blank"
             rel="noreferrer"
             class="button-ghost"
-          >View resume</a>
+          >{{ t('hero.viewResume') }}</a>
 
           <div class="flex items-center gap-1 sm:ml-2 max-sm:basis-full max-sm:-ml-3">
             <a
@@ -357,8 +357,8 @@
             <a
               href="mailto:jryther91@gmail.com"
               class="social-link"
-              aria-label="Email"
-              title="Email"
+              :aria-label="t('hero.email')"
+              :title="t('hero.email')"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -373,17 +373,20 @@
 
     <!-- Coordinates of the summit -->
     <p class="coords wrap">
-      <span class="coords-text">45.3736° N, 121.6960° W <span class="opacity-50">·</span> Mt. Hood <span class="opacity-50">·</span> 11,249 ft</span>
+      <span class="coords-text">45.3736° N, 121.6960° W <span class="opacity-50">·</span> {{ t('hero.mountain') }} <span class="opacity-50">·</span> {{ t('hero.elevation') }}</span>
     </p>
   </section>
 </template>
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import resumeUrl from '../assets/Resume.pdf'
 import { theme } from '../composables/useTheme'
 import { scenePaused, heroInView } from '../composables/useScene'
 import { gamePlaying } from '../composables/useGame'
+
+const { t } = useI18n()
 
 interface Puff           { x: number; y: number; r: number }
 interface Cloud          { x: number; y: number; speed: number; depth: number; nightCache: HTMLCanvasElement; dayCache: HTMLCanvasElement }

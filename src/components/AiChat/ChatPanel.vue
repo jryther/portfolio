@@ -47,7 +47,7 @@
           class="topic-chip"
           @click="askTopic(id)"
         >
-          {{ TOPICS[id].label }}
+          {{ topicLabel(id, locale) }}
         </button>
       </div>
 
@@ -55,7 +55,7 @@
       <div
         v-if="thinking"
         class="flex items-end gap-2 mt-1"
-        aria-label="Thinking"
+        :aria-label="t('chat.thinking')"
       >
         <div class="avatar flex-shrink-0 flex items-center justify-center bg-snow/[.05] rounded-full">
           <SparkleIcon class="w-[1.4rem] h-[1.4rem] text-amber" />
@@ -78,14 +78,14 @@
         class="flex items-center gap-4"
       >
         <p class="status-text flex-1 m-0 text-mist leading-[1.5]">
-          Want me to understand questions in your own words? Load a small AI model that runs in your browser.
+          {{ t('chat.loadPrompt') }}
         </p>
         <button
           class="button-ghost flex-shrink-0 py-[0.5rem] px-[1rem] text-sm"
-          :title="`${MODEL.name}, ${MODEL.sizeLabel} one-time download`"
+          :title="t('chat.loadTitle', { name: MODEL.name, size: MODEL.sizeLabel })"
           @click="startModel"
         >
-          Load AI · {{ MODEL.sizeLabel }}
+          {{ t('chat.loadButton', { size: MODEL.sizeLabel }) }}
         </button>
       </div>
       <div
@@ -112,7 +112,7 @@
               name="game"
               class="w-[1.6rem] h-[1.6rem]"
             />
-            Play a game while you wait
+            {{ t('chat.playWhileWait') }}
           </button>
         </Transition>
       </div>
@@ -120,12 +120,12 @@
         v-else
         class="status-text m-0 text-ash leading-[1.5]"
       >
-        The AI model couldn't load on this device, but quick answers still work.
+        {{ t('chat.loadError') }}
         <button
           class="bg-transparent border-none p-0 text-amber cursor-pointer font-[inherit] underline"
           @click="startModel"
         >
-          Try again
+          {{ t('chat.tryAgain') }}
         </button>
       </p>
     </div>
@@ -135,8 +135,8 @@
       <!-- :value + @input rather than v-model, so phone keyboards update it mid-word -->
       <input
         :value="userInput"
-        :placeholder="modelLoading ? 'Loading the AI model… pick a topic above meanwhile' : 'Ask about Josh...'"
-        aria-label="Ask a question about Josh"
+        :placeholder="modelLoading ? t('chat.placeholderLoading') : t('chat.placeholder')"
+        :aria-label="t('chat.inputLabel')"
         :disabled="busy || modelLoading"
         maxlength="400"
         class="chat-input block w-full box-border bg-snow/[.06] border border-snow/10 rounded-[0.75rem] py-3 px-4 text-snow font-[inherit] transition-[border-color] duration-200 resize-none mb-[0.6rem] focus:border-amber disabled:opacity-50 placeholder:text-ash"
@@ -156,14 +156,14 @@
               name="refresh"
               class="w-[1.4rem] h-[1.4rem]"
             />
-            Clear
+            {{ t('chat.clear') }}
           </button>
           <button
             :disabled="busy || modelLoading"
             class="button py-[0.4rem] px-[1.2rem] text-base disabled:opacity-40 disabled:cursor-not-allowed"
             @click="sendMessage"
           >
-            Send
+            {{ t('chat.send') }}
           </button>
         </div>
       </div>
@@ -173,9 +173,11 @@
 
 <script setup lang="ts">
 import { ref, nextTick, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import UiIcon from '../icons/UiIcon.vue'
-import { TOPICS } from '../../data/chatTree'
+import { topicLabel } from '../../data/chatTree'
+import { locale } from '../../i18n'
 import { MODEL } from '../../services/chatModel'
 import {
   messages, followUps, userInput, thinking, busy, modelStatus, modelLoading, loadingProgress, loadingText, slowLoad,
@@ -186,6 +188,8 @@ import {
 // live: announce new messages to screen readers (off for a copy of the chat that's off screen)
 withDefaults(defineProps<{ large?: boolean, live?: boolean }>(), { live: true })
 const emit = defineEmits<{ 'play-game': [] }>()
+
+const { t } = useI18n()
 
 const messagesEl = ref<HTMLElement | null>(null)
 

@@ -27,13 +27,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { scenePaused, heroInView, toggleScene } from '../composables/useScene'
 
 // Reduced motion already stops the scene, so the control would do nothing
 const prefersReducedMotion = typeof window !== 'undefined'
   && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
-const label = computed(() => scenePaused.value ? 'Play background animation' : 'Pause background animation')
+const { t } = useI18n()
+
+const label = computed(() => scenePaused.value ? t('toggles.playScene') : t('toggles.pauseScene'))
 </script>
 
 <style scoped>
