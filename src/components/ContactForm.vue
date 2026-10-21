@@ -1,10 +1,10 @@
 <template>
   <form
-    class="flex flex-col gap-6"
+    class="contact-form"
     @submit.prevent="handleSubmit"
   >
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-      <label class="flex flex-col gap-2">
+    <div class="form-row">
+      <label class="form-field">
         <span class="field-label">Name</span>
         <input
           v-model="formData.name"
@@ -17,7 +17,7 @@
         >
       </label>
 
-      <label class="flex flex-col gap-2">
+      <label class="form-field">
         <span class="field-label">Email</span>
         <input
           v-model="formData.email"
@@ -31,7 +31,7 @@
       </label>
     </div>
 
-    <label class="flex flex-col gap-2">
+    <label class="form-field">
       <span class="field-label">Message</span>
       <textarea
         v-model="formData.message"
@@ -39,25 +39,25 @@
         placeholder="What would you like to talk about?"
         rows="5"
         required
-        class="field resize-y min-h-[15rem]"
+        class="field message-field"
       />
     </label>
 
     <button
       type="submit"
-      class="button self-start py-[1.3rem] px-[2.4rem] max-xs:self-stretch"
+      class="button submit-btn"
     >
       Send Message
     </button>
 
     <p
       v-if="submitted"
-      class="success-message flex items-center gap-3 p-4 bg-moss/10 border border-moss/40 rounded-lg text-snow text-base"
+      class="success-message"
       role="status"
     >
       <svg
         viewBox="0 0 16 16"
-        class="w-[1.6rem] h-[1.6rem] flex-shrink-0 text-moss"
+        class="success-icon"
         fill="none"
         stroke="currentColor"
         stroke-width="2"
@@ -102,6 +102,49 @@ const handleSubmit = async (): Promise<void> => {
 </script>
 
 <style scoped>
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.message-field {
+  min-height: 15rem;
+  resize: vertical;
+}
+
+.submit-btn {
+  align-self: flex-start;
+  padding: 1.3rem 2.4rem;
+}
+
+@media (width < 480px) {
+  .submit-btn { align-self: stretch; }
+}
+
+.success-icon {
+  flex-shrink: 0;
+  width: 1.6rem;
+  height: 1.6rem;
+  color: var(--color-moss);
+}
+
 .field-label {
   font-family: var(--font-mono);
   font-size: 1.15rem;
@@ -111,6 +154,16 @@ const handleSubmit = async (): Promise<void> => {
 }
 
 .success-message {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-moss) 40%, transparent);
+  border-radius: 0.5rem;
+  background-color: color-mix(in srgb, var(--color-moss) 10%, transparent);
+  color: var(--color-snow);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
   animation: slideIn 0.3s ease-in-out;
 }
 @keyframes slideIn {

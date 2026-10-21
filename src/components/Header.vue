@@ -3,16 +3,16 @@
     class="header-fixed"
     :class="{ scrolled: isScrolled || isMenuOpen }"
   >
-    <div class="wrap flex items-center justify-between h-full">
+    <div class="wrap header-bar">
       <a
         href="#home"
-        class="flex items-center gap-3 text-snow font-semibold text-[1.6rem] tracking-[-0.01em]"
+        class="brand"
         aria-label="Josh Ryther — home"
         @click="isMenuOpen = false"
       >
         <svg
           viewBox="0 0 32 32"
-          class="w-[2.8rem] h-[2.8rem]"
+          class="brand-mark"
           aria-hidden="true"
         >
           <rect
@@ -74,14 +74,14 @@
               :href="resumeUrl"
               target="_blank"
               rel="noreferrer"
-              class="button-ghost py-[0.9rem] px-[1.4rem] text-[1.4rem]"
+              class="button-ghost resume-btn"
             >Resume</a>
           </li>
         </ul>
       </nav>
 
       <!-- Background animation + theme toggles: after the links on desktop, beside the menu button on phones -->
-      <div class="header-controls flex items-center gap-3 md:ml-6">
+      <div class="header-controls">
         <SceneToggle />
         <ThemeToggle />
       </div>
@@ -164,6 +164,40 @@ onUnmounted(() => {
   border-bottom-color: var(--color-line);
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+.header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--color-snow);
+  font-weight: 600;
+  font-size: 1.6rem;
+  letter-spacing: -0.01em;
+}
+
+.brand-mark {
+  width: 2.8rem;
+  height: 2.8rem;
+}
+
+.resume-btn {
+  padding: 0.9rem 1.4rem;
+  font-size: 1.4rem;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: 1.5rem;
 }
 
 /* Desktop nav — inline links, hamburger hidden */

@@ -12,45 +12,45 @@
         01 — About
       </p>
 
-      <div class="mt-6 grid grid-cols-1 gap-16 lg:grid-cols-[1.6fr_1fr] lg:gap-20">
+      <div class="about-grid">
         <div data-aos="fade-up">
-          <h2 class="section-title mb-8">
+          <h2 class="section-title about-title">
             A little about me
           </h2>
-          <p class="text-body leading-[1.8] text-mist mb-6">
+          <p class="lede">
             I'm a full-stack software engineer who cares about getting the details right. I work mainly in JavaScript, TypeScript, HTML, and CSS, with Vue and React on the frontend and Java and Node.js on the backend. Before software, I spent nine years as a certified pharmacy technician, at a startup and at larger healthcare providers, where accuracy mattered on every task. That habit carries straight into how I build and test code.
           </p>
-          <p class="text-body leading-[1.8] text-mist">
+          <p class="lede">
             At Pearson, I work on TestNav, the testing app behind millions of secure, high-stakes school exams each year. I introduced end-to-end testing to its codebase, brought it to WCAG 2.1 AA compliance, and work across the apps and services that support it. I lean on AI coding agents and automated tests to move quickly without letting quality slip, and I mentor teammates through code reviews and secure design.
           </p>
         </div>
 
         <div
-          class="card p-8 self-start"
+          class="card glance-card"
           data-aos="fade-up"
           data-aos-delay="100"
         >
-          <p class="font-mono text-xs uppercase tracking-[0.12em] text-ash mb-6">
+          <p class="label card-label">
             At a glance
           </p>
-          <dl class="flex flex-col gap-5">
+          <dl class="facts">
             <div
               v-for="fact in facts"
               :key="fact.label"
-              class="grid grid-cols-[9rem_1fr] gap-4 text-base"
+              class="fact"
             >
-              <dt class="text-ash">
+              <dt>
                 {{ fact.label }}
               </dt>
-              <dd class="text-snow">
+              <dd>
                 {{ fact.value }}
               </dd>
             </div>
           </dl>
-          <div class="mt-8 pt-8 border-t border-line flex flex-wrap gap-3">
+          <div class="downloads">
             <a
               :href="resumeUrl"
-              class="button-ghost text-[1.4rem] py-[1rem] px-[1.4rem]"
+              class="button-ghost download-btn"
               download="Joshua_Ryther_Resume.pdf"
             >
               <svg
@@ -61,7 +61,7 @@
             </a>
             <a
               :href="coverLetterUrl"
-              class="button-ghost text-[1.4rem] py-[1rem] px-[1.4rem]"
+              class="button-ghost download-btn"
               download="Joshua_Ryther_Cover_Letter.docx"
             >
               <svg
@@ -75,7 +75,7 @@
       </div>
 
       <!-- ── Experience & education timeline ── -->
-      <div class="mt-32 max-md:mt-24">
+      <div class="subsection">
         <p
           class="eyebrow"
           data-aos="fade-up"
@@ -83,7 +83,7 @@
           02 — Experience
         </p>
         <h2
-          class="section-title mt-6 mb-14"
+          class="section-title subsection-title"
           data-aos="fade-up"
         >
           Experience &amp; education
@@ -105,24 +105,24 @@
                 :class="{ work: item.type === 'Work' }"
                 aria-hidden="true"
               />
-              <p class="font-mono text-2xs uppercase tracking-[0.12em] text-ash mb-2">
+              <p class="label is-small timeline-type">
                 {{ item.type }}
               </p>
-              <h3 class="text-xl font-semibold text-snow">
+              <h3 class="timeline-title">
                 {{ item.title }}
               </h3>
-              <p class="text-base text-mist mt-1">
-                <span class="text-amber">{{ item.org }}</span>
+              <p class="timeline-org-line">
+                <span class="timeline-org">{{ item.org }}</span>
                 <span v-if="item.meta"> · {{ item.meta }}</span>
               </p>
               <ul
                 v-if="item.bullets"
-                class="mt-5 flex flex-col gap-3"
+                class="timeline-bullets"
               >
                 <li
                   v-for="bullet in item.bullets"
                   :key="bullet"
-                  class="relative pl-6 text-base leading-[1.7] text-mist before:content-[''] before:absolute before:left-0 before:top-[1.25rem] before:w-[0.6rem] before:h-px before:bg-ash"
+                  class="timeline-bullet"
                 >
                   {{ bullet }}
                 </li>
@@ -133,7 +133,7 @@
       </div>
 
       <!-- ── Skills ── -->
-      <div class="mt-32 max-md:mt-24">
+      <div class="subsection">
         <p
           class="eyebrow"
           data-aos="fade-up"
@@ -141,33 +141,32 @@
           03 — Skills
         </p>
         <h2
-          class="section-title mt-6 mb-14"
+          class="section-title subsection-title"
           data-aos="fade-up"
         >
           Tools I build with
         </h2>
 
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div class="skill-groups">
           <div
             v-for="(group, index) in skillGroups"
             :key="group.name"
-            class="card p-8"
+            class="card skill-group"
             data-aos="fade-up"
             :data-aos-delay="index * 80"
           >
-            <p class="font-mono text-xs uppercase tracking-[0.12em] text-ash mb-6">
+            <p class="label card-label">
               {{ group.name }}
             </p>
-            <ul class="flex flex-wrap gap-3">
+            <ul class="skill-list">
               <li
                 v-for="skill in group.skills"
                 :key="skill.name"
-                class="skill-chip chip text-[1.3rem] py-[0.7rem] px-[1.2rem]"
+                class="skill-chip chip"
               >
                 <img
                   :src="skill.svg"
                   alt=""
-                  class="w-[1.8rem] h-[1.8rem] object-contain"
                 >
                 {{ skill.name }}
               </li>
@@ -227,7 +226,7 @@ const facts = [
 
 const downloadIcon = {
   viewBox: '0 0 16 16',
-  class: 'w-[1.4rem] h-[1.4rem]',
+  class: 'download-icon',
   fill: 'none',
   stroke: 'currentColor',
   'stroke-width': '1.6',
@@ -309,6 +308,155 @@ const skillGroups: SkillGroup[] = [
 </script>
 
 <style scoped>
+/* ── About — bio beside an "at a glance" card ── */
+.about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .about-grid {
+    grid-template-columns: 1.6fr 1fr;
+    gap: 5rem;
+  }
+}
+
+.about-title {
+  margin-bottom: 2rem;
+}
+
+.lede + .lede {
+  margin-top: 1.5rem;
+}
+
+.glance-card {
+  align-self: flex-start;
+  padding: 2rem;
+}
+
+.card-label {
+  margin-bottom: 1.5rem;
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 1rem;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+}
+.fact dt { color: var(--color-ash); }
+.fact dd { color: var(--color-snow); }
+
+.downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--color-line);
+}
+
+.download-btn {
+  padding: 1rem 1.4rem;
+  font-size: 1.4rem;
+}
+
+.download-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* ── Experience and skills ── */
+.subsection {
+  margin-top: 8rem;
+}
+
+.subsection-title {
+  margin-top: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+
+@media (width < 768px) {
+  .subsection { margin-top: 6rem; }
+}
+
+.timeline-type {
+  margin-bottom: 0.5rem;
+}
+
+.timeline-title {
+  font-size: var(--text-xl);
+  line-height: var(--leading-xl);
+  font-weight: 600;
+  color: var(--color-snow);
+}
+
+.timeline-org-line {
+  margin-top: 0.25rem;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--color-mist);
+}
+
+.timeline-org {
+  color: var(--color-amber);
+}
+
+.timeline-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.timeline-bullet {
+  position: relative;
+  padding-left: 1.5rem;
+  font-size: var(--text-base);
+  line-height: 1.7;
+  color: var(--color-mist);
+}
+
+/* Short dash marker */
+.timeline-bullet::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 1.25rem;
+  width: 0.6rem;
+  height: 1px;
+  background-color: var(--color-ash);
+}
+
+.skill-groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .skill-groups { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.skill-group {
+  padding: 2rem;
+}
+
+.skill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 /* ── Timeline — date column + hairline rail with dots ── */
 .timeline {
   display: flex;
@@ -375,10 +523,15 @@ const skillGroups: SkillGroup[] = [
 
 /* Monochrome icons that pick up their brand colour on hover */
 .skill-chip {
+  padding: 0.7rem 1.2rem;
+  font-size: 1.3rem;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 
 .skill-chip img {
+  width: 1.8rem;
+  height: 1.8rem;
+  object-fit: contain;
   filter: saturate(0.2);
   opacity: 0.75;
   transition: filter 0.2s ease, opacity 0.2s ease;

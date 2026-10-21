@@ -33,7 +33,7 @@ These constraints must be respected in all changes:
 2. **Cloudflare Pages deployment** — Static files only. No server-side rendering. `vite.config.ts` `base` is `/`
 3. **No backend** — Contact form uses Formspree; the AI chat runs client-side (wllama, CPU)
 4. **Vite is the build tool** — Do not switch bundlers
-5. **Tailwind CSS v4** — Styling uses `@tailwindcss/vite` plugin, `@import "tailwindcss"` in `main.css`, and `@theme` for custom tokens. No `tailwind.config.js`
+5. **Plain CSS, no framework** — One global stylesheet (`src/styles/main.css`: tokens, reset, base, shared classes) imported in `main.ts`; everything component-specific goes in that component's `<style scoped>`. Do not add Tailwind or another CSS framework
 6. **COOP/COEP headers required** — `public/_headers` sets `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: credentialless` so wllama can use `SharedArrayBuffer` for multi-threading. Dev server mirrors these in `vite.config.ts`
 7. **Dev server must use `localhost`** — `host: 'localhost'` in vite config; changing to `0.0.0.0` or `true` would break the COOP/COEP headers
 8. **`sharp` must remain a dependency** — Used for image processing during build
@@ -44,7 +44,7 @@ These constraints must be respected in all changes:
 
 ## Current State (as of May 2026)
 
-The project is fully built and deployed. All content is personalized. The tech stack migration (scoped CSS → Tailwind v4) is complete. The following are **done and should not be rebuilt from scratch**:
+The project is fully built and deployed. All content is personalized. Styling was migrated off Tailwind v4 to plain global + scoped CSS (Oct 2026). The following are **done and should not be rebuilt from scratch**:
 
 - PNW theme with full design token system
 - Dark / light themes (`useTheme`, header toggle, saved to localStorage, dark by default) — dusk storm vs. summer sun hero scene
@@ -54,7 +54,7 @@ The project is fully built and deployed. All content is personalized. The tech s
 - Professional work section with app store links (TestNav)
 - AOS scroll animations on all sections
 - 2026 redesign: cooler PNW palette, Inter + JetBrains Mono, SVG Mount Hood hero, bento work grid, reduced-motion support
-- Tailwind v4 migration with custom `@theme` design tokens
+- Plain CSS: design tokens as custom properties in `main.css`, component styles in `<style scoped>`
 - Cloudflare Pages deployment (auto-deploy on push to `main`)
 
 ---

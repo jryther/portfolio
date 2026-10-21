@@ -67,7 +67,7 @@ const label = computed(() => scenePaused.value ? 'Play background animation' : '
 .scene-toggle.is-away {
   width: 0;
   border-width: 0;
-  margin-inline-end: calc(var(--spacing) * -3);
+  margin-inline-end: -0.75rem;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;

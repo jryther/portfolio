@@ -17,11 +17,9 @@
     "embed:topics": "node scripts/embed-topics.mjs"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.2.4",
     "@wllama/wllama": "3.8.1",
     "aos": "^2.3.4",
     "sharp": "^0.34.5",
-    "tailwindcss": "^4.2.4",
     "vue": "^3.5.28"
   },
   "devDependencies": {
@@ -36,6 +34,7 @@
     "eslint": "^10.3.0",
     "eslint-plugin-vue": "^10.9.0",
     "globals": "^17.6.0",
+    "jiti": "^2.7.0",
     "jsdom": "^29.1.1",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.1",

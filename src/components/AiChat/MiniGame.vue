@@ -1,37 +1,37 @@
 <template>
-  <div class="mini-game flex flex-col min-h-0">
+  <div class="mini-game">
     <!-- Top bar: score, AI status, controls -->
-    <div class="flex items-center gap-4 px-4 py-[0.8rem] border-b border-snow/[.06] bg-snow/[.02] flex-shrink-0">
-      <div class="flex items-center gap-5 text-sm text-ash font-mono">
+    <div class="game-bar">
+      <div class="game-stats">
         <span
-          class="flex items-center gap-[0.4rem]"
+          class="best"
           title="Best score"
         >
           <UiIcon
             name="trophy"
-            class="w-[1.4rem] h-[1.4rem] text-amber"
+            class="trophy-icon"
           />
-          Best <span class="text-snow font-semibold">{{ highScore }}</span>
+          Best <span class="best-value">{{ highScore }}</span>
         </span>
       </div>
 
-      <div class="flex-1 min-w-0 flex justify-end">
+      <div class="game-ai">
         <div
           v-if="modelStatus === 'loading'"
-          class="flex items-center gap-3 min-w-0 w-full max-w-[16rem]"
+          class="ai-progress"
           :title="loadingText"
         >
-          <span class="text-xs text-ash font-mono whitespace-nowrap">AI {{ loadingProgress }}%</span>
-          <div class="flex-1 h-[0.4rem] bg-snow/[.08] rounded-full overflow-hidden">
+          <span class="ai-progress-label">AI {{ loadingProgress }}%</span>
+          <div class="progress-track">
             <div
-              class="h-full bg-amber rounded-full transition-[width] duration-300 ease-out"
+              class="progress-bar"
               :style="{ width: loadingProgress + '%' }"
             />
           </div>
         </div>
         <span
           v-else-if="modelReady && wasLoading"
-          class="text-xs font-mono text-moss whitespace-nowrap"
+          class="ai-ready"
         >AI ready</span>
       </div>
 
@@ -56,7 +56,7 @@
     <!-- Play area -->
     <div
       ref="stageEl"
-      class="stage relative flex-1 min-h-0 overflow-hidden select-none"
+      class="stage"
       tabindex="0"
       role="application"
       aria-label="Flappy bird game. Press Space or tap to fly."
@@ -65,19 +65,19 @@
     >
       <canvas
         ref="canvasEl"
-        class="absolute inset-0 w-full h-full block"
+        class="game-canvas"
       />
 
       <!-- Start hint -->
       <Transition name="fade-game">
         <div
           v-if="phase === 'idle'"
-          class="absolute inset-x-0 bottom-[22%] flex justify-center pointer-events-none"
+          class="start-hint"
         >
           <span class="hint">
             <UiIcon
               name="play"
-              class="w-[1.3rem] h-[1.3rem]"
+              class="hint-icon"
             />
             Tap, click, or press Space to fly
           </span>
@@ -88,31 +88,31 @@
       <Transition name="fade-game">
         <div
           v-if="phase === 'dead'"
-          class="absolute inset-0 flex items-center justify-center p-6 bg-charcoal/40 backdrop-blur-[2px]"
+          class="game-over"
           @pointerdown.stop
         >
           <div class="over-card">
             <p class="eyebrow-mini">
               Game over
             </p>
-            <p class="text-4xl font-semibold text-snow m-0 leading-none">
+            <p class="final-score">
               {{ score }}
             </p>
             <p
-              class="text-sm m-0"
-              :class="newBest ? 'text-amber font-semibold' : 'text-ash'"
+              class="best-line"
+              :class="{ 'is-new': newBest }"
             >
               {{ newBest ? 'New best!' : `Best ${highScore}` }}
             </p>
-            <div class="flex flex-col gap-3 w-full mt-2">
+            <div class="over-actions">
               <button
                 ref="againEl"
-                class="button w-full justify-center py-[0.8rem] text-base"
+                class="button again-btn"
                 @click="restart"
               >
                 <UiIcon
                   name="refresh"
-                  class="w-[1.5rem] h-[1.5rem]"
+                  class="again-icon"
                 />
                 Play again
               </button>
@@ -298,7 +298,89 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Fills whatever is left of its card or popup below the header */
+.mini-game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ── Top bar ── */
+.game-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-snow) 6%, transparent);
+  background-color: color-mix(in srgb, var(--color-snow) 2%, transparent);
+}
+
+.game-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-ash);
+}
+
+.best {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.trophy-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+  color: var(--color-amber);
+}
+.best-value {
+  color: var(--color-snow);
+  font-weight: 600;
+}
+
+.game-ai {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ai-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 16rem;
+}
+.ai-progress-label,
+.ai-ready {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-xs);
+  white-space: nowrap;
+}
+.ai-progress-label { color: var(--color-ash); }
+.ai-ready          { color: var(--color-moss); }
+
+.progress-track {
+  flex: 1;
+}
+.progress-bar {
+  transition-duration: 0.3s;
+}
+
+/* ── Play area ── */
 .stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  user-select: none;
   cursor: pointer;
   touch-action: none;
   outline: none;
@@ -330,6 +412,23 @@ onUnmounted(() => {
   height: 1.8rem;
 }
 
+.game-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.start-hint {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 22%;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
 .hint {
   display: inline-flex;
   align-items: center;
@@ -341,6 +440,22 @@ onUnmounted(() => {
   border-radius: 2rem;
   padding: 0.6rem 1.4rem;
   backdrop-filter: blur(4px);
+}
+.hint-icon {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+/* ── Game over ── */
+.game-over {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: color-mix(in srgb, var(--color-charcoal) 40%, transparent);
+  backdrop-filter: blur(2px);
 }
 
 .over-card {
@@ -363,6 +478,43 @@ onUnmounted(() => {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-ash);
+}
+
+.final-score {
+  font-size: var(--text-4xl);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-snow);
+}
+
+.best-line {
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-ash);
+}
+.best-line.is-new {
+  font-weight: 600;
+  color: var(--color-amber);
+}
+
+.over-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.again-btn {
+  width: 100%;
+  justify-content: center;
+  padding-block: 0.8rem;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+}
+.again-icon {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .fade-game-enter-active,

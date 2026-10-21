@@ -7,7 +7,7 @@
 | `index.html` | HTML shell; loads `/src/main.ts` |
 | `src/main.ts` | Creates Vue app, imports `main.css`, initializes AOS |
 | `src/App.vue` | Root component — composes Header, Hero, About, Project, Contact, Footer, AiChat |
-| `src/styles/main.css` | Tailwind v4 entry point (`@import "tailwindcss"`, `@theme`, `@layer base/components`) |
+| `src/styles/main.css` | Global stylesheet — design tokens, reset, base element styles, shared classes (`@layer reset, base, components`) |
 
 ---
 
@@ -21,11 +21,13 @@ App.vue
 │   ├── About.vue           (id="about")
 │   ├── Project.vue         (id="projects")
 │   ├── ChatSection.vue     (id="chat", full-page chat + how it works)
+│   │   ├── AiChat/ChatHeader.vue
 │   │   └── AiChat/ChatPanel.vue
 │   └── Contact.vue         (id="contact")
 │       └── ContactForm.vue
 ├── Footer.vue
 └── AiChat/AiChat.vue       (fixed overlay, z-index 9999)
+    ├── AiChat/ChatHeader.vue
     └── AiChat/ChatPanel.vue
 ```
 
@@ -38,7 +40,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 ### `Header.vue`
 - Fixed navigation bar, `z-index: 100`, `background: rgba(15,20,25,0.92)`
 - Mobile: hamburger button + `max-height` CSS transition on `.nav.active`
-- Desktop nav link colors/hover use Tailwind classes
+- Desktop nav link colors/hover live in `<style scoped>` with the rest of the header
 - Mobile hamburger/active-state `nth-child` selectors kept in `<style scoped>`
 
 ### `Hero.vue`
@@ -49,7 +51,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - `prefers-reduced-motion`: rain never starts and clouds render as a still frame
 - Weather follows the theme: rain + ambient lightning at dusk (dark), sun + fair-weather clouds in summer (light)
 - Bigfoot is an SVG silhouette in the treeline — lit by lightning flashes in dark mode, hiding in plain sight in light mode. Nothing in the hero is clickable
-- `clamp()` font sizes and responsive breakpoints live in `<style scoped>` (Canvas CSS and clamp cannot be expressed as Tailwind utilities)
+- `clamp()` font sizes and responsive breakpoints live in `<style scoped>`
 
 ### `About.vue`
 - Three blocks: bio + "At a glance" card, experience & education timeline (`timeline` array), and skills grouped by category (`skillGroups` array)
@@ -75,13 +77,14 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 ### `Footer.vue`
 - Three-column grid: Quick Links, Professional, Resources
 - Trademark disclaimer at bottom (`TestNav is a trademark of Pearson Education, Inc.`)
-- No `<style>` block — 100% Tailwind
+- Layout and link hover styles in `<style scoped>`
 
 ### Chat: `composables/useChat.ts`, `AiChat/ChatPanel.vue`, `AiChat/AiChat.vue`, `ChatSection.vue`
 - **`useChat.ts`** holds the one conversation (messages, follow-up chips, input, model status) and its actions (`openChat`, `startModel`, `sendMessage`, `askQuestion`, `askTopic`, `clearChat`). The popup and the section share it, so a chat started in one continues in the other
 - `modelStatus`: `idle` → `loading` → `ready` | `error`. `openChat()` greets once and auto-loads the model if it's already cached
 - Replies come from `chatTree.ts`, routed by `chatRouter.ts` (keywords) then `wllama.ts` (embeddings), and type out word by word
 - **`ChatPanel.vue`** is one view of that conversation: messages, chips, the model status strip, input. `large` prop = roomier type for the section. Each instance scrolls its own message list
+- **`ChatHeader.vue`** = the title bar both chat surfaces share: title, game toggle (with the slow-load hint), optional close button (`closable`), and a default slot for extra status (the section's AI status pill). `large` = the section's roomier sizing
 - **`AiChat.vue`** = the floating button + popup (fixed bottom-right, `z-index: 9999`) wrapping a ChatPanel. Shows on every device (wllama runs on the CPU)
 - **`ChatSection.vue`** (`#chat`, "05 — Ask", nav link "Ask") = a full-page ChatPanel plus how it works, "try asking in your own words" examples (click to fill the chat input, not send) and model facts. Its IntersectionObserver (middle 30% of the viewport) sets `chatSectionInView` and greets on first view
 - The floating button also hides while the popup is open (same `fab` transition), so its outline never shows behind the panel. Focus moves into the popup on open and back to the button on close
@@ -124,7 +127,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 
 ```ts
 base: '/'                       // Cloudflare Pages serves from domain root
-plugins: [tailwindcss(), vue()] // Tailwind MUST be first plugin
+plugins: [vue()]                // plus basicSsl() in 'lan' mode
 assetsInclude: ['**/*.docx']    // .docx treated as static asset
 server.host: 'localhost'        // Required for COOP/COEP to work locally
 server.headers: {               // SharedArrayBuffer for wllama multi-threading in dev

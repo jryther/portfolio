@@ -11,14 +11,14 @@
         04 — Work
       </p>
       <div
-        class="mt-6 mb-14"
+        class="work-heading"
         data-aos="fade-up"
       >
         <h2 class="section-title">
           Professional work
         </h2>
-        <p class="role-line mt-5">
-          <span class="text-snow font-semibold">Software Engineer</span>
+        <p class="role-line">
+          <span class="role-title">Software Engineer</span>
           <span aria-hidden="true">·</span>
           <span>Pearson</span>
           <span aria-hidden="true">·</span>
@@ -38,22 +38,22 @@
           <p class="eyebrow-mini">
             Main project
           </p>
-          <h3 class="text-3xl font-semibold text-snow mt-3 max-xs:text-2xl">
+          <h3 class="featured-title">
             TestNav
           </h3>
-          <p class="text-base text-mist leading-[1.75] mt-4">
+          <p class="featured-desc">
             Pearson's student testing app, delivering millions of secure, high-stakes school exams each year in every major browser and on Windows, macOS, Linux, iOS, and ChromeOS. I work across its full lifecycle, from new features to long-term maintenance, with a focus on reliability, security, and accessibility.
           </p>
 
-          <ul class="mt-8 flex flex-col gap-4">
+          <ul class="featured-points">
             <li
               v-for="point in featured"
               :key="point"
-              class="flex gap-3 text-[1.45rem] leading-[1.65] text-mist"
+              class="featured-point"
             >
               <svg
                 viewBox="0 0 16 16"
-                class="w-[1.4rem] h-[1.4rem] mt-[0.4rem] flex-shrink-0 text-moss"
+                class="check-icon"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -65,16 +65,16 @@
             </li>
           </ul>
 
-          <div class="mt-10 flex flex-wrap items-center gap-3">
-            <span class="font-mono text-xs uppercase tracking-[0.12em] text-ash mr-2">Available on</span>
+          <div class="stores">
+            <span class="label stores-label">Available on</span>
             <a
               href="https://apps.apple.com/us/app/testnav/id818779127"
               target="_blank"
               rel="noreferrer"
-              class="button-ghost text-[1.35rem] py-[0.8rem] px-[1.2rem]"
+              class="button-ghost store-btn"
             >
               <svg
-                class="w-[1.6rem] h-[1.6rem]"
+                class="apple-icon"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 aria-hidden="true"
@@ -87,10 +87,10 @@
               href="https://apps.microsoft.com/detail/9nd5fc7rppx1?hl=en-US&gl=US"
               target="_blank"
               rel="noreferrer"
-              class="button-ghost text-[1.35rem] py-[0.8rem] px-[1.2rem]"
+              class="button-ghost store-btn"
             >
               <svg
-                class="w-[1.4rem] h-[1.4rem]"
+                class="windows-icon"
                 viewBox="0 0 24 24"
                 fill="currentColor"
                 aria-hidden="true"
@@ -118,7 +118,7 @@
               </dd>
             </div>
           </dl>
-          <p class="font-mono text-2xs text-ash mt-4">
+          <p class="stats-note">
             Percentages are my own estimates.
           </p>
         </div>
@@ -126,27 +126,27 @@
 
       <!-- Supporting work around the main project -->
       <p
-        class="eyebrow-mini mt-16 mb-6"
+        class="eyebrow-mini platform-label"
         data-aos="fade-up"
       >
         Around the platform
       </p>
-      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="supporting-grid">
         <article
           v-for="(item, index) in supporting"
           :key="item.name"
-          class="card spotlight p-8 flex flex-col"
+          class="card spotlight supporting-card"
           data-aos="fade-up"
           :data-aos-delay="index * 60"
           @mousemove="trackPointer"
         >
-          <h3 class="text-xl font-semibold text-snow">
+          <h3 class="supporting-title">
             {{ item.name }}
           </h3>
-          <p class="text-[1.4rem] text-mist leading-[1.65] mt-3 mb-6">
+          <p class="supporting-desc">
             {{ item.description }}
           </p>
-          <p class="result mt-auto">
+          <p class="result">
             <span class="result-value">{{ item.result }}</span>
             <span class="result-label">{{ item.resultLabel }}</span>
           </p>
@@ -225,7 +225,13 @@ const supporting: Supporting[] = [
 </script>
 
 <style scoped>
+.work-heading {
+  margin-top: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+
 .role-line {
+  margin-top: 1.25rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -233,6 +239,11 @@ const supporting: Supporting[] = [
   font-family: var(--font-mono);
   font-size: 1.35rem;
   color: var(--color-ash);
+}
+
+.role-title {
+  color: var(--color-snow);
+  font-weight: 600;
 }
 
 .eyebrow-mini {
@@ -259,6 +270,123 @@ const supporting: Supporting[] = [
 }
 @media (max-width: 480px) {
   .featured { padding: 2.8rem 2.2rem; }
+}
+
+.featured-title {
+  margin-top: 0.75rem;
+  font-size: var(--text-3xl);
+  line-height: var(--leading-3xl);
+  font-weight: 600;
+  color: var(--color-snow);
+}
+
+@media (width < 480px) {
+  .featured-title { font-size: var(--text-2xl); line-height: var(--leading-2xl); }
+}
+
+.featured-desc {
+  margin-top: 1rem;
+  font-size: var(--text-base);
+  line-height: 1.75;
+  color: var(--color-mist);
+}
+
+.featured-points {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.featured-point {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 1.45rem;
+  line-height: 1.65;
+  color: var(--color-mist);
+}
+
+.check-icon {
+  flex-shrink: 0;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: 0.4rem;
+  color: var(--color-moss);
+}
+
+.stores {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 2.5rem;
+}
+
+.stores-label {
+  margin-right: 0.5rem;
+}
+
+.store-btn {
+  padding: 0.8rem 1.2rem;
+  font-size: 1.35rem;
+}
+
+.apple-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+}
+
+.windows-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.stats-note {
+  margin-top: 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-ash);
+}
+
+/* ── Supporting work ── */
+.platform-label {
+  margin-top: 4rem;
+  margin-bottom: 1.5rem;
+}
+
+.supporting-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .supporting-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .supporting-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.supporting-card {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+.supporting-title {
+  font-size: var(--text-xl);
+  line-height: var(--leading-xl);
+  font-weight: 600;
+  color: var(--color-snow);
+}
+
+.supporting-desc {
+  margin-top: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+  line-height: 1.65;
+  color: var(--color-mist);
 }
 
 .stats {
@@ -293,6 +421,7 @@ const supporting: Supporting[] = [
 }
 
 .result {
+  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;

@@ -1,17 +1,17 @@
 <template>
-  <div class="fixed bottom-8 right-8 z-[9999] flex flex-col items-end gap-3 pointer-events-none max-xs:bottom-4 max-xs:right-4">
+  <div class="chat-dock">
     <!-- Floating toggle button; steps aside while the popup is open (so its outline never
          peeks out behind it) and while the full chat section is on screen -->
     <Transition name="fab">
       <button
         v-show="fabVisible && !isOpen"
         ref="fabEl"
-        class="pointer-events-auto w-[5.6rem] h-[5.6rem] rounded-2xl bg-amber border border-golden/40 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.3),0_0_0_6px_color-mix(in_srgb,var(--color-amber)_10%,transparent)] flex items-center justify-center transition-[background] duration-200 flex-shrink-0 hover:bg-golden"
+        class="fab"
         aria-label="Ask about Josh"
         title="Ask about Josh"
         @click="toggleModal"
       >
-        <SparkleIcon class="w-[2.4rem] h-[2.4rem] text-ink" />
+        <SparkleIcon class="fab-icon" />
       </button>
     </Transition>
 
@@ -23,7 +23,7 @@
         class="backtop-slot"
       >
         <button
-          class="backtop pointer-events-auto"
+          class="backtop"
           aria-label="Back to top"
           title="Back to top"
           @click="backToTop"
@@ -41,49 +41,18 @@
         role="dialog"
         tabindex="-1"
         aria-label="Ask about Josh"
-        class="pointer-events-auto absolute bottom-0 right-0 bg-panel border border-line-strong rounded-[1.4rem] flex flex-col overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.35)] z-[1] max-xs:w-[calc(100vw-2rem)] max-xs:max-h-[70vh]"
-        :style="modalStyle"
+        class="chat-popup"
         @keydown.esc.stop="toggleModal"
       >
-        <!-- Header -->
-        <div class="flex items-center justify-between px-[1.2rem] py-5 bg-snow/[.04] border-b border-snow/[.06] font-semibold text-lg text-snow flex-shrink-0">
-          <div class="flex items-center gap-3">
-            <SparkleIcon class="w-[1.8rem] h-[1.8rem] text-amber" />
-            <span class="ml-1 text-lg">Ask About Josh</span>
-          </div>
-          <div class="flex items-center gap-1">
-            <button
-              class="header-btn"
-              :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
-              :aria-pressed="showGame"
-              :aria-label="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
-              :title="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
-              @click="showGame = !showGame"
-            >
-              <UiIcon name="game" />
-              <span
-                v-if="slowLoad && !showGame"
-                class="hint-dot"
-              />
-            </button>
-            <button
-              class="header-btn"
-              aria-label="Close chat"
-              title="Close"
-              @click="toggleModal"
-            >
-              <UiIcon name="close" />
-            </button>
-          </div>
-        </div>
-
-        <MiniGame
-          v-if="showGame"
-          class="flex-1"
+        <ChatHeader
+          v-model:show-game="showGame"
+          closable
+          @close="toggleModal"
         />
+
+        <MiniGame v-if="showGame" />
         <ChatPanel
           v-else
-          class="flex-1"
           @play-game="showGame = true"
         />
       </div>
@@ -95,8 +64,9 @@
 import { ref, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import ChatPanel from './ChatPanel.vue'
+import ChatHeader from './ChatHeader.vue'
 import UiIcon from '../icons/UiIcon.vue'
-import { openChat, chatSectionInView, slowLoad } from '../../composables/useChat'
+import { openChat, chatSectionInView } from '../../composables/useChat'
 import { prefetchWhenIdle } from '../../composables/useGame'
 
 // The game's code downloads in the background once the chat opens, so the game icon is instant
@@ -111,13 +81,6 @@ const panelEl    = ref<HTMLElement | null>(null)
 
 // Matches the .chat-panel-leave-active duration below
 const PANEL_LEAVE_MS = 280
-
-const modalStyle = {
-  width:     '44rem',
-  maxWidth:  'calc(100vw - 2rem)',  // inline width beats the max-xs class, so cap it here
-  minHeight: '46rem',
-  maxHeight: '56rem',
-}
 
 async function toggleModal() {
   isOpen.value = !isOpen.value
@@ -172,60 +135,77 @@ watch(chatSectionInView, (inView) => {
 </script>
 
 <style scoped>
-[role="dialog"]:focus {
-  outline: none;   /* focus parks here on open; the controls inside show their own focus rings */
+/* Bottom-right corner stack: chat button, back to top, and the popup over both.
+   The stack itself ignores the pointer so it never blocks the page beside its buttons */
+.chat-dock {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+  pointer-events: none;
 }
 
-.header-btn {
-  width: 3.2rem;
-  height: 3.2rem;
-  display: inline-flex;
+@media (width < 480px) {
+  .chat-dock {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
+
+.fab {
+  pointer-events: auto;
+  flex-shrink: 0;
+  width: 5.6rem;
+  height: 5.6rem;
+  display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  border-radius: 0.8rem;
-  background: transparent;
-  color: var(--color-ash);
+  border: 1px solid color-mix(in srgb, var(--color-golden) 40%, transparent);
+  border-radius: 1rem;
+  background-color: var(--color-amber);
   cursor: pointer;
-  transition: color 0.2s ease, background-color 0.2s ease;
+  box-shadow:
+    0 8px 30px rgb(0 0 0 / 0.3),
+    0 0 0 6px color-mix(in srgb, var(--color-amber) 10%, transparent);
+  transition: background 0.2s ease;
 }
-.header-btn:hover {
-  color: var(--color-snow);
-  background: color-mix(in srgb, var(--color-snow) 6%, transparent);
+.fab:hover {
+  background-color: var(--color-golden);
 }
-.header-btn.is-active {
-  color: var(--color-amber);
-  background: color-mix(in srgb, var(--color-amber) 12%, transparent);
+
+.fab-icon {
+  width: 2.4rem;
+  height: 2.4rem;
+  color: var(--color-ink);
 }
-.header-btn {
-  position: relative;
-}
-/* The AI is still loading: point at the game */
-.header-btn.is-hinting {
-  color: var(--color-amber);
-  animation: hint-pulse 1.8s ease-out infinite;
-}
-.hint-dot {
+
+.chat-popup {
+  pointer-events: auto;
   position: absolute;
-  top: 0.45rem;
-  right: 0.45rem;
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 50%;
-  background: var(--color-amber);
-  box-shadow: 0 0 0 2px var(--color-panel);
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 44rem;
+  max-width: calc(100vw - 2rem);
+  /* Short screens (landscape phones, an open keyboard) shrink it so the header and close
+     button stay on screen */
+  min-height: min(46rem, calc(100dvh - 4rem));
+  max-height: min(56rem, calc(100dvh - 4rem));
+  background-color: var(--color-panel);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 1.4rem;
+  box-shadow: 0 8px 40px rgb(0 0 0 / 0.35);
 }
-@keyframes hint-pulse {
-  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-amber) 45%, transparent); }
-  70%  { box-shadow: 0 0 0 0.8rem color-mix(in srgb, var(--color-amber) 0%, transparent); }
-  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-amber) 0%, transparent); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .header-btn.is-hinting { animation: none; }
-}
-.header-btn svg {
-  width: 1.8rem;
-  height: 1.8rem;
+
+[role="dialog"]:focus {
+  outline: none;   /* focus parks here on open; the controls inside show their own focus rings */
 }
 
 /* ── Panel slide-up transition ── */
@@ -259,6 +239,7 @@ watch(chatSectionInView, (inView) => {
   justify-content: center;
 }
 .backtop {
+  pointer-events: auto;
   width: 4.4rem;
   height: 4.4rem;
   display: inline-flex;
@@ -288,7 +269,7 @@ watch(chatSectionInView, (inView) => {
 .backtop-enter-from,
 .backtop-leave-to {
   height: 0;
-  margin-top: -0.75rem;   /* cancels the container's gap-3 */
+  margin-top: -0.75rem;   /* cancels the dock's gap */
   opacity: 0;
 }
 @media (prefers-reduced-motion: reduce) {

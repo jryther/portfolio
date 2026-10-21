@@ -11,7 +11,7 @@ Live at **[https://portfolio-v3.jryther91.workers.dev](https://portfolio-v3.jryt
 |---|---|
 | Framework | Vue 3 (Composition API) |
 | Build tool | Vite 7 |
-| Styling | Tailwind CSS v4 + scoped `<style>` for animations |
+| Styling | Plain CSS — a global stylesheet plus scoped `<style>` per component |
 | Animations | AOS (Animate On Scroll) + Canvas 2D |
 | AI chat | Decision tree of pre-written answers + [wllama](https://github.com/ngxson/wllama) (llama.cpp in WebAssembly) running Google EmbeddingGemma in the browser |
 | Testing | Vitest + `@vue/test-utils` |
@@ -72,7 +72,7 @@ src/
 │       └── topicIndex.spec.ts
 │
 ├── styles/
-│   └── main.css              # Tailwind v4 entry — @theme, @layer base/components
+│   └── main.css              # Global styles — tokens, reset, base, shared classes
 │
 ├── assets/
 │   ├── Resume.pdf

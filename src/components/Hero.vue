@@ -264,7 +264,7 @@
 
     <!-- Hero text -->
     <div class="wrap hero-content">
-      <div class="max-w-[64rem] flex flex-col items-start">
+      <div class="hero-text">
         <p
           class="status-pill"
           data-aos="fade-up"
@@ -274,7 +274,7 @@
         </p>
 
         <p
-          class="font-mono text-[1.4rem] text-amber mt-8 mb-3"
+          class="hero-greeting"
           data-aos="fade-up"
           data-aos-delay="80"
         >
@@ -295,7 +295,7 @@
           Full-Stack Software Engineer
         </p>
         <p
-          class="font-mono text-[1.35rem] text-mist mt-3"
+          class="hero-stack"
           data-aos="fade-up"
           data-aos-delay="160"
         >
@@ -310,7 +310,7 @@
         </p>
 
         <div
-          class="flex flex-wrap items-center gap-4"
+          class="hero-actions"
           data-aos="fade-up"
           data-aos-delay="240"
         >
@@ -321,7 +321,7 @@
             Get in touch
             <svg
               viewBox="0 0 16 16"
-              class="w-[1.4rem] h-[1.4rem]"
+              class="arrow-icon"
               fill="none"
               stroke="currentColor"
               stroke-width="1.8"
@@ -339,7 +339,7 @@
             class="button-ghost"
           >View resume</a>
 
-          <div class="flex items-center gap-1 sm:ml-2 max-sm:basis-full max-sm:-ml-3">
+          <div class="hero-socials">
             <a
               href="https://linkedin.com/in/joshua-ryther-121400109"
               target="_blank"
@@ -373,7 +373,7 @@
 
     <!-- Coordinates of the summit -->
     <p class="coords wrap">
-      <span class="coords-text">45.3736° N, 121.6960° W <span class="opacity-50">·</span> Mt. Hood <span class="opacity-50">·</span> 11,249 ft</span>
+      <span class="coords-text">45.3736° N, 121.6960° W <span class="dim">·</span> Mt. Hood <span class="dim">·</span> 11,249 ft</span>
     </p>
   </section>
 </template>
@@ -1072,6 +1072,55 @@ onUnmounted(() => {
   color: var(--color-mist);
 }
 
+.hero-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 64rem;
+}
+
+.hero-greeting {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  color: var(--color-amber);
+}
+
+.hero-stack {
+  margin-top: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  color: var(--color-mist);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.arrow-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* Beside the buttons on wider screens; their own row on phones, nudged so the icons line up */
+.hero-socials {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-left: 0.5rem;
+}
+
+@media (width < 640px) {
+  .hero-socials {
+    flex-basis: 100%;
+    margin-left: -0.75rem;
+  }
+}
+
 .social-link {
   display: inline-flex;
   align-items: center;
@@ -1106,6 +1155,7 @@ onUnmounted(() => {
   color: #9FB0AA;
   pointer-events: none;
 }
+.coords .dim { opacity: 0.5; }
 /* Light mode: the forest behind is a mid-tone green no text color can contrast with, so the
    caption sits on a soft dark-green backing */
 :root[data-theme="light"] .coords { color: #F1F5F2; }

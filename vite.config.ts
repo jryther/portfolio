@@ -1,7 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vitest/config'
-import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 
@@ -13,7 +12,6 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 export default defineConfig(({ mode }) => ({
   base: '/',
   plugins: [
-    tailwindcss(),
     vue(),
     mode === 'lan' && basicSsl(),
   ],

@@ -3,22 +3,22 @@
     id="contact"
     class="section bg-topo"
   >
-    <div class="wrap grid grid-cols-1 gap-16 lg:grid-cols-[1fr_1.15fr] lg:gap-24">
+    <div class="wrap contact-grid">
       <div data-aos="fade-up">
         <p class="eyebrow">
           06 — Contact
         </p>
-        <h2 class="section-title mt-6 mb-8">
+        <h2 class="section-title contact-title">
           Let's connect
         </h2>
-        <p class="text-body leading-[1.8] text-mist mb-4">
+        <p class="lede">
           I'm always interested in discussing new opportunities, technical challenges, and collaborations.
         </p>
-        <p class="text-body leading-[1.8] text-mist">
+        <p class="lede">
           Whether you're looking for a full-stack developer, need technical insights, or just want to chat about software engineering, feel free to reach out!
         </p>
 
-        <ul class="mt-12 flex flex-col gap-3">
+        <ul class="contact-list">
           <li
             v-for="item in contactLinks"
             :key="item.label"
@@ -42,9 +42,9 @@
                   aria-hidden="true"
                 ><path :d="item.icon" /></svg>
               </span>
-              <span class="flex flex-col">
-                <span class="font-mono text-2xs uppercase tracking-[0.12em] text-ash">{{ item.label }}</span>
-                <span class="contact-value text-body text-snow">{{ item.value }}</span>
+              <span class="contact-text">
+                <span class="label is-small">{{ item.label }}</span>
+                <span class="contact-value">{{ item.value }}</span>
               </span>
             </component>
           </li>
@@ -52,14 +52,14 @@
       </div>
 
       <div
-        class="card p-10 self-start max-xs:p-7"
+        class="card form-card"
         data-aos="fade-up"
         data-aos-delay="100"
       >
-        <h3 class="text-xl font-semibold text-snow mb-2">
+        <h3 class="form-title">
           Send a message
         </h3>
-        <p class="text-base text-mist mb-8">
+        <p class="form-intro">
           I usually reply within a day or two.
         </p>
         <ContactForm />
@@ -98,6 +98,64 @@ const contactLinks = [
 </script>
 
 <style scoped>
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4rem;
+}
+
+@media (min-width: 1024px) {
+  .contact-grid {
+    grid-template-columns: 1fr 1.15fr;
+    gap: 6rem;
+  }
+}
+
+.contact-title {
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.lede + .lede {
+  margin-top: 1rem;
+}
+
+.contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 3rem;
+}
+
+.contact-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-card {
+  align-self: flex-start;
+  padding: 2.5rem;
+}
+
+@media (width < 480px) {
+  .form-card { padding: 1.75rem; }
+}
+
+.form-title {
+  margin-bottom: 0.5rem;
+  font-size: var(--text-xl);
+  line-height: var(--leading-xl);
+  font-weight: 600;
+  color: var(--color-snow);
+}
+
+.form-intro {
+  margin-bottom: 2rem;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--color-mist);
+}
+
 .contact-row {
   display: flex;
   align-items: center;
@@ -113,6 +171,8 @@ const contactLinks = [
 }
 
 .contact-value {
+  font-size: var(--text-body);
+  color: var(--color-snow);
   transition: color 0.2s ease;
 }
 

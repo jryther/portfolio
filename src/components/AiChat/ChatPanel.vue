@@ -1,13 +1,12 @@
 <template>
   <div
-    class="chat-panel flex flex-col min-h-0"
+    class="chat-panel"
     :class="{ 'is-large': large }"
   >
     <!-- Chat messages -->
     <div
       ref="messagesEl"
-      class="flex-1 min-h-0 overflow-y-auto px-4 py-[1.2rem] flex flex-col gap-2"
-      style="scrollbar-width:thin; scrollbar-color:var(--color-line-strong) transparent"
+      class="messages"
       :aria-live="live ? 'polite' : 'off'"
     >
       <template
@@ -16,20 +15,18 @@
       >
         <div
           v-if="msg.text !== ''"
-          class="flex items-end gap-2"
-          :class="msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'"
+          class="message"
+          :class="{ 'is-user': msg.role === 'user' }"
         >
           <div
             v-if="msg.role === 'assistant'"
-            class="avatar flex-shrink-0 flex items-center justify-center bg-snow/[.05] rounded-full mb-[0.1rem]"
+            class="avatar"
           >
-            <SparkleIcon class="w-[1.4rem] h-[1.4rem] text-amber" />
+            <SparkleIcon class="avatar-icon" />
           </div>
           <div
-            class="bubble max-w-[78%] py-[0.7rem] px-4 whitespace-pre-wrap break-words rounded-[1.2rem]"
-            :class="msg.role === 'user'
-              ? 'bg-amber text-ink font-medium rounded-br-[0.25rem]'
-              : 'bg-snow/[.09] text-snow rounded-bl-[0.25rem] border border-snow/[.07]'"
+            class="bubble"
+            :class="msg.role === 'user' ? 'from-user' : 'from-assistant'"
           >
             {{ msg.text }}
           </div>
@@ -39,7 +36,7 @@
       <!-- Follow-up topics for the latest answer -->
       <div
         v-if="followUps.length"
-        class="chips flex flex-wrap gap-2 pt-1"
+        class="chips"
       >
         <button
           v-for="id in followUps"
@@ -54,13 +51,13 @@
       <!-- Thinking indicator -->
       <div
         v-if="thinking"
-        class="flex items-end gap-2 mt-1"
+        class="message thinking"
         aria-label="Thinking"
       >
-        <div class="avatar flex-shrink-0 flex items-center justify-center bg-snow/[.05] rounded-full">
-          <SparkleIcon class="w-[1.4rem] h-[1.4rem] text-amber" />
+        <div class="avatar">
+          <SparkleIcon class="avatar-icon" />
         </div>
-        <div class="flex items-center gap-[0.35rem] bg-snow/[.09] border border-snow/[.07] rounded-[1.2rem] rounded-bl-[0.25rem] py-3 px-4">
+        <div class="typing">
           <span class="dot" />
           <span class="dot" />
           <span class="dot" />
@@ -71,17 +68,17 @@
     <!-- AI model status: optional, chips and quick answers work without it -->
     <div
       v-if="modelStatus !== 'ready'"
-      class="px-4 py-[0.9rem] border-t border-snow/[.06] flex-shrink-0"
+      class="model-status"
     >
       <div
         v-if="modelStatus === 'idle'"
-        class="flex items-center gap-4"
+        class="model-offer"
       >
-        <p class="status-text flex-1 m-0 text-mist leading-[1.5]">
+        <p class="status-text offer-text">
           Want me to understand questions in your own words? Load a small AI model that runs in your browser.
         </p>
         <button
-          class="button-ghost flex-shrink-0 py-[0.5rem] px-[1rem] text-sm"
+          class="button-ghost load-btn"
           :title="`${MODEL.name}, ${MODEL.sizeLabel} one-time download`"
           @click="startModel"
         >
@@ -90,15 +87,15 @@
       </div>
       <div
         v-else-if="modelStatus === 'loading'"
-        class="flex flex-col gap-[0.6rem]"
+        class="model-loading"
       >
-        <div class="status-text flex items-center justify-between gap-3">
-          <span class="text-mist">{{ loadingText }}</span>
-          <span class="font-semibold text-amber">{{ loadingProgress }}%</span>
+        <div class="status-text progress-row">
+          <span class="progress-label">{{ loadingText }}</span>
+          <span class="progress-value">{{ loadingProgress }}%</span>
         </div>
-        <div class="w-full h-[0.4rem] bg-snow/[.08] rounded-full overflow-hidden">
+        <div class="progress-track">
           <div
-            class="h-full bg-amber rounded-full transition-[width] duration-[350ms] ease-out"
+            class="progress-bar"
             :style="{ width: loadingProgress + '%' }"
           />
         </div>
@@ -110,7 +107,7 @@
           >
             <UiIcon
               name="game"
-              class="w-[1.6rem] h-[1.6rem]"
+              class="play-hint-icon"
             />
             Play a game while you wait
           </button>
@@ -118,11 +115,11 @@
       </div>
       <p
         v-else
-        class="status-text m-0 text-ash leading-[1.5]"
+        class="status-text model-error"
       >
         The AI model couldn't load on this device, but quick answers still work.
         <button
-          class="bg-transparent border-none p-0 text-amber cursor-pointer font-[inherit] underline"
+          class="retry-btn"
           @click="startModel"
         >
           Try again
@@ -131,7 +128,7 @@
     </div>
 
     <!-- Input area -->
-    <div class="px-4 py-[0.8rem] border-t border-snow/[.06] bg-snow/[.02] flex-shrink-0 box-border w-full">
+    <div class="composer">
       <!-- :value + @input rather than v-model, so phone keyboards update it mid-word -->
       <input
         :value="userInput"
@@ -139,28 +136,28 @@
         aria-label="Ask a question about Josh"
         :disabled="busy || modelLoading"
         maxlength="400"
-        class="chat-input block w-full box-border bg-snow/[.06] border border-snow/10 rounded-[0.75rem] py-3 px-4 text-snow font-[inherit] transition-[border-color] duration-200 resize-none mb-[0.6rem] focus:border-amber disabled:opacity-50 placeholder:text-ash"
+        class="chat-input"
         @input="userInput = ($event.target as HTMLInputElement).value"
         @keydown.enter="onEnter"
       >
-      <div class="flex items-center justify-between">
-        <p class="text-base text-ash m-0">
+      <div class="composer-footer">
+        <p class="char-count">
           {{ userInput.length }}/400
         </p>
-        <div class="flex items-center gap-3">
+        <div class="composer-actions">
           <button
-            class="inline-flex items-center gap-[0.4rem] min-h-[2.4rem] bg-transparent border-none text-ash text-base cursor-pointer p-0 transition-colors duration-200 hover:text-amber font-[inherit]"
+            class="clear-btn"
             @click="clearChat"
           >
             <UiIcon
               name="refresh"
-              class="w-[1.4rem] h-[1.4rem]"
+              class="clear-icon"
             />
             Clear
           </button>
           <button
             :disabled="busy || modelLoading"
-            class="button py-[0.4rem] px-[1.2rem] text-base disabled:opacity-40 disabled:cursor-not-allowed"
+            class="button send-btn"
             @click="sendMessage"
           >
             Send
@@ -208,24 +205,237 @@ function onEnter(e: KeyboardEvent) {
 </script>
 
 <style scoped>
+/* Fills whatever is left of its card or popup below the header */
+.chat-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ── Messages ── */
+.messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.2rem 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+.message {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+.message.is-user {
+  flex-direction: row-reverse;
+}
+.message.thinking {
+  margin-top: 0.25rem;
+}
+
 .avatar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 2.8rem;
   height: 2.8rem;
+  border-radius: 50%;
+  margin-bottom: 0.1rem;
+  background-color: color-mix(in srgb, var(--color-snow) 5%, transparent);
 }
+.thinking .avatar {
+  margin-bottom: 0;
+}
+.avatar-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+  color: var(--color-amber);
+}
+
 .bubble {
+  max-width: 78%;
+  padding: 0.7rem 1rem;
+  border-radius: 1.2rem;
   font-size: 1.5rem;
   line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
+.typing {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.75rem 1rem;
+  border-radius: 1.2rem;
+}
+
+/* Each side's bubble has one squared-off corner, pointing at its speaker */
+.bubble.from-user {
+  border-bottom-right-radius: 0.25rem;
+  background-color: var(--color-amber);
+  color: var(--color-ink);
+  font-weight: 500;
+}
+.bubble.from-assistant,
+.typing {
+  border: 1px solid color-mix(in srgb, var(--color-snow) 7%, transparent);
+  border-bottom-left-radius: 0.25rem;
+  background-color: color-mix(in srgb, var(--color-snow) 9%, transparent);
+  color: var(--color-snow);
+}
+
 /* Chips line up with the bubbles, past the avatar */
 .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.25rem;
   padding-left: calc(2.8rem + 0.8rem);
 }
+
+/* ── AI model status ── */
+.model-status {
+  flex-shrink: 0;
+  padding: 0.9rem 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-snow) 6%, transparent);
+}
+
 .status-text {
   font-size: 1.3rem;
 }
+
+.model-offer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.offer-text {
+  flex: 1;
+  line-height: 1.5;
+  color: var(--color-mist);
+}
+.load-btn {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+}
+
+.model-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.progress-label {
+  color: var(--color-mist);
+}
+.progress-value {
+  font-weight: 600;
+  color: var(--color-amber);
+}
+.progress-track {
+  width: 100%;
+}
+
+.model-error {
+  line-height: 1.5;
+  color: var(--color-ash);
+}
+.retry-btn {
+  padding: 0;
+  color: var(--color-amber);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ── Input area ── */
+.composer {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-snow) 6%, transparent);
+  background-color: color-mix(in srgb, var(--color-snow) 2%, transparent);
+}
+
 .chat-input {
+  display: block;
+  width: 100%;
   height: 4.4rem;
+  margin-bottom: 0.6rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-snow) 10%, transparent);
+  border-radius: 0.75rem;
+  background-color: color-mix(in srgb, var(--color-snow) 6%, transparent);
+  color: var(--color-snow);
   font-size: 1.4rem;
+  transition: border-color 0.2s ease;
+}
+.chat-input::placeholder {
+  color: var(--color-ash);
+}
+.chat-input:focus {
+  border-color: var(--color-amber);
+}
+.chat-input:disabled {
+  opacity: 0.5;
+}
+
+.composer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.char-count {
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--color-ash);
+}
+.composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.4rem;
+  padding: 0;
+  color: var(--color-ash);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.clear-btn:hover {
+  color: var(--color-amber);
+}
+.clear-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.send-btn {
+  padding: 0.4rem 1.2rem;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+}
+.send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Full-page section: roomier type */
@@ -265,6 +475,10 @@ function onEnter(e: KeyboardEvent) {
 .play-hint:hover {
   background: color-mix(in srgb, var(--color-amber) 18%, transparent);
   border-color: var(--color-amber);
+}
+.play-hint-icon {
+  width: 1.6rem;
+  height: 1.6rem;
 }
 .hint-enter-active { transition: opacity 0.3s ease, transform 0.3s ease; }
 .hint-enter-from { opacity: 0; transform: translateY(0.4rem); }

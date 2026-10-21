@@ -13,10 +13,10 @@
         <p class="eyebrow">
           05 — Ask
         </p>
-        <h2 class="section-title mt-6 mb-6">
+        <h2 class="section-title chat-title">
           Ask about my work
         </h2>
-        <p class="text-body leading-[1.8] text-mist">
+        <p class="lede">
           Ask about my experience, projects, or skills and get an answer straight away, or pick a topic to explore.
         </p>
       </div>
@@ -45,10 +45,10 @@
           </li>
         </ol>
 
-        <h3 class="detail-heading mt-12">
+        <h3 class="detail-heading examples-heading">
           Try asking in your own words
         </h3>
-        <div class="flex flex-col items-start gap-3">
+        <div class="examples">
           <button
             v-for="q in AI_EXAMPLES"
             :key="q"
@@ -60,7 +60,7 @@
         </div>
         <p
           v-if="!modelReady"
-          class="text-sm text-ash mt-4"
+          class="tip"
         >
           Tip: load the AI model in the chat first, so it understands questions like these.
         </p>
@@ -92,44 +92,23 @@
           role="region"
           aria-label="Chat about Josh"
         >
-          <div class="flex items-center justify-between gap-4 px-[1.6rem] py-[1.2rem] bg-snow/[.04] border-b border-snow/[.06] flex-shrink-0">
-            <div class="flex items-center gap-3 text-snow font-semibold text-lg">
-              <SparkleIcon class="w-[1.8rem] h-[1.8rem] text-amber" />
-              Ask About Josh
-            </div>
-            <div class="flex items-center gap-3">
-              <span
-                class="status-pill"
-                :class="{ 'is-ready': modelReady }"
-              >
-                <span class="status-dot" />
-                {{ statusLabel }}
-              </span>
-              <button
-                class="header-btn"
-                :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
-                :aria-pressed="showGame"
-                :aria-label="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
-                :title="showGame ? 'Back to chat' : slowLoad ? 'Play a game while the AI loads' : 'Play a game'"
-                @click="showGame = !showGame"
-              >
-                <UiIcon name="game" />
-                <span
-                  v-if="slowLoad && !showGame"
-                  class="hint-dot"
-                />
-              </button>
-            </div>
-          </div>
-          <MiniGame
-            v-if="showGame"
-            class="flex-1"
-          />
+          <ChatHeader
+            v-model:show-game="showGame"
+            large
+          >
+            <span
+              class="status-pill"
+              :class="{ 'is-ready': modelReady }"
+            >
+              <span class="status-dot" />
+              {{ statusLabel }}
+            </span>
+          </ChatHeader>
+          <MiniGame v-if="showGame" />
           <ChatPanel
             v-else
             large
             :live="chatSectionInView"
-            class="flex-1"
             @play-game="showGame = true"
           />
         </div>
@@ -165,14 +144,14 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
-import SparkleIcon from './icons/SparkleIcon.vue'
 import ChatPanel from './AiChat/ChatPanel.vue'
+import ChatHeader from './AiChat/ChatHeader.vue'
 import UiIcon from './icons/UiIcon.vue'
 import { AI_EXAMPLES } from '../data/chatTree'
 import { MODEL } from '../services/chatModel'
 import { prefetchWhenIdle } from '../composables/useGame'
 import {
-  openChat, chatSectionInView, modelStatus, modelReady, loadingProgress, userInput, slowLoad,
+  openChat, chatSectionInView, modelStatus, modelReady, loadingProgress, userInput,
 } from '../composables/useChat'
 
 // The game's code downloads in the background once the section is in view, so the game icon is instant
@@ -266,6 +245,10 @@ onUnmounted(() => {
   }
 }
 
+.chat-title {
+  margin-block: 1.5rem;
+}
+
 .chat-card {
   display: flex;
   flex-direction: column;
@@ -316,58 +299,6 @@ onUnmounted(() => {
 }
 .game-note-btn:hover {
   background: color-mix(in srgb, var(--color-amber) 12%, transparent);
-}
-
-.header-btn {
-  width: 3.4rem;
-  height: 3.4rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  border-radius: 0.8rem;
-  background: transparent;
-  color: var(--color-ash);
-  cursor: pointer;
-  transition: color 0.2s ease, background-color 0.2s ease;
-}
-.header-btn:hover {
-  color: var(--color-snow);
-  background: color-mix(in srgb, var(--color-snow) 6%, transparent);
-}
-.header-btn.is-active {
-  color: var(--color-amber);
-  background: color-mix(in srgb, var(--color-amber) 12%, transparent);
-}
-.header-btn {
-  position: relative;
-}
-/* The AI is still loading: point at the game */
-.header-btn.is-hinting {
-  color: var(--color-amber);
-  animation: hint-pulse 1.8s ease-out infinite;
-}
-.hint-dot {
-  position: absolute;
-  top: 0.45rem;
-  right: 0.45rem;
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 50%;
-  background: var(--color-amber);
-  box-shadow: 0 0 0 2px var(--color-panel);
-}
-@keyframes hint-pulse {
-  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-amber) 45%, transparent); }
-  70%  { box-shadow: 0 0 0 0.8rem color-mix(in srgb, var(--color-amber) 0%, transparent); }
-  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-amber) 0%, transparent); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .header-btn.is-hinting { animation: none; }
-}
-.header-btn svg {
-  width: 1.9rem;
-  height: 1.9rem;
 }
 
 .status-pill {
@@ -437,6 +368,24 @@ onUnmounted(() => {
   font-family: var(--font-mono);
   font-size: 1.2rem;
   margin-top: 0.1rem;
+}
+
+.examples-heading {
+  margin-top: 3rem;
+}
+
+.examples {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.tip {
+  margin-top: 1rem;
+  font-size: var(--text-sm);
+  line-height: var(--leading-sm);
+  color: var(--color-ash);
 }
 
 .example {

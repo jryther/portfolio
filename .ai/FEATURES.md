@@ -99,7 +99,7 @@ The chat doesn't generate text. Every reply is pre-written in a decision tree (`
 - The input uses `:value` + `@input` instead of `v-model` so it updates during phone-keyboard composition; Enter is ignored while an IME is composing
 - Replies get a short "thinking" beat (500 ms minimum), then type out a few words at a time; both are skipped for `prefers-reduced-motion`
 - Follow-up chips show the topic's unseen children (all children once every one has been seen)
-- Panel width is capped at `calc(100vw - 2rem)` inline, because the inline width beats Tailwind's `max-xs:` class
+- Popup size lives in `.chat-popup` (scoped): `44rem` wide, capped at `calc(100vw - 2rem)` so it fits phones
 
 ---
 
