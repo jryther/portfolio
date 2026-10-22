@@ -1,7 +1,12 @@
 # Dependabot: weekly dependency updates as pull requests.
 #
-# Patch and minor updates arrive as two grouped PRs (dev and production) that the CI workflow
-# can merge once every check passes. Major versions, and wllama, each get their own PR for review.
+# Patch and minor updates arrive as grouped PRs (dev and production) that the CI workflow
+# can merge once every check passes. Major versions, and wllama, each get their own PR for review,
+# except Vitest and its plugins, which always update together in one PR.
+#
+# Node is pinned to an exact version in .node-version (CI and Cloudflare both read it). Some
+# packages require a recent Node, and .npmrc's engine-strict refuses to install them on an
+# older one, so bump .node-version (and local Node) when an update asks for it.
 #
 # Cooldown: a new release has to be out for a few days before Dependabot proposes it, so a
 # compromised or broken release is usually caught and pulled before it reaches this repo.
@@ -31,6 +36,13 @@ updates:
       prefix: deps
       prefix-development: deps-dev
     groups:
+      # Vitest and its plugins require the exact same version of each other, so they always
+      # move together, majors included (a major still waits for review). Listed first: a
+      # package goes to the first group it matches
+      vitest:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
       # Build tools, linters, test runners
       dev-dependencies:
         dependency-type: development
@@ -47,7 +59,7 @@ updates:
         # vectors need `npm run embed:topics` before it merges
         exclude-patterns:
           - "@wllama/*"
-    # Major versions match no group, so each one opens its own PR
+    # Other major versions match no group, so each one opens its own PR
 
   # Keeps the actions used by the CI workflows up to date once they exist
   - package-ecosystem: github-actions
