@@ -14,7 +14,7 @@ Live at **[https://portfolio-v3.jryther91.workers.dev](https://portfolio-v3.jryt
 | Styling | Plain CSS — a global stylesheet plus scoped `<style>` per component |
 | Animations | AOS (Animate On Scroll) + Canvas 2D |
 | AI chat | Decision tree of pre-written answers + [wllama](https://github.com/ngxson/wllama) (llama.cpp in WebAssembly) running Google EmbeddingGemma in the browser |
-| Testing | Vitest + `@vue/test-utils` |
+| Testing | Vitest + `@vue/test-utils`, Playwright (end-to-end) |
 | Deployment | Cloudflare Pages (auto-deploy on push to `main`) |
 
 ---
@@ -192,6 +192,39 @@ src/__tests__/
 ```
 
 > **Note:** `services/wllama.ts` is excluded from coverage because it needs WebAssembly workers and a real model, which jsdom can't run. The routing logic it relies on lives in `chatRouter.ts` and `topicIndex.ts`, which are tested.
+
+### End-to-end tests
+
+**[Playwright](https://playwright.dev/)** drives the whole page in Chromium, at desktop size and as a phone (Pixel 7). It starts its own Vite dev server on port 5180.
+
+```sh
+# First time only: download the browser
+npx playwright install chromium
+
+# Run everything headless
+npm run test:e2e
+
+# Interactive UI mode (watch, time-travel debugging)
+npm run test:e2e:ui
+
+# Open the HTML report from the last run
+npm run test:e2e:report
+```
+
+The page runs offline in these tests: Google Fonts, the Hugging Face model and Formspree are blocked (`e2e/fixtures.ts`), and tests that need them mock the response. Nothing downloads the ~330 MB model or sends a real message. Tests run with reduced motion so the page is deterministic (no AOS, no weather, instant chat replies); specs that cover motion-only UI turn it back off.
+
+```
+e2e/
+├── fixtures.ts               # offline network, page helpers, chat locators
+├── page-content.spec.ts      # every section's content, links, downloads, no errors or broken assets
+├── navigation.spec.ts        # header nav, active section, phone menu, skip link, back to top
+├── preferences.spec.ts       # theme, language (incl. Spanish browsers) and animation toggles, persisted
+├── chat.spec.ts              # popup + section chat, chips, keyword answers, model loading/error states
+├── mini-game.spec.ts         # game toggle, play to game over, best score, sound, keyboard focus
+└── contact-form.spec.ts      # validation, successful send, server and network failures
+```
+
+These aren't part of `npm run build`, since the Cloudflare build has no browser.
 
 ---
 

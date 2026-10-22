@@ -16,6 +16,8 @@ export default tseslint.config(
       'coverage/**',
       'node_modules/**',
       'public/**',
+      'test-results/**',
+      'playwright-report/**',
     ],
   },
 

@@ -1,7 +1,9 @@
 <template>
   <div
+    ref="panelEl"
     class="chat-panel"
     :class="{ 'is-large': large }"
+    tabindex="-1"
   >
     <!-- Chat messages -->
     <div
@@ -42,7 +44,7 @@
           v-for="id in followUps"
           :key="id"
           class="topic-chip"
-          @click="askTopic(id)"
+          @click="pickTopic(id)"
         >
           {{ topicLabel(id, locale) }}
         </button>
@@ -188,7 +190,15 @@ const emit = defineEmits<{ 'play-game': [] }>()
 
 const { t } = useI18n()
 
+const panelEl    = ref<HTMLElement | null>(null)
 const messagesEl = ref<HTMLElement | null>(null)
+
+// The chips are replaced once the answer arrives, which would drop focus to <body> (and out of
+// reach of the popup's Escape), so park it on the panel first, like the popup does on open
+function pickTopic(id: string) {
+  panelEl.value?.focus({ preventScroll: true })
+  askTopic(id)
+}
 
 async function scrollToBottom() {
   await nextTick()
@@ -215,6 +225,10 @@ function onEnter(e: KeyboardEvent) {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.chat-panel:focus {
+  outline: none;   /* focus parks here after a chip; the controls inside show their own focus rings */
 }
 
 /* ── Messages ── */
