@@ -7,8 +7,9 @@
 //
 // Compares the model file itself, not the repo's latest commit: a README edit moves the
 // commit but not the model, and shouldn't open a PR. When the file has changed, it rewrites
-// the URL's commit, `bytes` and `sizeLabel`. Afterwards, run `npm run embed:topics` (a new
-// model means new topic vectors) and `npm run model:hashes` (new piece hashes for the download).
+// the URL's commit, `bytes` and `sizeLabel`. Afterwards, run `npm run model:hashes` (new piece
+// hashes for the download), then `npm run embed:topics` (a new model means new topic vectors).
+// In that order: embedding loads the model through the hash checks.
 //
 // Like Dependabot's cooldown, a commit has to be COOLDOWN_DAYS old before it's proposed.
 // In GitHub Actions it writes `updated` (true/false), `revision`, `url` and `sha256` (the new

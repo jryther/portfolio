@@ -47,21 +47,22 @@ jobs:
         if: steps.check.outputs.updated == 'true'
         run: npm ci
 
-      # Downloads the new model (~330 MB) and embeds the topics with it, in the runner's Chrome
-      - name: Recompute topic vectors
-        if: steps.check.outputs.updated == 'true'
-        run: npm run embed:topics
-
       # The browser checks every downloaded piece against these. The script refuses a file whose
-      # SHA-256 isn't the one Hugging Face lists for it
+      # SHA-256 isn't the one Hugging Face lists for it. Before the topic vectors, which load the
+      # model through the same checks and would reject the new file against the old hashes
       - name: Recompute model piece hashes
         if: steps.check.outputs.updated == 'true'
         env:
           MODEL_URL: ${{ steps.check.outputs.url }}
           MODEL_SHA256: ${{ steps.check.outputs.sha256 }}
         run: |
-          curl -fsSL -o "$RUNNER_TEMP/model.gguf" "$MODEL_URL"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/model.gguf" "$MODEL_URL"
           npm run model:hashes -- "$RUNNER_TEMP/model.gguf" "$MODEL_SHA256"
+
+      # Downloads the new model (~330 MB) and embeds the topics with it, in the runner's Chrome
+      - name: Recompute topic vectors
+        if: steps.check.outputs.updated == 'true'
+        run: npm run embed:topics
 
       - name: Open or update the PR
         if: steps.check.outputs.updated == 'true'
