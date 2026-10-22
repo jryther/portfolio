@@ -1,0 +1,74 @@
+# Weekly check for a new EmbeddingGemma model file, which Dependabot can't watch (it lives on
+# Hugging Face, pinned by commit in src/services/chatModel.ts). When the file has changed, it
+# repins it, recomputes the topic vectors, and opens a PR for review. It never merges.
+#
+# Needs "Allow GitHub Actions to create and approve pull requests" turned on under
+# Settings > Actions > General.
+#
+# A PR opened with the workflow's own token doesn't trigger the CI workflow, so this starts CI
+# on the PR branch itself; its result shows on the PR's commit.
+
+name: Model update
+
+on:
+  schedule:
+    # Mondays, alongside Dependabot (14:00 UTC is 06:00 or 07:00 in Los Angeles)
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check for a new model
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    env:
+      BRANCH: deps/embeddinggemma
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Check Hugging Face
+        id: check
+        run: node scripts/check-model-update.mjs
+
+      - name: Install dependencies
+        if: steps.check.outputs.updated == 'true'
+        run: npm ci
+
+      # Downloads the new model (~330 MB) and embeds the topics with it, in the runner's Chrome
+      - name: Recompute topic vectors
+        if: steps.check.outputs.updated == 'true'
+        run: npm run embed:topics
+
+      - name: Open or update the PR
+        if: steps.check.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVISION: ${{ steps.check.outputs.revision }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git commit -am "deps: update EmbeddingGemma model to ${REVISION:0:7}"
+          git push --force origin "$BRANCH"
+
+          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+            gh pr create --head "$BRANCH" --base main --assignee jryther \
+              --title "deps: update EmbeddingGemma model to ${REVISION:0:7}" \
+              --body "A new \`embeddinggemma-300M-Q8_0.gguf\` is on Hugging Face ([commit](https://huggingface.co/ggml-org/embeddinggemma-300M-GGUF/commit/$REVISION)). This repins \`src/services/chatModel.ts\` and recomputes \`src/data/topicVectors.json\` with it.
+
+          Before merging, try a few free-text questions in the chat to check that they still find the right topics."
+          fi
+
+          gh workflow run ci.yml --ref "$BRANCH"

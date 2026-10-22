@@ -12,7 +12,8 @@
 # compromised or broken release is usually caught and pulled before it reaches this repo.
 # Security updates skip the cooldown and open right away.
 #
-# Not covered: the EmbeddingGemma model, pinned by URL in src/services/chatModel.ts.
+# Not covered: the EmbeddingGemma model, pinned by URL in src/services/chatModel.ts. The
+# model-update workflow (.github/workflows/model-update.yml) watches it instead.
 #
 # Docs: https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 
