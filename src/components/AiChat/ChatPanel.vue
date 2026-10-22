@@ -54,6 +54,7 @@
       <div
         v-if="thinking"
         class="message thinking"
+        role="img"
         :aria-label="t('chat.thinking')"
       >
         <div class="avatar">
@@ -160,7 +161,7 @@
           <button
             :disabled="busy || modelLoading"
             class="button send-btn"
-            @click="sendMessage"
+            @click="send"
           >
             {{ t('chat.send') }}
           </button>
@@ -201,6 +202,12 @@ function pickTopic(id: string) {
   askTopic(id)
 }
 
+// Same for the text box and Send button, which are disabled while the answer is on its way
+function send() {
+  sendMessage()
+  if (busy.value) panelEl.value?.focus({ preventScroll: true })
+}
+
 async function scrollToBottom() {
   await nextTick()
   if (messagesEl.value) messagesEl.value.scrollTop = messagesEl.value.scrollHeight
@@ -215,7 +222,7 @@ onMounted(scrollToBottom)
 
 // Enter that confirms an IME composition (e.g. Japanese input) shouldn't also send
 function onEnter(e: KeyboardEvent) {
-  if (!e.isComposing) sendMessage()
+  if (!e.isComposing) send()
 }
 </script>
 

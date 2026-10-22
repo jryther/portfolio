@@ -107,7 +107,10 @@ onMounted(() => {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
 })
-onUnmounted(() => window.removeEventListener('scroll', onScroll))
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+  clearTimeout(hideTimer)
+})
 
 function backToTop() {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches

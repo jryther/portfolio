@@ -5,7 +5,7 @@ import storedVectors from '../data/topicVectors.json'
 import { MODEL } from './chatModel'
 import { createLogger } from './errors'
 import {
-  buildDocs, docsHash, decodeVectors, encodeVectors, normalize, rankTopics, pickTopic,
+  buildDocs, docsHash, decodeVectors, encodeVectors, unitVector, rankTopics, pickTopic,
   type TopicIndex, type StoredTopicVectors,
 } from './topicIndex'
 
@@ -39,7 +39,7 @@ export async function embed(text: string): Promise<Float32Array> {
   const instance = getInstance()
   if (!instance.isModelLoaded()) throw new Error('Model not loaded')
   const res = await instance.createEmbedding({ input: MODEL.prefix + text })
-  return normalize(res.data[0].embedding as number[])
+  return unitVector(res.data[0].embedding as number[])
 }
 
 /** Embeds every topic example. Used by scripts/embed-topics.mjs, and at runtime only if the
@@ -83,6 +83,11 @@ export function loadModel(onProgress: (progress: number) => void): Promise<void>
     }
   })().catch((e) => {
     loadPromise = null
+    // A load that failed after the worker started leaves it half initialized, and wllama refuses
+    // to load into it again ("Module is already initialized"), so a retry starts afresh
+    const failed = wllama
+    wllama = null
+    failed?.exit().catch(() => {})
     throw e
   })
   return loadPromise

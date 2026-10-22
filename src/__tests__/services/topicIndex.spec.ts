@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  buildDocs, docsHash, encodeVectors, decodeVectors, normalize, rankTopics, pickTopic,
+  buildDocs, docsHash, encodeVectors, decodeVectors, unitVector, rankTopics, pickTopic,
   MIN_SIMILARITY, type StoredTopicVectors,
 } from '../../services/topicIndex'
 import { TOPIC_LIST, OFF_TOPIC_ID, UNKNOWN_ID } from '../../data/chatTree'
@@ -29,8 +29,8 @@ describe('topicIndex', () => {
   })
 
   it('round-trips vectors through int8 storage', () => {
-    const a = normalize([3, 4, 0, -1])
-    const b = normalize([-1, 0, 2, 2])
+    const a = unitVector([3, 4, 0, -1])
+    const b = unitVector([-1, 0, 2, 2])
     const stored: StoredTopicVectors = { model: '', dims: 4, hash: '', ids: ['a', 'b'], vectors: encodeVectors([a, b]) }
     const { vectors } = decodeVectors(stored)
     vectors.forEach((v, i) => [...v].forEach((x, j) => expect(x).toBeCloseTo([a, b][i][j], 1)))
@@ -39,9 +39,9 @@ describe('topicIndex', () => {
   it('ranks topics by their closest example', () => {
     const index = {
       ids: ['skills', 'skills', 'contact'],
-      vectors: [normalize([1, 0, 0]), normalize([0, 1, 0]), normalize([0, 0, 1])],
+      vectors: [unitVector([1, 0, 0]), unitVector([0, 1, 0]), unitVector([0, 0, 1])],
     }
-    const ranked = rankTopics(normalize([0.1, 0.9, 0.2]), index)
+    const ranked = rankTopics(unitVector([0.1, 0.9, 0.2]), index)
     expect(ranked.map(r => r.id)).toEqual(['skills', 'contact'])
   })
 

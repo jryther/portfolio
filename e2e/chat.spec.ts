@@ -82,6 +82,19 @@ test.describe('chat popup', () => {
     expect(await chat.dialog.evaluate(el => el.contains(document.activeElement))).toBe(true)
   })
 
+  // The text box is disabled while the answer arrives; focus must stay in the popup, not drop to <body>
+  test('sending a question by keyboard keeps focus in the chat', async ({ page }) => {
+    await gotoHome(page)
+    const chat = chatPopup(page)
+    await chat.fab.click()
+    await chat.input.fill('hello')
+    await chat.input.press('Enter')
+    await expect(chat.assistantBubbles).toHaveCount(2)
+    expect(await chat.dialog.evaluate(el => el.contains(document.activeElement))).toBe(true)
+    await page.keyboard.press('Escape')
+    await expect(chat.fab).toBeFocused()
+  })
+
   test('a topic chip asks its question and offers follow-ups', async ({ page }) => {
     await gotoHome(page)
     const chat = chatPopup(page)

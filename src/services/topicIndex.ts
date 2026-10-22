@@ -44,7 +44,8 @@ export function docsHash(docs: readonly TopicDoc[]): string {
   return (h >>> 0).toString(16).padStart(8, '0')
 }
 
-export function normalize(v: ArrayLike<number>): Float32Array {
+/** The vector scaled to length 1, so a dot product is the cosine similarity */
+export function unitVector(v: ArrayLike<number>): Float32Array {
   let sum = 0
   for (let i = 0; i < v.length; i++) sum += v[i] * v[i]
   const n = Math.sqrt(sum) || 1
@@ -63,7 +64,7 @@ export function encodeVectors(vectors: readonly Float32Array[]): string {
 export function decodeVectors(stored: StoredTopicVectors): TopicIndex {
   const bin = atob(stored.vectors)
   const signed = Int8Array.from(bin, c => (c.charCodeAt(0) << 24) >> 24)
-  const vectors = stored.ids.map((_, i) => normalize(signed.subarray(i * stored.dims, (i + 1) * stored.dims)))
+  const vectors = stored.ids.map((_, i) => unitVector(signed.subarray(i * stored.dims, (i + 1) * stored.dims)))
   return { ids: stored.ids, vectors }
 }
 
@@ -74,7 +75,8 @@ export function rankTopics(query: Float32Array, index: TopicIndex): { id: string
     let dot = 0
     for (let j = 0; j < v.length; j++) dot += v[j] * query[j]
     const id = index.ids[i]
-    if (!(best.get(id)! >= dot)) best.set(id, dot)
+    const prev = best.get(id)
+    if (prev === undefined || dot > prev) best.set(id, dot)
   })
   return [...best].map(([id, score]) => ({ id, score })).sort((a, b) => b.score - a.score)
 }
