@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A personal portfolio SPA for **Joshua Ryther**, a Full-Stack Software Engineer based in Salem, Oregon. It is hosted on Cloudflare Pages at `https://portfolio-v3.jryther91.workers.dev`.
+A personal portfolio SPA for **Joshua Ryther**, a Full-Stack Software Engineer based in Salem, Oregon. It is hosted on Cloudflare Pages at `https://joshryther.com` (custom domain; the Pages project's own URL is `portfolio-v3-fji.pages.dev`).
 
 The project was originally scaffolded as a Vue 3 SPA, then progressively personalized and extended through iterative AI-assisted development sessions.
 

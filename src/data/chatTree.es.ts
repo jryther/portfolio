@@ -141,13 +141,13 @@ export const esTopics = (yearsAtPearson: number): Record<string, TopicTranslatio
     label: '¿Crea cosas fuera del trabajo?',
     keywords: ['proyecto personal', 'proyectos personales', 'proyectos paralelos', 'minijuego', 'este juego', 'el juego de este sitio', 'por diversión', 'por su cuenta', 'programar por diversión'],
     examples: ['¿Programa en su tiempo libre?', '¿Ha creado algo por diversión?', '¿Quién hizo el juego de este sitio?', '¿Tiene proyectos personales?', '¿Trabaja en proyectos de programación por su cuenta?', '¿Qué ha creado en su tiempo libre?'],
-    answer: 'Sí. Este portafolio lo creó él mismo con Vue 3, TypeScript y Tailwind. Su chat se ejecuta por completo en tu navegador, usando un pequeño modelo de embeddings para emparejar preguntas con respuestas, y el minijuego al que puedes jugar mientras se carga es un juego en canvas que él creó, que funciona igual a cualquier tasa de fotogramas y tiene su propia música para los temas claro y oscuro. En el trabajo también creó por iniciativa propia una herramienta interna de escritorio para facilitar la búsqueda de contenido de evaluación.',
+    answer: 'Sí. Este portafolio lo creó él mismo con Vue 3 y TypeScript, con CSS escrito a mano. Su chat se ejecuta por completo en tu navegador, usando un pequeño modelo de embeddings para emparejar preguntas con respuestas, y el minijuego al que puedes jugar mientras se carga es un juego en canvas que él creó, que funciona igual a cualquier tasa de fotogramas y tiene su propia música para los temas claro y oscuro. En el trabajo también creó por iniciativa propia una herramienta interna de escritorio para facilitar la búsqueda de contenido de evaluación.',
   },
   portfolio_site: {
     label: '¿Cómo se hizo este sitio?',
     keywords: ['este sitio', 'este sitio web', 'esta página', 'este portafolio', 'este chat', 'este chatbot', 'cómo funciona este chat', 'cómo se hizo', 'eres una ia', 'eres un bot', 'qué modelo', 'este asistente', 'tus respuestas', 'cómo funcionas', 'cómo lo sabes'],
     examples: ['¿Cómo se hizo este sitio web?', '¿Cómo funciona este chatbot?', '¿Eres una persona real?', '¿Qué tecnología usa este chat?', '¿Qué modelo de IA eres?', '¿Cómo se te ocurren las respuestas?', '¿De dónde sale tu información sobre Josh?'],
-    answer: 'Este sitio lo creó Josh: Vue 3, TypeScript, Tailwind CSS y Vite. Este chat se ejecuta por completo en tu navegador. Cada respuesta está escrita de antemano a partir de las notas profesionales de Josh. Las preguntas claras se emparejan por palabras clave, y para todo lo demás un pequeño modelo de embeddings (EmbeddingGemma de Google, ejecutándose en llama.cpp mediante wllama) encuentra la respuesta de significado más cercano a tu pregunta. Nada de lo que escribes sale de tu dispositivo.',
+    answer: 'Este sitio lo creó Josh: Vue 3, TypeScript y Vite, con CSS escrito a mano y versiones en inglés y español. Este chat se ejecuta por completo en tu navegador. Cada respuesta está escrita de antemano a partir de las notas profesionales de Josh. Las preguntas claras se emparejan por palabras clave, y para todo lo demás un pequeño modelo de embeddings (EmbeddingGemma de Google, ejecutándose en llama.cpp mediante wllama) encuentra la respuesta de significado más cercano a tu pregunta. Nada de lo que escribes sale de tu dispositivo.',
   },
 
   // ── Habilidades ────────────────────────────────────────────────────────────
@@ -161,7 +161,7 @@ export const esTopics = (yearsAtPearson: number): Record<string, TopicTranslatio
     label: '¿Qué trabajo de frontend hace?',
     keywords: ['interfaz de usuario', 'interfaces', 'páginas web', 'desarrollo web', 'crear un sitio web', 'crear sitios web'],
     examples: ['¿Es un buen desarrollador frontend?', '¿Qué tan fuerte es en desarrollo frontend?', '¿Se le da bien el CSS?', '¿Puede crear interfaces de usuario?', '¿Qué tan bueno es creando sitios web?', '¿Puede crear un sitio web completo por su cuenta?'],
-    answer: 'En el frontend, Josh trabaja con JavaScript, TypeScript, HTML y CSS en TestNav, una aplicación grande que tiene que funcionar en todos los navegadores principales y tamaños de pantalla. Gran parte de su código diario es JavaScript puro y jQuery, y Josh convirtió la mayoría de sus vistas en componentes reutilizables de TypeScript en React y Vue. También creó este sitio con Vue 3, TypeScript y Tailwind.',
+    answer: 'En el frontend, Josh trabaja con JavaScript, TypeScript, HTML y CSS en TestNav, una aplicación grande que tiene que funcionar en todos los navegadores principales y tamaños de pantalla. Gran parte de su código diario es JavaScript puro y jQuery, y Josh convirtió la mayoría de sus vistas en componentes reutilizables de TypeScript en React y Vue. También creó este sitio con Vue 3, TypeScript y CSS escrito a mano.',
   },
   skill_react: {
     label: '¿Sabe React?',

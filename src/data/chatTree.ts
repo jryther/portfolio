@@ -184,14 +184,14 @@ const topics: ChatTopic[] = [
     id: 'side_projects',
     label: 'Does he build things outside of work?',
     keywords: ['side project', 'side projects', 'personal project', 'personal projects', 'hobby project', 'hobby projects', 'mini game', 'minigame', 'this game', 'game on this site', 'own time', 'his own time', 'program for fun', 'code for fun', 'coding for fun', 'on the side', 'hobby app', 'hobby apps'],
-    answer: "Yes. This portfolio is his own build in Vue 3, TypeScript, and Tailwind. Its chat runs entirely in your browser, using a small embedding model to match questions to answers, and the mini-game you can play while it loads is a canvas game he built that runs the same at any frame rate, with its own music for the light and dark themes. At work he also built an internal desktop tool on his own initiative to make test content easier to find.",
+    answer: "Yes. This portfolio is his own build in Vue 3 and TypeScript, with hand-written CSS. Its chat runs entirely in your browser, using a small embedding model to match questions to answers, and the mini-game you can play while it loads is a canvas game he built that runs the same at any frame rate, with its own music for the light and dark themes. At work he also built an internal desktop tool on his own initiative to make test content easier to find.",
     followUps: ['portfolio_site', 'learning', 'proj_catalog'],
   },
   {
     id: 'portfolio_site',
     label: 'How was this site built?',
     keywords: ['this site', 'this website', 'this portfolio', 'this chat', 'this chatbot', 'how does this chat work', 'how was this built', 'built this', 'wllama', 'how do you work', 'are you ai', 'are you an ai', 'what model', 'this assistant', 'your answers', 'answering me', 'how do you know'],
-    answer: "This site is Josh's own build: Vue 3, TypeScript, Tailwind CSS, and Vite. This chat runs entirely in your browser. Every answer is written ahead of time from Josh's career notes. Clear questions are matched by keyword, and for everything else a small embedding model (Google's EmbeddingGemma, running on llama.cpp through wllama) finds the answer closest in meaning to your question. Nothing you type leaves your device.",
+    answer: "This site is Josh's own build: Vue 3, TypeScript, and Vite, with hand-written CSS and English and Spanish versions. This chat runs entirely in your browser. Every answer is written ahead of time from Josh's career notes. Clear questions are matched by keyword, and for everything else a small embedding model (Google's EmbeddingGemma, running on llama.cpp through wllama) finds the answer closest in meaning to your question. Nothing you type leaves your device.",
     followUps: ['side_projects', 'skills', 'contact'],
   },
 
@@ -208,7 +208,7 @@ const topics: ChatTopic[] = [
     id: 'skill_frontend',
     label: 'What frontend work does he do?',
     keywords: ['frontend', 'front end', 'front-end', 'javascript', 'js', 'html', 'css', 'tailwind', 'ui', 'user interface', 'web pages', 'web page', 'web development', 'build a website', 'build websites', 'building websites', 'jquery', 'pwa', 'angular', 'svelte', 'next js', 'nextjs'],
-    answer: "On the frontend Josh works in JavaScript, TypeScript, HTML, and CSS on TestNav, a large app that has to work in every major browser and screen size. Much of its day-to-day code is vanilla JavaScript and jQuery, and Josh converted most of its views into reusable TypeScript components in React and Vue. He also built this site with Vue 3, TypeScript, and Tailwind.",
+    answer: "On the frontend Josh works in JavaScript, TypeScript, HTML, and CSS on TestNav, a large app that has to work in every major browser and screen size. Much of its day-to-day code is vanilla JavaScript and jQuery, and Josh converted most of its views into reusable TypeScript components in React and Vue. He also built this site with Vue 3, TypeScript, and hand-written CSS.",
     followUps: ['skill_react', 'skill_components', 'skill_state', 'accessibility'],
   },
   {

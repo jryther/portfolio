@@ -1,7 +1,7 @@
 # Josh Ryther — Portfolio v3
 
 Personal portfolio website for Josh Ryther, Full-Stack Software Engineer based in Salem, Oregon.
-Live at **[https://portfolio-v3.jryther91.workers.dev](https://portfolio-v3.jryther91.workers.dev)**
+Live at **[joshryther.com](https://joshryther.com)**
 
 ---
 
