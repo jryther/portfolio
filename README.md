@@ -10,7 +10,7 @@ Live at **[joshryther.com](https://joshryther.com)**
 | Layer | Technology |
 |---|---|
 | Framework | Vue 3 (Composition API) |
-| Build tool | Vite 7 |
+| Build tool | Vite 8 |
 | Styling | Plain CSS — a global stylesheet plus scoped `<style>` per component |
 | Animations | AOS (Animate On Scroll) + Canvas 2D |
 | AI chat | Decision tree of pre-written answers + [wllama](https://github.com/ngxson/wllama) (llama.cpp in WebAssembly) running Google EmbeddingGemma in the browser |

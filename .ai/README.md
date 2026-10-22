@@ -22,7 +22,7 @@ This directory contains machine-readable documentation for AI coding agents work
 
 - **Framework:** Vue 3 Composition API — no React, no Vue Router
 - **Styling:** Plain CSS — global `src/styles/main.css` (tokens, reset, shared classes) + `<style scoped>` per component
-- **Build:** Vite 7, base path `/`, deploys to Cloudflare Pages
+- **Build:** Vite 8, base path `/`, deploys to Cloudflare Pages
 - **AI chat:** decision tree of pre-written answers (`data/chatTree.ts`); free text routed by keywords, then Google EmbeddingGemma 300M (~330 MB) via wllama on the CPU
 - **Languages:** English + Spanish via `vue-i18n` (Composition API). UI text in `src/i18n/en.ts` / `es.ts` (es is typed against en; a test checks key and list parity); chat answers in `data/chatTree.ts` + `data/chatTree.es.ts`. No hardcoded user-facing strings in components
 - **1 rem = 10 px** (html font-size: 62.5%)
