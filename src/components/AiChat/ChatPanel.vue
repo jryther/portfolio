@@ -115,12 +115,31 @@
         </button>
       </div>
       <div
-        v-else-if="modelStatus === 'loading'"
+        v-else-if="modelStatus === 'loading' || modelStatus === 'paused'"
         class="model-loading"
+        :class="{ 'is-paused': modelStatus === 'paused' }"
       >
         <div class="status-text progress-row">
-          <span class="progress-label">{{ loadingText }}</span>
-          <span class="progress-value">{{ loadingProgress }}%</span>
+          <span class="progress-label">{{ modelStatus === 'paused' ? t('chat.paused', { progress: loadingProgress }) : loadingText }}</span>
+          <span
+            v-if="modelStatus === 'loading'"
+            class="progress-value"
+          >{{ loadingProgress }}%</span>
+          <!-- One button that flips between Pause and Resume, so keyboard focus stays on it.
+               Only while downloading: a load from the cache is over in a moment -->
+          <button
+            v-if="downloading || modelStatus === 'paused'"
+            v-tooltip="modelStatus === 'paused' ? '' : t('chat.pauseTitle')"
+            type="button"
+            class="pause-btn"
+            @click="modelStatus === 'paused' ? startModel() : pauseModel()"
+          >
+            <UiIcon
+              :name="modelStatus === 'paused' ? 'play' : 'pause'"
+              class="pause-icon"
+            />
+            {{ modelStatus === 'paused' ? t('chat.resume') : t('chat.pause') }}
+          </button>
         </div>
         <!-- The percentage beside it says the same, so the bar is decoration -->
         <div
@@ -134,7 +153,7 @@
         </div>
         <Transition name="hint">
           <button
-            v-if="slowLoad"
+            v-if="slowLoad && modelStatus === 'loading'"
             class="play-hint"
             @click="emit('play-game')"
           >
@@ -214,7 +233,7 @@ import { locale } from '../../i18n'
 import { MODEL } from '../../services/chatModel'
 import {
   messages, followUps, userInput, thinking, busy, modelStatus, modelLoading, loadingProgress, loadingText, slowLoad,
-  startModel, sendMessage, askTopic, clearChat,
+  downloading, startModel, pauseModel, sendMessage, askTopic, clearChat,
 } from '../../composables/useChat'
 
 // The conversation itself lives in useChat; this is one view of it (popup or full section)
@@ -442,6 +461,7 @@ function onEnter(e: KeyboardEvent) {
   gap: 0.75rem;
 }
 .progress-label {
+  flex: 1;
   color: var(--color-mist);
 }
 .progress-value {
@@ -450,6 +470,30 @@ function onEnter(e: KeyboardEvent) {
 }
 .progress-track {
   width: 100%;
+}
+.is-paused .progress-bar {
+  opacity: 0.45;
+}
+.pause-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 0.6rem;
+  color: var(--color-mist);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+.pause-btn:hover {
+  color: var(--color-amber);
+  border-color: var(--color-amber);
+}
+.pause-icon {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .model-error {

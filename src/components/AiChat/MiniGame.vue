@@ -14,15 +14,16 @@
 
       <div class="game-ai">
         <div
-          v-if="modelStatus === 'loading'"
+          v-if="modelStatus === 'loading' || modelStatus === 'paused'"
           class="ai-progress"
+          :class="{ 'is-paused': modelStatus === 'paused' }"
           role="progressbar"
           aria-valuemin="0"
           aria-valuemax="100"
           :aria-valuenow="loadingProgress"
-          :aria-label="loadingText"
+          :aria-label="modelStatus === 'paused' ? t('chat.paused', { progress: loadingProgress }) : loadingText"
         >
-          <span class="ai-progress-label">{{ t('game.aiProgress', { progress: loadingProgress }) }}</span>
+          <span class="ai-progress-label">{{ modelStatus === 'paused' ? t('game.aiPaused', { progress: loadingProgress }) : t('game.aiProgress', { progress: loadingProgress }) }}</span>
           <div class="progress-track">
             <div
               class="progress-bar"
@@ -147,7 +148,6 @@ import { FlappySim, type Phase } from '../../game/flappySim'
 import { FlappyRenderer } from '../../game/flappyRender'
 import { GameAudio } from '../../game/flappyAudio'
 import { theme } from '../../composables/useTheme'
-import { gamePlaying } from '../../composables/useGame'
 import { prefersReducedMotion } from '../../composables/useReducedMotion'
 import { modelStatus, modelReady, loadingProgress, loadingText } from '../../composables/useChat'
 import { handleError, notify } from '../../services/errors'
@@ -184,7 +184,6 @@ function fail(error: unknown) {
   stopLoop()
   sim = null
   renderer = null
-  gamePlaying.value = false
   failed.value = true
   handleError('game', 'The mini-game stopped', error)
 }
@@ -231,7 +230,6 @@ function stopLoop() {
 
 function onPhaseChange(next: Phase) {
   phase.value = next
-  gamePlaying.value = next === 'playing'
   if (next === 'dead') {
     newBest.value = sim!.score > highScore.value
     if (newBest.value) {
@@ -401,7 +399,6 @@ onUnmounted(() => {
   dprQuery?.removeEventListener('change', onPixelRatioChange)
   document.removeEventListener('visibilitychange', onVisibilityChange)
   audio.dispose()
-  gamePlaying.value = false
 })
 </script>
 
@@ -480,6 +477,9 @@ onUnmounted(() => {
 }
 .progress-bar {
   transition-duration: 0.3s;
+}
+.is-paused .progress-bar {
+  opacity: 0.45;
 }
 
 /* ── Play area ── */

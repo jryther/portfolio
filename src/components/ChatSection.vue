@@ -177,6 +177,7 @@ async function fillInput(question: string) {
 const statusLabel = computed(() => {
   if (modelStatus.value === 'ready') return t('ask.status.ready')
   if (modelStatus.value === 'loading') return t('ask.status.loading', { progress: loadingProgress.value })
+  if (modelStatus.value === 'paused') return t('ask.status.paused', { progress: loadingProgress.value })
   return t('ask.status.quick')
 })
 

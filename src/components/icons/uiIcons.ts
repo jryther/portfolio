@@ -13,6 +13,7 @@ export const ICONS = {
   refresh: ['M3 12a9 9 0 1 0 2.64-6.36L3 8', 'M3 3v5h5'],
   trophy: ['M8 21h8', 'M12 17v4', 'M7 4h10v5a5 5 0 0 1-10 0V4Z', 'M17 6h2a2 2 0 0 1 0 4h-2', 'M7 6H5a2 2 0 0 0 0 4h2'],
   play: ['M7 5v14l11-7Z'],
+  pause: ['M8 5v14', 'M16 5v14'],
   'arrow-up': ['M12 19V5', 'M5 12l7-7 7 7'],
   'chevron-down': ['m6 9 6 6 6-6'],
   info: ['M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z', 'M12 16v-4', 'M12 8h.01'],

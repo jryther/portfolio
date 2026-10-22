@@ -386,7 +386,6 @@ import ResumeMenu from './ResumeMenu.vue'
 import { CONTACT_EMAIL, LINKEDIN_URL } from '../data/contact'
 import { theme } from '../composables/useTheme'
 import { scenePaused, heroInView } from '../composables/useScene'
-import { gamePlaying } from '../composables/useGame'
 import { handleError } from '../services/errors'
 import { prefersReducedMotion } from '../composables/useReducedMotion'
 
@@ -818,7 +817,6 @@ function canFlash() {
   return theme.value === 'dark'
     && heroVisible
     && !scenePaused.value
-    && !gamePlaying.value
     && !prefersReducedMotion.value
     && document.visibilityState === 'visible'
 }
@@ -875,7 +873,7 @@ function startRain() {
 }
 
 function syncHeroAnims() {
-  if (heroVisible && !gamePlaying.value) resumeHeroAnims()
+  if (heroVisible) resumeHeroAnims()
   else pauseHeroAnims()
   scheduleFlash(3000, 9000)
 }
@@ -904,9 +902,6 @@ onMounted(() => {
   heroIntersectionObserver.observe(heroSection.value!)
 
   // ── Visitor-controlled pause (header control) ──
-  // ── Give the mini-game the frame budget while a round is in play ──
-  watch(gamePlaying, syncHeroAnims)
-
   watch(scenePaused, (paused) => {
     if (paused) { pauseHeroAnims(); scheduleFlash() }
     else syncHeroAnims()

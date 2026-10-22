@@ -302,6 +302,34 @@ test.describe('AI model loading', () => {
     await expect(chat.assistantBubbles).toHaveCount(2)
   })
 
+  test('the download can be paused and resumed, and quick answers work while paused', async ({ page }) => {
+    await holdModelDownload(page)
+    await gotoHome(page)
+    await scrollToCenter(page, 'chat')
+    const chat = chatSection(page)
+    await chat.loadButton.click()
+
+    const pause = chat.region.getByRole('button', { name: 'Pause' })
+    await expect(pause).toHaveAccessibleDescription('Pause the download. You can resume it later, even after leaving the page')
+    await pause.focus()
+    await page.keyboard.press('Enter')
+
+    await expect(chat.region.getByText('Download paused at 0%. Quick answers still work.')).toBeVisible()
+    await expect(chat.region.locator('.status-pill')).toHaveText('AI paused · 0%')
+    // The same button now resumes, and keeps keyboard focus
+    const resume = chat.region.getByRole('button', { name: 'Resume' })
+    await expect(resume).toBeFocused()
+    await expect(chat.input).toBeEnabled()
+    await chat.input.fill('What are his skills?')
+    await chat.input.press('Enter')
+    await expect(chat.assistantBubbles).toHaveCount(2)
+
+    await resume.click()
+    await expect(chat.region.getByText('Downloading AI model… this only happens once.')).toBeVisible()
+    await expect(pause).toBeVisible()
+    await expect(chat.input).toBeDisabled()
+  })
+
   test('a slow load suggests the mini-game', async ({ page }) => {
     await holdModelDownload(page)
     await gotoHome(page)

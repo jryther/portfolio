@@ -82,7 +82,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 
 ### Chat: `composables/useChat.ts`, `AiChat/ChatPanel.vue`, `AiChat/AiChat.vue`, `ChatSection.vue`
 - **`useChat.ts`** holds the one conversation (messages, follow-up chips, input, model status) and its actions (`openChat`, `startModel`, `sendMessage`, `askQuestion`, `askTopic`, `clearChat`). The popup and the section share it, so a chat started in one continues in the other
-- `modelStatus`: `idle` → `loading` → `ready` | `error`. `openChat()` greets once and auto-loads the model if it's already cached
+- `modelStatus`: `idle` → `loading` ⇄ `paused` → `ready` | `error` (`pauseModel()` aborts the download; `startModel()` resumes it). `openChat()` greets once and auto-loads the model if it's already cached
 - Replies come from `chatTree.ts`, routed by `chatRouter.ts` (keywords) then `wllama.ts` (embeddings), and type out word by word
 - **`ChatPanel.vue`** is one view of that conversation: messages, chips, the model status strip, input. `large` prop = roomier type for the section. Each instance scrolls its own message list
 - **`ChatHeader.vue`** = the title bar both chat surfaces share: title, game toggle (with the slow-load hint), optional close button (`closable`), and a default slot for extra status (the section's AI status pill). `large` = the section's roomier sizing
@@ -124,13 +124,17 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - Mini-game simulation (fixed-step, world units, seeded) and canvas renderer (cached parallax tiles, DPR-aware, themed)
 
 ### `composables/useGame.ts`
-- `gamePlaying`: true during a round; Hero pauses its scene then
+- `prefetchWhenIdle`: downloads the game's code in the background once a chat view opens
 
 ### `services/chatModel.ts`
-- Model name, pinned URL, size label, task prefix, dimensions. Separate so the UI can show them without loading wllama
+- Model name, pinned URL, exact size in bytes, size label, task prefix, dimensions. Separate so the UI can show them without loading wllama
 
 ### `services/wllama.ts`
-- `loadModel(onProgress)`, `isModelCached()`, `routeWithModel(question)`, `embed(text)`, `computeTopicVectors()`, `loadWeights()`
+- `loadModel(onProgress, signal?)`, `isModelCached()`, `partialDownload()`, `routeWithModel(question)`, `embed(text)`, `computeTopicVectors()`, `loadWeights()`
+- Downloads through `modelDownload.ts` and loads the joined Blob with `wllama.loadModel`; an abort (pause) keeps the saved pieces and the worker
+
+### `services/modelDownload.ts`
+- Resumable download: 8 MB ranged requests, each saved to Cache Storage under `<url>?piece=<i>` (a query: the cache ignores #fragments), joined into one Blob at the end. `savedFraction`, `clearSaved`
 - wllama runs inference in its own worker; this module is lazy-loaded by AiChat
 
 ---

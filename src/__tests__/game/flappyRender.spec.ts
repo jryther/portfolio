@@ -24,6 +24,7 @@ function recordingContext(calls: Call[]) {
 
 let mainCalls: Call[]
 let mainCanvas: HTMLCanvasElement
+let paths: { points: [number, number][] }[]
 
 function setup(cssW = 400, cssH = 300) {
   mainCanvas = document.createElement('canvas')
@@ -42,7 +43,14 @@ describe('FlappyRenderer', () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation(function (this: HTMLCanvasElement) {
       return recordingContext(this === mainCanvas ? mainCalls : []) as unknown as CanvasRenderingContext2D
     } as unknown as typeof HTMLCanvasElement.prototype.getContext)
-    vi.stubGlobal('Path2D', class { moveTo() {} lineTo() {} closePath() {} arc() {} ellipse() {} rect() {} })
+    paths = []
+    vi.stubGlobal('Path2D', class {
+      points: [number, number][] = []
+      constructor() { paths.push(this) }
+      moveTo(x: number, y: number) { this.points.push([x, y]) }
+      lineTo(x: number, y: number) { this.points.push([x, y]) }
+      closePath() {} arc() {} ellipse() {} rect() {}
+    })
     vi.stubGlobal('devicePixelRatio', 1)
   })
   afterEach(() => {
@@ -94,6 +102,27 @@ describe('FlappyRenderer', () => {
     renderer.render(sim)
     expect(texts()).toEqual(['3', '3'])   // shadow, then the number
   })
+
+  // Each background layer is one tile drawn again and again side by side. The mountains used to
+  // stop a few units short of the tile's edge, which cut a sliver out of them at every repeat
+  it.each([[380, 300, 1], [380, 300, 2], [1100, 600, 2], [1280, 560, 2]])(
+    'tiles the mountains without a gap at %ix%i, %ix', (w, h, dpr) => {
+      vi.stubGlobal('devicePixelRatio', dpr)
+      setup(w, h)
+      expect(paths).toHaveLength(2)   // the two ridgelines
+      for (const { points } of paths) {
+        const xs = points.map(([x]) => x)
+        const edge = Math.max(...xs)
+        // The outline reaches the edge at the ridge's height, then drops to the base there
+        const atEdge = points.filter(([x]) => Math.abs(x - edge) < 1e-6)
+        expect(atEdge.length).toBe(2)
+        // Starts and ends at the same height, so the next tile carries on from it
+        const top = (x: number) => points.find(([px], i) => i > 0 && Math.abs(px - x) < 1e-6)![1]
+        expect(top(edge)).toBeCloseTo(top(0), 6)
+        // The tile is a whole number of pixels wide, so repeats sit exactly side by side
+        expect(Number.isInteger(edge)).toBe(true)
+      }
+    })
 
   it('holds the clouds still with reduced motion', () => {
     const { renderer, worldW } = setup()

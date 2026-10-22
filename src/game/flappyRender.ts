@@ -117,7 +117,8 @@ const PLAY_H = WORLD_H - GROUND_H
 
 function makeCanvas(w: number, h: number): HTMLCanvasElement {
   const c = document.createElement('canvas')
-  c.width = Math.max(1, Math.ceil(w))
+  // Rounded, not ceiled: tile widths are whole pixels already, give or take float error
+  c.width = Math.max(1, Math.round(w))
   c.height = Math.max(1, Math.ceil(h))
   return c
 }
@@ -160,8 +161,9 @@ export class FlappyRenderer {
   private buildLayers() {
     const k = this.k
     const p = this.palette
-    // Tiles are wider than the view so repeats are hard to spot, and seamless at the edges
-    const tileWU = Math.max(this.worldW, 900) * 1.25
+    // Tiles are wider than the view so repeats are hard to spot, and seamless at the edges.
+    // A whole number of pixels wide, so each repeat starts exactly where the last one ends
+    const tileWU = Math.ceil(Math.max(this.worldW, 900) * 1.25 * k) / k
 
     this.sky = this.buildSky()
     this.layers = [
@@ -227,26 +229,34 @@ export class FlappyRenderer {
     const waves = freqs.map(f => ({ f, a: amp * (0.4 + rand() * 0.6) / Math.sqrt(f / freqs[0]), ph: rand() * Math.PI * 2 }))
     const yAt = (x: number) => base - waves.reduce((s, w) => s + w.a * Math.sin((x / tileWU) * Math.PI * 2 * w.f + w.ph), 0)
 
+    // Points about every 6 units, spaced so the last lands exactly on the tile's edge (a
+    // shortfall there cut a sliver out of the mountain at every repeat)
+    const steps = Math.ceil(tileWU / 6)
+    const xs = Array.from({ length: steps + 1 }, (_, i) => (tileWU * i) / steps)
+
     const peak = base - waves.reduce((s, w) => s + w.a, 0) - 2
     const { canvas: c, g, y } = this.band(tileWU, k, Math.max(0, peak), PLAY_H)
     const path = new Path2D()
     path.moveTo(0, PLAY_H * k)
-    for (let x = 0; x <= tileWU; x += 6) path.lineTo(x * k, yAt(x) * k)
+    for (const x of xs) path.lineTo(x * k, yAt(x) * k)
     path.lineTo(tileWU * k, PLAY_H * k)
     path.closePath()
     g.fillStyle = color
     g.fill(path)
 
     if (snow) {
-      // Snow on whatever sticks up above the snow line, with a ragged lower edge
+      // Snow on whatever sticks up above the snow line, with a ragged lower edge. Its waves
+      // also repeat a whole number of times per tile, so the edge lines up at the seam
       const snowLine = base - amp * 0.55
+      const cycles = (perUnit: number) => (Math.PI * 2 * Math.max(1, Math.round((tileWU * perUnit) / (Math.PI * 2)))) / tileWU
+      const fine = cycles(0.21), coarse = cycles(0.067)
       g.save()
       g.clip(path)
       g.fillStyle = this.palette.snow
       g.beginPath()
       g.moveTo(0, 0)
-      for (let x = 0; x <= tileWU; x += 6) {
-        const ragged = snowLine + Math.sin(x * 0.21) * 5 + Math.sin(x * 0.067 + 1) * 6
+      for (const x of xs) {
+        const ragged = snowLine + Math.sin(x * fine) * 5 + Math.sin(x * coarse + 1) * 6
         g.lineTo(x * k, ragged * k)
       }
       g.lineTo(tileWU * k, 0)

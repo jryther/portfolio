@@ -12,7 +12,8 @@ import { prefersReducedMotion } from './useReducedMotion'
 // wllama (~0.5 MB of JS plus its wasm) only loads once the chat needs the model
 const modelService = () => import('../services/wllama')
 
-export type ModelStatus = 'idle' | 'loading' | 'ready' | 'error'
+// paused: the visitor stopped the download partway; what's downloaded is kept for a resume
+export type ModelStatus = 'idle' | 'loading' | 'paused' | 'ready' | 'error'
 
 export interface ChatMessage {
   role: 'user' | 'assistant'
@@ -42,7 +43,8 @@ export const modelReady   = computed(() => modelStatus.value === 'ready')
 export const modelLoading = computed(() => modelStatus.value === 'loading')
 export const busy         = computed(() => thinking.value || typing.value)
 // A load from the browser cache isn't a download (and may report no progress at all)
-export const loadingText  = computed(() => loadingProgress.value < 100 && !loadingFromCache.value
+export const downloading  = computed(() => modelLoading.value && loadingProgress.value < 100 && !loadingFromCache.value)
+export const loadingText  = computed(() => downloading.value
   ? i18n.global.t('chat.downloading')
   : i18n.global.t('chat.starting'))
 
@@ -103,13 +105,21 @@ export function openChat() {
   autoLoadIfCached()
 }
 
-// A returning visitor already has the model cached, so there's no download to ask about
+// A returning visitor already has the model cached, so there's no download to ask about. One who
+// left partway through the download sees it paused where it stopped, ready to resume
 async function autoLoadIfCached() {
   if (cacheChecked || modelStatus.value !== 'idle') return
   cacheChecked = true
   try {
-    const { isModelCached } = await modelService()
-    if (!(await isModelCached())) return
+    const { isModelCached, partialDownload } = await modelService()
+    if (!(await isModelCached())) {
+      const saved = await partialDownload()
+      if (saved > 0 && modelStatus.value === 'idle') {
+        loadingProgress.value = Math.floor(saved * 100)
+        modelStatus.value = 'paused'
+      }
+      return
+    }
   } catch (e) {
     // Nothing to show: the visitor still gets the "Load AI" offer, which reports its own failure
     handleError('chat', 'Could not check for a cached AI model', e, { level: 'warn' })
@@ -119,18 +129,28 @@ async function autoLoadIfCached() {
   startModel()
 }
 
+let download: AbortController | null = null
+
+/** Starts loading the model, or resumes a paused download from where it stopped */
 export async function startModel() {
   if (modelStatus.value === 'loading' || modelStatus.value === 'ready') return
+  // A resume carries on from the paused percentage until the first piece reports in
+  if (modelStatus.value !== 'paused') loadingProgress.value = 0
   modelStatus.value = 'loading'
-  loadingProgress.value = 0
+  download = new AbortController()
   try {
     const { loadModel } = await modelService()
     await loadModel((progress) => {
-      loadingProgress.value = Math.round(progress * 100)
-    })
+      // Rounded down, so it never shows 100% while the last bytes are still coming
+      loadingProgress.value = Math.floor(progress * 100)
+    }, download.signal)
     loadingProgress.value = 100
     modelStatus.value = 'ready'
   } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError') {
+      modelStatus.value = 'paused'
+      return
+    }
     // The chat's status strip shows this one, with a retry
     modelStatus.value = 'error'
     // A retry may download the model again (a failed cached copy is cleared), so it gets the
@@ -138,6 +158,11 @@ export async function startModel() {
     loadingFromCache.value = false
     handleError('chat', 'The AI model failed to load', e)
   }
+}
+
+/** Pauses the download. Only while downloading: a load from the cache takes a moment anyway */
+export function pauseModel() {
+  if (downloading.value) download?.abort()
 }
 
 // Keywords answer instantly when they're clear; otherwise the model picks the topic

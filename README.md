@@ -132,6 +132,7 @@ src/
 │   ├── chatRouter.ts         # Keyword routing + "tell me more"
 │   ├── topicIndex.ts         # Embedding similarity, vector storage
 │   ├── chatModel.ts          # Model name, URL, size
+│   ├── modelDownload.ts      # Pausable, resumable model download (cached in pieces)
 │   ├── wllama.ts             # Loads the model, embeds questions
 │   └── errors.ts             # Logging, error handling, toast notices
 │
@@ -173,7 +174,7 @@ Page text lives in the locale files (`src/i18n/en.ts` and `es.ts`, kept in step)
 
 - Nothing is generated: every reply is written in `src/data/chatTree.ts`, so it can't make things up
 - Topic chips and keyword matching work instantly, with no download
-- For free-form questions, visitors can load Google EmbeddingGemma 300M (~330 MB, cached after the first visit). It runs on the CPU through wllama in a worker, so there's no GPU shader compile and no WebGPU requirement
+- For free-form questions, visitors can load Google EmbeddingGemma 300M (~330 MB, cached after the first visit; the download can be paused and resumed, even across visits). It runs on the CPU through wllama in a worker, so there's no GPU shader compile and no WebGPU requirement
 - **After changing topic labels or example questions, run `npm run embed:topics`** (needs Node 22+ and Chrome; set `CHROME_PATH` if Chrome isn't in the default location). A test fails if the stored vectors are out of date
 - The answers are written from a private source document kept outside the repo and reviewed before publishing, since `chatTree.ts` ships publicly
 
@@ -218,6 +219,7 @@ src/__tests__/
 │   └── ResumeMenu.spec.ts    # menu button keys, view vs download
 ├── composables/
 │   ├── useChat.spec.ts       # recovering from a failed answer
+│   ├── useChatModel.spec.ts  # model loading: pause, resume, unfinished download from a past visit
 │   ├── useScene.spec.ts      # hero pause state
 │   └── useTheme.spec.ts      # default/restore/toggle/persist behaviour
 ├── directives/
@@ -231,6 +233,7 @@ src/__tests__/
 │   └── messages.spec.ts      # English/Spanish key parity, messages compile
 └── services/
     ├── chatRouter.spec.ts    # tree integrity, keyword routing, "tell me more"
+    ├── modelDownload.spec.ts # ranged pieces, pause and resume, cache cleanup
     ├── errors.spec.ts        # logging, notices, global error handlers
     └── topicIndex.spec.ts    # vector storage, similarity ranking, stale-vector check
 ```
