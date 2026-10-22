@@ -143,16 +143,13 @@ assetsInclude: ['**/*.docx']    // The Word resume is imported as an asset URL
 plugins: [vue()]                // plus basicSsl() in 'lan' mode
 define: { __VUE_I18N_*__ }      // vue-i18n: Composition API only, no legacy API, no prod devtools
 server.host: 'localhost'        // true in 'lan' mode (npm run dev:lan, HTTPS)
-server.headers: {               // SharedArrayBuffer for wllama multi-threading in dev
-  'Cross-Origin-Opener-Policy': 'same-origin',   // vite preview inherits these
-  'Cross-Origin-Embedder-Policy': 'credentialless'
-}
+server.headers / preview.headers: siteHeaders()   // the /* block of public/_headers (minus HSTS)
 worker.format: 'es'             // ESM workers
-build.chunkSizeWarningLimit: 3000  // The lazy wllama chunk is ~920 kB
-test: { environment: 'jsdom', globals: true, ... }  // Vitest config lives here too
+build.chunkSizeWarningLimit: 1000  // The lazy wllama chunk is ~920 kB
+test: { environment: 'jsdom', globals: true, coverage.thresholds, ... }  // Vitest config lives here too
 ```
 
-Production headers (COOP/COEP plus `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`) are served via `public/_headers` (Cloudflare Pages). `vite preview` doesn't read that file, so the e2e tests in CI only see the COOP/COEP pair from `server.headers`.
+Production headers (COOP/COEP, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, HSTS, and a year-long immutable cache for `/assets/*`) are served via `public/_headers` (Cloudflare Pages). The dev and preview servers read the same file's `/*` block, so the e2e tests (including a `crossOriginIsolated` check) run with the live headers. A Content-Security-Policy is still to be added.
 
 ---
 

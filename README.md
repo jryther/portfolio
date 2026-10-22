@@ -51,7 +51,7 @@ npm run dev
 ## Build & Deploy
 
 ```sh
-# Production build (runs lint + unit tests + vite build, outputs to dist/)
+# Production build (runs lint + type check + unit tests + vite build, outputs to dist/)
 npm run build
 
 # Type-check the app, the e2e specs and vite.config.ts
@@ -144,7 +144,8 @@ scripts/
 └── embed-topics.mjs          # Regenerates src/data/topicVectors.json in headless Chrome
 
 public/
-└── _headers                  # Cloudflare Pages response headers (COOP/COEP, security)
+├── og-image.png              # Link preview image (1200×630)
+└── _headers                  # Cloudflare Pages response headers (COOP/COEP, security, caching); dev and preview read it too
 ```
 
 ---
@@ -195,11 +196,11 @@ npm test
 # Single run (CI-friendly)
 npm run test:run
 
-# Single run with coverage report
+# Single run with coverage report (CI runs this one)
 npm run test:coverage
 ```
 
-Coverage reports are written to `coverage/` (HTML at `coverage/index.html`).
+Coverage reports are written to `coverage/` (HTML at `coverage/index.html`). The run fails if coverage drops below the thresholds in `vite.config.ts`.
 
 ### Test structure
 
@@ -207,9 +208,14 @@ Coverage reports are written to `coverage/` (HTML at `coverage/index.html`).
 src/__tests__/
 ├── components/
 │   ├── About.spec.ts         # timeline bullets, in both languages
-│   ├── ContactForm.spec.ts   # mount/submit/validation behaviour, failure states
+│   ├── AiChat.spec.ts        # chat popup focus, back to top, stepping aside for the section
+│   ├── ContactForm.spec.ts   # the mailto: link, the note after sending
+│   ├── Header.spec.ts        # phone menu, current section
+│   ├── Hero.spec.ts          # contact links, pause and reduced motion
+│   ├── lazyMiniGame.spec.ts  # one quiet retry, then the error
 │   ├── MiniGameSound.spec.ts # sound failure handling, key handling
-│   └── Notices.spec.ts       # toast notices
+│   ├── Notices.spec.ts       # toast notices
+│   └── ResumeMenu.spec.ts    # menu button keys, view vs download
 ├── composables/
 │   ├── useChat.spec.ts       # recovering from a failed answer
 │   ├── useScene.spec.ts      # hero pause state
@@ -217,8 +223,11 @@ src/__tests__/
 ├── directives/
 │   └── tooltip.spec.ts       # v-tooltip show/hide/dismiss
 ├── game/
+│   ├── flappyAudio.spec.ts   # mute/unmute, theme switch, hidden tab (fake Web Audio)
+│   ├── flappyRender.spec.ts  # canvas sizing, what each frame draws (recording 2D context)
 │   └── flappySim.spec.ts     # frame-rate independence, determinism, autopilot
 ├── i18n/
+│   ├── firstPaint.spec.ts    # index.html's inline language/theme scripts match the app
 │   └── messages.spec.ts      # English/Spanish key parity, messages compile
 └── services/
     ├── chatRouter.spec.ts    # tree integrity, keyword routing, "tell me more"

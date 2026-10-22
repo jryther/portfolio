@@ -192,9 +192,9 @@ Laid out like an experience entry rather than a project grid, in order of emphas
 
 ## 9. Cloudflare Pages Deployment
 
-Cloudflare Pages auto-deploys on every push to `main` with the build command `npx vite build` (output `dist`). Lint, type check, unit tests and the Playwright tests have already run in CI (`.github/workflows/ci.yml`) on the pull request, so the deploy doesn't repeat them. Locally, `npm run build` still runs lint → unit tests → `vite build` in sequence.
+Cloudflare Pages auto-deploys on every push to `main` with the build command `npx vite build` (output `dist`). Lint, type check, unit tests and the Playwright tests have already run in CI (`.github/workflows/ci.yml`) on the pull request, so the deploy doesn't repeat them. Locally, `npm run build` still runs lint → type check → unit tests → `vite build` in sequence.
 
-`public/_headers` sets the COOP/COEP headers that let wllama use `SharedArrayBuffer` for multi-threading, plus a few security headers:
+`public/_headers` sets the COOP/COEP headers that let wllama use `SharedArrayBuffer` for multi-threading, plus security and caching headers (a Content-Security-Policy is still to be added):
 ```
 /*
   Cross-Origin-Opener-Policy: same-origin
@@ -203,7 +203,15 @@ Cloudflare Pages auto-deploys on every push to `main` with the build command `np
   X-Frame-Options: DENY
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Strict-Transport-Security: max-age=31536000
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
 ```
+
+The dev and preview servers send the same `/*` headers (read from the file in `vite.config.ts`, without HSTS), and an e2e test checks them and `crossOriginIsolated`.
+
+Link previews use `public/og-image.png` (1200×630, a capture of the hero) through the `og:` and `twitter:card` tags in `index.html`.
 
 `vite.config.ts` `base: '/'` ensures all asset paths resolve correctly from the domain root.
 

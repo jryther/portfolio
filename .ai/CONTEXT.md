@@ -34,7 +34,7 @@ These constraints must be respected in all changes:
 3. **No backend** — The contact form opens the visitor's email app (`mailto:`); the AI chat runs client-side (wllama, CPU)
 4. **Vite is the build tool** — Do not switch bundlers
 5. **Plain CSS, no framework** — One global stylesheet (`src/styles/main.css`: tokens, reset, base, shared classes) imported in `main.ts`; everything component-specific goes in that component's `<style scoped>`. Do not add Tailwind or another CSS framework
-6. **COOP/COEP headers required** — `public/_headers` sets `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: credentialless` so wllama can use `SharedArrayBuffer` for multi-threading. Dev server mirrors these in `vite.config.ts`
+6. **COOP/COEP headers required** — `public/_headers` sets `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: credentialless` so wllama can use `SharedArrayBuffer` for multi-threading. The dev and preview servers read the same file (`vite.config.ts`)
 7. **Dev server uses `localhost`** — `host: 'localhost'` in vite config: SharedArrayBuffer and the model cache need a secure context, and plain HTTP on a network IP isn't one. To test on other devices use `npm run dev:lan` (mode `lan`: `host: true` plus a self-signed HTTPS certificate from `@vitejs/plugin-basic-ssl`), not a plain `host: true`
 8. **No trademark infringement** — TestNav branding/logos cannot be used; only app store links are acceptable. Footer contains a disclaimer
 

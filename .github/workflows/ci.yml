@@ -59,8 +59,9 @@ jobs:
       - name: Type check
         run: npm run type-check
 
+      # With coverage, which fails under the thresholds in vite.config.ts
       - name: Unit tests
-        run: npm run test:run
+        run: npm run test:coverage
 
       # Built once; the e2e tests below run against this same build (vite preview)
       - name: Build
@@ -102,7 +103,12 @@ jobs:
   automerge:
     name: Auto-merge Dependabot patch/minor
     needs: checks
-    if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]'
+    # Opened by Dependabot, and the run started by Dependabot too: a person pushing to the
+    # branch makes it their change, which a reviewer should see
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

@@ -1,9 +1,10 @@
+import { defineConfig } from 'eslint/config'
 import js from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import pluginVue from 'eslint-plugin-vue'
 import globals from 'globals'
 
-export default tseslint.config(
+export default defineConfig(
   // Files to lint
   {
     files: ['src/**/*.{ts,tsx,vue}'],
@@ -31,10 +32,10 @@ export default tseslint.config(
   js.configs.recommended,
 
   // TypeScript recommended rules
-  ...tseslint.configs.recommended,
+  tseslint.configs.recommended,
 
   // Vue flat/recommended rules for Vue 3
-  ...pluginVue.configs['flat/recommended'],
+  pluginVue.configs['flat/recommended'],
 
   // Project-specific overrides
   {

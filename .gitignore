@@ -39,13 +39,5 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
-# Build logs
-build-err.txt
-build-out.txt
-
-# Temporary reference images
-mount hood image.jpg
-
-
 # Private notes: keep any local copy out of git
 *Career Master File*.md
