@@ -30,6 +30,11 @@ updates:
       semver-minor-days: 7
       semver-major-days: 30
     open-pull-requests-limit: 5
+    # @types/node describes the Node API, so its major follows the Node version in
+    # .node-version (24); move both together by hand. Minor and patch updates still come
+    ignore:
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     assignees:
       - jryther
     commit-message:
