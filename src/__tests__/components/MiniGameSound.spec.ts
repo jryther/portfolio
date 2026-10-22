@@ -38,4 +38,23 @@ describe('MiniGame sound', () => {
     expect(wrapper.find('.game-failed').exists()).toBe(true)
     wrapper.unmount()
   })
+
+  it('leaves keys from controls inside the stage alone', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null)
+    const { default: MiniGame } = await import('../../components/AiChat/MiniGame.vue')
+    const wrapper = mount(MiniGame, { global: { plugins: [i18n] } })
+    await wrapper.vm.$nextTick()   // renders the "can't run" panel, a stand-in for an inner control
+
+    const space = () => new KeyboardEvent('keydown', { code: 'Space', bubbles: true, cancelable: true })
+    // A key on the stage itself is the game's (no page scroll)...
+    const onStage = space()
+    wrapper.find('.stage').element.dispatchEvent(onStage)
+    expect(onStage.defaultPrevented).toBe(true)
+    // ...but one bubbling up from inside (like the Play again button) keeps its default action
+    const inside = space()
+    wrapper.find('.game-failed').element.dispatchEvent(inside)
+    expect(inside.defaultPrevented).toBe(false)
+    wrapper.unmount()
+  })
 })

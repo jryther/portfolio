@@ -1,4 +1,4 @@
-import { WORLD_H, GROUND_H, BIRD_R, COLUMN_W, GAP_H, mulberry32, type FlappySim } from './flappySim'
+import { WORLD_H, GROUND_H, BIRD_R, COLUMN_W, GAP_H, mulberry32, type FlappySim, type Phase } from './flappySim'
 import type { Theme } from '../composables/useTheme'
 
 // Draws the mini-game in the site's flat Pacific Northwest style: cut-tree stumps and logs,
@@ -466,7 +466,7 @@ export class FlappyRenderer {
     cutFace(bottom + ry)
   }
 
-  private drawBird(g: CanvasRenderingContext2D, x: number, y: number, ang: number, sinceFlap: number, k: number, p: Palette, phase: string) {
+  private drawBird(g: CanvasRenderingContext2D, x: number, y: number, ang: number, sinceFlap: number, k: number, p: Palette, phase: Phase) {
     const r = BIRD_R * k
     // Wing flaps hard right after a tap, then settles into a slow glide beat
     const flapPhase = phase === 'dying' || phase === 'dead' ? 0.2 : Math.max(0, 1 - sinceFlap * 4)

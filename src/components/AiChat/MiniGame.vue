@@ -260,8 +260,10 @@ function onPress(e: PointerEvent) {
   flap()
 }
 
-// Keys only while the game has focus, so typing elsewhere on the page is never hijacked
+// Keys only while the game has focus, so typing elsewhere on the page is never hijacked.
+// Keys from controls inside the stage (Play again) are theirs: Space must still press the button
 function onKeyDown(e: KeyboardEvent) {
+  if (e.target !== e.currentTarget) return
   if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
     e.preventDefault()
     if (!e.repeat) flap()
@@ -307,11 +309,15 @@ function resizeStage() {
   if (sim.phase !== 'dead') startLoop()
 }
 
-watch(theme, (t) => {
-  audio.setTheme(t)
+watch(theme, (next) => {
+  sound(() => audio.setTheme(next))
   if (!renderer || !sim) return
-  renderer.setTheme(t)
-  renderer.render(sim)
+  try {
+    renderer.setTheme(next)
+    renderer.render(sim)
+  } catch (e) {
+    fail(e)
+  }
 })
 
 // ── Audio (procedural, muted by default; see game/flappyAudio.ts) ─────────────

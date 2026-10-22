@@ -4,11 +4,10 @@ import type { Theme } from '../composables/useTheme'
 //
 // Dark mode: a slow, warm night track — soft pad chords, drifting electric-piano notes,
 // deep bass and faint rain, washed in reverb. Light mode: a brighter summer track — plucky
-// arpeggios, a bouncing bass line, soft kick and hats. Switching themes crossfades at the
-// Switching themes stops the current track right away (a quick fade, its own reverb tail
-// included) and starts the other one from the top. Nothing is created until the visitor
-// unmutes, and the audio engine is suspended while muted or while the tab is hidden, so it
-// costs nothing in the background.
+// arpeggios, a bouncing bass line, soft kick and hats. Switching themes stops the current
+// track right away (a quick fade, its own reverb tail included) and starts the other one
+// from the top. Nothing is created until the visitor unmutes, and the audio engine is
+// suspended while muted or while the tab is hidden, so it costs nothing in the background.
 
 type Mood = 'night' | 'day'
 
@@ -48,10 +47,6 @@ export class GameAudio {
   constructor(theme: Theme) {
     this.mood = theme === 'light' ? 'day' : 'night'
     document.addEventListener('visibilitychange', this.onVisibility)
-  }
-
-  get isMuted() {
-    return this.muted
   }
 
   /** Must be called from a user gesture (the mute button) the first time */
