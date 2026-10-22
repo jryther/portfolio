@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 
-// End-to-end tests for the whole page, run against the Vite dev server.
+// End-to-end tests for the whole page, run against the Vite dev server (or, in CI, the build).
 // Unit tests (Vitest) live in src/__tests__; these drive the real UI in a browser.
 
 // Its own port, so a dev server already running for another checkout is never reused by mistake
@@ -35,7 +35,10 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npx vite --port ${PORT} --strictPort`,
+    // Locally the dev server; in CI the production build the workflow just made (vite preview)
+    command: process.env.CI
+      ? `npx vite preview --port ${PORT} --strictPort`
+      : `npx vite --port ${PORT} --strictPort`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
