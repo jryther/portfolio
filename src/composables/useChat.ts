@@ -3,6 +3,7 @@ import { WELCOME, UNKNOWN_ID, topicLabel, topicAnswer, welcomeText } from '../da
 import { matchKeywords, resolveReply, isConversational, type Reply } from '../services/chatRouter'
 import { i18n, locale } from '../i18n'
 import { handleError } from '../services/errors'
+import { prefersReducedMotion } from './useReducedMotion'
 
 // One conversation shared by the floating popup and the full-page chat section, so a chat
 // started in one carries on in the other. Replies come in the current UI language, and
@@ -40,7 +41,8 @@ export const modelReady   = computed(() => modelStatus.value === 'ready')
 // Free text waits for the model once it's coming, so answers don't switch quality mid-load
 export const modelLoading = computed(() => modelStatus.value === 'loading')
 export const busy         = computed(() => thinking.value || typing.value)
-export const loadingText  = computed(() => loadingProgress.value < 100
+// A load from the browser cache isn't a download (and may report no progress at all)
+export const loadingText  = computed(() => loadingProgress.value < 100 && !loadingFromCache.value
   ? i18n.global.t('chat.downloading')
   : i18n.global.t('chat.starting'))
 
@@ -49,7 +51,7 @@ export const loadingText  = computed(() => loadingProgress.value < 100
 // gets one if it drags on (a hint that flashes up and vanishes would just be noise)
 const SLOW_DOWNLOAD_MS = 1500
 const SLOW_CACHED_MS = 4000
-let loadingFromCache = false
+const loadingFromCache = ref<boolean>(false)
 
 /** True once the model has been loading for a noticeable while */
 export const slowLoad = ref<boolean>(false)
@@ -57,7 +59,7 @@ let slowTimer: ReturnType<typeof setTimeout> | undefined
 watch(modelStatus, (status) => {
   clearTimeout(slowTimer)
   if (status === 'loading') {
-    slowTimer = setTimeout(() => { slowLoad.value = true }, loadingFromCache ? SLOW_CACHED_MS : SLOW_DOWNLOAD_MS)
+    slowTimer = setTimeout(() => { slowLoad.value = true }, loadingFromCache.value ? SLOW_CACHED_MS : SLOW_DOWNLOAD_MS)
   }
   else slowLoad.value = false
 })
@@ -69,8 +71,6 @@ export function gameToggleLabel(showGame: boolean): string {
   return slowLoad.value ? t('chat.playWhileLoading') : t('chat.playGame')
 }
 
-const prefersReducedMotion = typeof window !== 'undefined'
-  && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 // Where the conversation is in the tree, so "tell me more" knows what to continue
 let previousTopicId: string | null = null
@@ -115,7 +115,7 @@ async function autoLoadIfCached() {
     handleError('chat', 'Could not check for a cached AI model', e, { level: 'warn' })
     return
   }
-  loadingFromCache = true
+  loadingFromCache.value = true
   startModel()
 }
 
@@ -133,6 +133,9 @@ export async function startModel() {
   } catch (e) {
     // The chat's status strip shows this one, with a retry
     modelStatus.value = 'error'
+    // A retry may download the model again (a failed cached copy is cleared), so it gets the
+    // download timing for the slow-load hint
+    loadingFromCache.value = false
     handleError('chat', 'The AI model failed to load', e)
   }
 }
@@ -168,7 +171,7 @@ async function ask(question: string, topicId?: string) {
     const reply = resolveReply(routed, previousTopicId, visited, locale.value)
 
     // Instant answers still get a beat of "thinking" so the exchange reads as a conversation
-    const minThinking = prefersReducedMotion ? 0 : 500
+    const minThinking = prefersReducedMotion.value ? 0 : 500
     const elapsed = performance.now() - started
     if (elapsed < minThinking) await sleep(minThinking - elapsed)
 
@@ -203,7 +206,7 @@ async function typeOut(reply: Reply) {
   messages.value.push({ role: 'assistant', text: '', topicId: reply.topicId })
   const live = messages.value[messages.value.length - 1] as ChatMessage & { topicId: string }
 
-  if (prefersReducedMotion) {
+  if (prefersReducedMotion.value) {
     live.text = localizedText(live)
   } else {
     typing.value = true

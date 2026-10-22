@@ -72,7 +72,9 @@ export async function loadWeights(onProgress: (progress: number) => void = () =>
  * onProgress receives 0–1 for the download.
  */
 export function loadModel(onProgress: (progress: number) => void): Promise<void> {
+  let fromCache = false
   loadPromise ??= (async () => {
+    fromCache = await isModelCached()
     await loadWeights(onProgress)
     const stored = storedVectors as StoredTopicVectors
     if (stored.hash === docsHash(buildDocs(TOPIC_LIST))) {
@@ -81,11 +83,18 @@ export function loadModel(onProgress: (progress: number) => void): Promise<void>
       log.warn('topicVectors.json is out of date, run `npm run embed:topics`. Embedding topics in the browser instead.')
       index = decodeVectors(await computeTopicVectors())
     }
-  })().catch((e) => {
+  })().catch(async (e) => {
     loadPromise = null
+    const failed = wllama
+    // A copy from the browser cache that won't load is likely damaged, and a retry would read the
+    // same file again, so drop it: the retry downloads a fresh one
+    if (fromCache) {
+      await failed?.cacheManager.delete(MODEL.url).catch((err: unknown) => {
+        log.warn('Could not remove the cached model after a failed load', err)
+      })
+    }
     // A load that failed after the worker started leaves it half initialized, and wllama refuses
     // to load into it again ("Module is already initialized"), so a retry starts afresh
-    const failed = wllama
     wllama = null
     failed?.exit().catch(() => {})
     throw e

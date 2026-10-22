@@ -14,7 +14,6 @@
         v-tooltip="gameLabel"
         class="header-btn"
         :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
-        :aria-pressed="showGame"
         :aria-label="gameLabel"
         @click="showGame = !showGame"
       >

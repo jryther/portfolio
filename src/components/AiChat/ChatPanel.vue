@@ -5,11 +5,19 @@
     :class="{ 'is-large': large }"
     tabindex="-1"
   >
+    <!-- Each finished answer is read out once from here, rather than every frame of it typing out
+         (and without the follow-up chips) -->
+    <p
+      class="sr-only"
+      :aria-live="live ? 'polite' : 'off'"
+    >
+      {{ announcement }}
+    </p>
+
     <!-- Chat messages -->
     <div
       ref="messagesEl"
       class="messages"
-      :aria-live="live ? 'polite' : 'off'"
     >
       <template
         v-for="(msg, i) in messages"
@@ -30,7 +38,24 @@
             class="bubble"
             :class="msg.role === 'user' ? 'from-user' : 'from-assistant'"
           >
-            {{ msg.text }}
+            <template
+              v-for="(part, p) in linkParts(msg.text)"
+              :key="p"
+            >
+              <!-- v-text, so the bubble's pre-wrap shows no template whitespace -->
+              <a
+                v-if="part.href"
+                :href="part.href"
+                :target="part.external ? '_blank' : undefined"
+                :rel="part.external ? 'noreferrer' : undefined"
+                class="bubble-link"
+                v-text="part.text"
+              />
+              <span
+                v-else
+                v-text="part.text"
+              />
+            </template>
           </div>
         </div>
       </template>
@@ -38,13 +63,14 @@
       <!-- Follow-up topics for the latest answer -->
       <div
         v-if="followUps.length"
+        ref="chipsEl"
         class="chips"
       >
         <button
           v-for="id in followUps"
           :key="id"
           class="topic-chip"
-          @click="pickTopic(id)"
+          @click="pickTopic(id, $event)"
         >
           {{ topicLabel(id, locale) }}
         </button>
@@ -96,7 +122,11 @@
           <span class="progress-label">{{ loadingText }}</span>
           <span class="progress-value">{{ loadingProgress }}%</span>
         </div>
-        <div class="progress-track">
+        <!-- The percentage beside it says the same, so the bar is decoration -->
+        <div
+          class="progress-track"
+          aria-hidden="true"
+        >
           <div
             class="progress-bar"
             :style="{ width: loadingProgress + '%' }"
@@ -134,6 +164,7 @@
     <div class="composer">
       <!-- :value + @input rather than v-model, so phone keyboards update it mid-word -->
       <input
+        ref="inputEl"
         :value="userInput"
         :placeholder="modelLoading ? t('chat.placeholderLoading') : t('chat.placeholder')"
         :aria-label="t('chat.inputLabel')"
@@ -150,6 +181,7 @@
         <div class="composer-actions">
           <button
             class="clear-btn"
+            :disabled="busy"
             @click="clearChat"
           >
             <UiIcon
@@ -161,7 +193,7 @@
           <button
             :disabled="busy || modelLoading"
             class="button send-btn"
-            @click="send"
+            @click="send($event)"
           >
             {{ t('chat.send') }}
           </button>
@@ -194,18 +226,63 @@ const { t } = useI18n()
 
 const panelEl    = ref<HTMLElement | null>(null)
 const messagesEl = ref<HTMLElement | null>(null)
+const inputEl    = ref<HTMLInputElement | null>(null)
+const chipsEl    = ref<HTMLElement | null>(null)
+
+// Where keyboard focus goes once the answer is in: back to the text box after a typed question,
+// or to the first follow-up after a topic. Only for the keyboard; a tap or click leaves focus
+// alone, so a phone doesn't pop its keyboard up over the answer
+let focusAfterAnswer: 'input' | 'chips' | null = null
+// A click with detail 0 came from the keyboard (Enter or Space on the button)
+const fromKeyboard = (e?: Event) => !e || (e instanceof MouseEvent && e.detail === 0) || e instanceof KeyboardEvent
 
 // The chips are replaced once the answer arrives, which would drop focus to <body> (and out of
 // reach of the popup's Escape), so park it on the panel first, like the popup does on open
-function pickTopic(id: string) {
+function pickTopic(id: string, e?: MouseEvent) {
+  focusAfterAnswer = fromKeyboard(e) ? 'chips' : null
   panelEl.value?.focus({ preventScroll: true })
   askTopic(id)
 }
 
 // Same for the text box and Send button, which are disabled while the answer is on its way
-function send() {
+function send(e?: Event) {
   sendMessage()
-  if (busy.value) panelEl.value?.focus({ preventScroll: true })
+  if (!busy.value) return
+  focusAfterAnswer = fromKeyboard(e) ? 'input' : null
+  panelEl.value?.focus({ preventScroll: true })
+}
+
+// The latest answer, for the screen reader announcement once it has finished typing out
+const announcement = ref('')
+watch(busy, async (nowBusy, wasBusy) => {
+  if (nowBusy || !wasBusy) return
+  const last = messages.value[messages.value.length - 1]
+  if (last?.role === 'assistant') announcement.value = last.text
+
+  const target = focusAfterAnswer
+  focusAfterAnswer = null
+  // Only if focus is still parked on the panel (the visitor hasn't moved on)
+  if (!target || document.activeElement !== panelEl.value) return
+  await nextTick()
+  const el = target === 'input' ? inputEl.value : chipsEl.value?.querySelector('button')
+  el?.focus({ preventScroll: true })
+})
+
+// Email addresses and LinkedIn URLs in an answer become links (built as elements, never HTML)
+const LINK_RE = /([\w.+-]+@[\w-]+(?:\.[\w-]+)+)|((?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[\w-]+)/g
+function linkParts(text: string): { text: string, href?: string, external?: boolean }[] {
+  const parts: { text: string, href?: string, external?: boolean }[] = []
+  let last = 0
+  for (const m of text.matchAll(LINK_RE)) {
+    if (m.index > last) parts.push({ text: text.slice(last, m.index) })
+    const [match, email] = m
+    parts.push(email
+      ? { text: match, href: `mailto:${match}` }
+      : { text: match, href: match.startsWith('http') ? match : `https://${match}`, external: true })
+    last = m.index + match.length
+  }
+  if (last < text.length) parts.push({ text: text.slice(last) })
+  return parts
 }
 
 async function scrollToBottom() {
@@ -222,7 +299,7 @@ onMounted(scrollToBottom)
 
 // Enter that confirms an IME composition (e.g. Japanese input) shouldn't also send
 function onEnter(e: KeyboardEvent) {
-  if (!e.isComposing) send()
+  if (!e.isComposing) send(e)
 }
 </script>
 
@@ -446,8 +523,18 @@ function onEnter(e: KeyboardEvent) {
   cursor: pointer;
   transition: color 0.2s ease;
 }
-.clear-btn:hover {
+.clear-btn:hover:not(:disabled) {
   color: var(--color-amber);
+}
+.clear-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bubble-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .clear-icon {
   width: 1.4rem;

@@ -35,19 +35,36 @@ export function normalize(text: string): string {
     .trim()
 }
 
+interface Phrase { text: string, stem: string, weight: number }
+
+// Keyword lists are fixed, so each is normalized once rather than on every question
+const prepared = new WeakMap<readonly string[], Phrase[]>()
+function preparePhrases(phrases: readonly string[]): Phrase[] {
+  let list = prepared.get(phrases)
+  if (!list) {
+    list = phrases.map(normalize).filter(Boolean).map(text => ({
+      text,
+      // "projects" and "project" share a stem; short words ("his") and "-ss" endings ("class") keep theirs
+      stem: text.length > 3 && text.endsWith('s') && !text.endsWith('ss') ? text.slice(0, -1) : text,
+      // Longer phrases count a little more
+      weight: 1 + 0.5 * (text.split(' ').length - 1),
+    }))
+    prepared.set(phrases, list)
+  }
+  return list
+}
+
 /** Sums whole-word phrase matches. Longer phrases count a little more; "project" and
  * "projects" count once */
 function scorePhrases(padded: string, phrases: readonly string[]): number {
   const seen = new Set<string>()
   let score = 0
-  for (const phrase of phrases) {
-    const p = normalize(phrase)
-    const stem = p.replace(/s$/, '')
-    if (!p || seen.has(stem)) continue
+  for (const { text, stem, weight } of preparePhrases(phrases)) {
+    if (seen.has(stem)) continue
     // Plurals count too, except for two-letter keywords ("hi" must not match "his")
-    if (padded.includes(` ${p} `) || (p.length > 2 && padded.includes(` ${p}s `))) {
+    if (padded.includes(` ${text} `) || (text.length > 2 && padded.includes(` ${text}s `))) {
       seen.add(stem)
-      score += 1 + 0.5 * (p.split(' ').length - 1)
+      score += weight
     }
   }
   return score

@@ -62,12 +62,14 @@ try {
 
   let nextId = 0
   const pending = new Map()
+  let onLoaded = () => {}
   ws.onmessage = (e) => {
     const msg = JSON.parse(e.data)
     if (msg.id && pending.has(msg.id)) {
       pending.get(msg.id)(msg)
       pending.delete(msg.id)
     }
+    if (msg.method === 'Page.loadEventFired') onLoaded()
   }
   const send = (method, params = {}) => new Promise((resolve) => {
     const id = ++nextId
@@ -76,8 +78,10 @@ try {
   })
 
   await send('Page.enable')
+  // Wait for the page to finish loading (a fixed sleep was flaky on slow machines)
+  const loaded = new Promise((resolve) => { onLoaded = resolve })
   await send('Page.navigate', { url })
-  await new Promise(r => setTimeout(r, 2000))
+  await loaded
 
   console.log('Loading the model and embedding topics…')
   const started = Date.now()

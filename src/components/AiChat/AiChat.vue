@@ -129,8 +129,12 @@ watch(chatSectionInView, (inView) => {
     return
   }
   if (isOpen.value) {
+    // Focus in the closing popup would drop to the top of the page (the floating button is
+    // stepping aside too), so it carries on in the section's copy of the same conversation
+    const hadFocus = !!panelEl.value?.contains(document.activeElement)
     isOpen.value = false
     showGame.value = false
+    if (hadFocus) document.querySelector<HTMLElement>('#chat .chat-panel')?.focus({ preventScroll: true })
     hideTimer = setTimeout(() => { fabVisible.value = !chatSectionInView.value }, PANEL_LEAVE_MS)
   } else {
     fabVisible.value = false

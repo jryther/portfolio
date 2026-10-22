@@ -9,7 +9,8 @@ test.describe('mini-game', () => {
     await chat.fab.click()
 
     await expect(chat.gameButton).toHaveAttribute('aria-label', 'Play a game')
-    await expect(chat.gameButton).toHaveAttribute('aria-pressed', 'false')
+    // The label says what it does next, so it has no aria-pressed (which would contradict it)
+    await expect(chat.gameButton).not.toHaveAttribute('aria-pressed')
     await chat.gameButton.click()
 
     const stage = chat.dialog.getByRole('application', { name: /Flappy bird game/ })
@@ -17,7 +18,6 @@ test.describe('mini-game', () => {
     await expect(stage).toBeFocused()
     await expect(chat.input).toBeHidden()
     await expect(chat.gameButton).toHaveAttribute('aria-label', 'Back to chat')
-    await expect(chat.gameButton).toHaveAttribute('aria-pressed', 'true')
     await expect(stage.getByText('Tap, click, or press Space to fly')).toBeVisible()
 
     await chat.gameButton.click()
@@ -46,7 +46,7 @@ test.describe('mini-game', () => {
     await play.click()
     await expect(chat.region.getByRole('application')).toBeVisible()
     await expect(play).toBeHidden()
-    await expect(chat.gameButton).toHaveAttribute('aria-pressed', 'true')
+    await expect(chat.gameButton).toHaveAttribute('aria-label', 'Back to chat')
   })
 
   test('an example question switches the section back to the chat', async ({ page }) => {
