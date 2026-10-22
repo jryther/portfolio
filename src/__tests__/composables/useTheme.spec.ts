@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 async function loadTheme() {
   vi.resetModules()
@@ -10,6 +10,8 @@ describe('useTheme', () => {
     localStorage.clear()
     delete document.documentElement.dataset.theme
   })
+  // Even when a test fails partway, so fake timers never leak into the next one
+  afterEach(() => { vi.useRealTimers() })
 
   it('defaults to dark when nothing is stored', async () => {
     const { theme } = await loadTheme()
@@ -49,6 +51,5 @@ describe('useTheme', () => {
     expect(document.documentElement.classList.contains('theme-transition')).toBe(true)
     vi.advanceTimersByTime(1000)
     expect(document.documentElement.classList.contains('theme-transition')).toBe(false)
-    vi.useRealTimers()
   })
 })

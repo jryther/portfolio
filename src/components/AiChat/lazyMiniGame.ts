@@ -7,15 +7,21 @@ import { handleError } from '../../services/errors'
 
 export const loadMiniGame = () => import('./MiniGame.vue')
 
-// Each open gets one quiet retry, which covers a dropped connection; after that the panel says
-// what happened. (Not Vue's onError retry: its attempt count never resets, so only the first open
-// would get one.) Vue forgets a failed load, so opening the game again starts over
-export const MiniGame = defineAsyncComponent({
-  loader: () => loadMiniGame()
-    .catch(() => loadMiniGame())
+/**
+ * Each open gets one quiet retry, which covers a dropped connection; after that the panel says
+ * what happened. (Not Vue's onError retry: its attempt count never resets, so only the first open
+ * would get one.) Vue forgets a failed load, so opening the game again starts over
+ */
+export function loadWithRetry<T>(load: () => Promise<T>): Promise<T> {
+  return load()
+    .catch(() => load())
     .catch((error: unknown) => {
       handleError('game', 'The mini-game failed to load', error)
       throw error
-    }),
+    })
+}
+
+export const MiniGame = defineAsyncComponent({
+  loader: () => loadWithRetry(loadMiniGame),
   errorComponent: GameLoadError,
 })

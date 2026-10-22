@@ -4,6 +4,9 @@ import { test, expect, gotoHome, chatPopup } from './fixtures'
 // v-tooltip: styled tooltips that show on hover and keyboard focus, can be hovered, and are
 // dismissed with Escape (WCAG 1.4.13). Unit tests cover the details; these check the real
 // browser behavior: keyboard focus, positioning, and touch.
+//
+// The page clock is installed (it still runs in real time), so a test that checks a tooltip
+// does NOT change can jump past the show and hide delays instead of sleeping.
 
 const visibleTooltip = (page: Page) => page.locator('.tooltip:not([hidden])')
 const themeToggle = (page: Page) => page.getByRole('button', { name: /^Switch to (dark|light) mode$/ })
@@ -11,7 +14,10 @@ const themeToggle = (page: Page) => page.getByRole('button', { name: /^Switch to
 test.describe('tooltips with a mouse and keyboard', () => {
   test.skip(({ isMobile }) => isMobile, 'Hover and keyboard focus are desktop interactions')
 
-  test.beforeEach(async ({ page }) => { await gotoHome(page) })
+  test.beforeEach(async ({ page }) => {
+    await page.clock.install()
+    await gotoHome(page)
+  })
 
   test('hovering a control shows its styled tooltip next to it', async ({ page }) => {
     const toggle = themeToggle(page)
@@ -58,7 +64,7 @@ test.describe('tooltips with a mouse and keyboard', () => {
     await expect(tooltip).toBeVisible()
     const box = (await tooltip.boundingBox())!
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 4 })
-    await page.waitForTimeout(400)
+    await page.clock.fastForward(400)   // well past the hide delay
     await expect(tooltip).toBeVisible()
   })
 
@@ -94,9 +100,10 @@ test.describe('tooltips on touch', () => {
   test.skip(({ isMobile }) => !isMobile, 'Touch only')
 
   test('tapping a control does not leave a tooltip over the page', async ({ page }) => {
+    await page.clock.install()
     await gotoHome(page)
     await themeToggle(page).tap()
-    await page.waitForTimeout(600)
+    await page.clock.fastForward(600)   // well past the hover show delay
     await expect(visibleTooltip(page)).toHaveCount(0)
   })
 })

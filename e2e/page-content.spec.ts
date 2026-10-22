@@ -3,6 +3,28 @@ import { test, expect, gotoHome } from './fixtures'
 // Every section renders its content, links point where they should, and the page loads cleanly
 
 test.describe('page', () => {
+  // The servers send the headers from public/_headers, as Cloudflare does. Without isolation
+  // the AI chat silently drops to a single thread
+  test('is cross-origin isolated and sends the security headers', async ({ page }) => {
+    const response = await page.goto('/')
+    const headers = response!.headers()
+    expect(headers['cross-origin-opener-policy']).toBe('same-origin')
+    expect(headers['cross-origin-embedder-policy']).toBe('credentialless')
+    expect(headers['x-content-type-options']).toBe('nosniff')
+    expect(headers['x-frame-options']).toBe('DENY')
+    expect(await page.evaluate(() => window.crossOriginIsolated)).toBe(true)
+  })
+
+  test('has a link preview image', async ({ page, request }) => {
+    await gotoHome(page)
+    const image = await page.locator('meta[property="og:image"]').getAttribute('content')
+    expect(image).toBe('https://joshryther.com/og-image.png')
+    // Served from this build, at the same path
+    const response = await request.get(new URL(image!).pathname)
+    expect(response.ok()).toBe(true)
+    expect(response.headers()['content-type']).toBe('image/png')
+  })
+
   test('has the English title and description', async ({ page }) => {
     await gotoHome(page)
     await expect(page).toHaveTitle('Josh Ryther | Full-Stack Software Engineer')
@@ -18,7 +40,7 @@ test.describe('page', () => {
       if (new URL(res.url()).hostname === 'localhost' && res.status() >= 400) failed.push(`${res.status()} ${res.url()}`)
     })
     await gotoHome(page)
-    await page.waitForLoadState('networkidle')
+    await page.waitForLoadState('load')
     expect(errors).toEqual([])
     expect(failed).toEqual([])
   })
@@ -31,10 +53,10 @@ test.describe('page', () => {
 
   test('every image has loaded', async ({ page }) => {
     await gotoHome(page)
-    await page.waitForLoadState('networkidle')
-    const broken = await page.locator('img').evaluateAll(imgs =>
-      (imgs as HTMLImageElement[]).filter(img => !img.complete || img.naturalWidth === 0).map(img => img.src))
-    expect(broken).toEqual([])
+    // Retried until every image has finished, rather than waiting for the network to go quiet
+    await expect.poll(() => page.locator('img').evaluateAll(imgs =>
+      (imgs as HTMLImageElement[]).filter(img => !img.complete || img.naturalWidth === 0).map(img => img.src)))
+      .toEqual([])
   })
 
   test('opens external links in a new tab without a referrer', async ({ page }) => {
