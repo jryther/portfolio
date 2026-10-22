@@ -11,11 +11,12 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   base: '/',
+  // The resume is also offered as a Word file
+  assetsInclude: ['**/*.docx'],
   plugins: [
     vue(),
     mode === 'lan' && basicSsl(),
   ],
-  assetsInclude: ['**/*.docx'],
   // vue-i18n feature flags: Composition API only (drops the legacy API from the bundle), no
   // global <i18n-t> components, no devtools in production
   define: {

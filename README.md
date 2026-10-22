@@ -76,7 +76,6 @@ src/
 │
 ├── assets/
 │   ├── Resume.pdf
-│   ├── Cover Letter.docx
 │   ├── topo.svg              # Topographic contour section background
 │   ├── topo-light.svg        # Contour background for light mode
 │   ├── spinner-solid-full.svg

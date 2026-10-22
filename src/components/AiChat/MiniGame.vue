@@ -3,10 +3,7 @@
     <!-- Top bar: score, AI status, controls -->
     <div class="game-bar">
       <div class="game-stats">
-        <span
-          class="best"
-          :title="t('game.bestTitle')"
-        >
+        <span class="best">
           <UiIcon
             name="trophy"
             class="trophy-icon"
@@ -19,7 +16,11 @@
         <div
           v-if="modelStatus === 'loading'"
           class="ai-progress"
-          :title="loadingText"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuenow="loadingProgress"
+          :aria-label="loadingText"
         >
           <span class="ai-progress-label">{{ t('game.aiProgress', { progress: loadingProgress }) }}</span>
           <div class="progress-track">
@@ -36,9 +37,9 @@
       </div>
 
       <button
+        v-tooltip="muted ? t('game.soundOn') : t('game.soundOff')"
         class="icon-btn"
         :aria-label="muted ? t('game.soundOn') : t('game.soundOff')"
-        :title="muted ? t('game.soundOn') : t('game.soundOff')"
         @click="toggleMute"
       >
         <UiIcon :name="muted ? 'sound-off' : 'sound-on'" />
@@ -139,6 +140,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { vTooltip } from '../../directives/tooltip'
 import { useI18n } from 'vue-i18n'
 import UiIcon from '../icons/UiIcon.vue'
 import { FlappySim, type Phase } from '../../game/flappySim'

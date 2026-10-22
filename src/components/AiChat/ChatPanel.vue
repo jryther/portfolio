@@ -80,8 +80,8 @@
           {{ t('chat.loadPrompt') }}
         </p>
         <button
+          v-tooltip="t('chat.loadTitle', { name: MODEL.name, size: MODEL.sizeLabel })"
           class="button-ghost load-btn"
-          :title="t('chat.loadTitle', { name: MODEL.name, size: MODEL.sizeLabel })"
           @click="startModel"
         >
           {{ t('chat.loadButton', { size: MODEL.sizeLabel }) }}
@@ -172,6 +172,7 @@
 
 <script setup lang="ts">
 import { ref, nextTick, watch, onMounted } from 'vue'
+import { vTooltip } from '../../directives/tooltip'
 import { useI18n } from 'vue-i18n'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import UiIcon from '../icons/UiIcon.vue'

@@ -58,7 +58,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - Three blocks: bio + "At a glance" card, experience & education timeline (`timeline` array), and skills grouped by category (`skillGroups` array)
 - Timeline rail/dot styles and the skill-chip desaturate→colour hover live in `<style scoped>`
 - Download buttons use the global `.button-ghost` class
-- Resume and cover letter imported as asset URLs via Vite
+- Resume imported as an asset URL via Vite
 
 ### `Project.vue`
 - Role line, a featured TestNav case study (`featured` bullets + `stats` tiles + store links), and four "around the platform" cards (`supporting`), all from arrays in `<script setup>`
@@ -140,7 +140,6 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 ```ts
 base: '/'                       // Cloudflare Pages serves from domain root
 plugins: [vue()]                // plus basicSsl() in 'lan' mode
-assetsInclude: ['**/*.docx']    // .docx treated as static asset
 server.host: 'localhost'        // Required for COOP/COEP to work locally
 server.headers: {               // SharedArrayBuffer for wllama multi-threading in dev
   'Cross-Origin-Opener-Policy': 'same-origin',
@@ -157,7 +156,7 @@ Production COOP/COEP headers are served via `public/_headers` (Cloudflare Pages)
 ## Asset Pipeline
 
 - `.svg` icons imported in `<script setup>` → Vite returns URL string → used in `<img :src="...">`
-- `.pdf`, `.docx` imported → Vite returns URL → used in `<a :href="..." download>`
+- `.pdf` imported → Vite returns URL → used in `<a :href="..." download>`
 - `.webp`, `.png` imported → Vite returns URL → used in `<img :src="...">`
 - All assets under `src/assets/` get content-hashed filenames in production build
 

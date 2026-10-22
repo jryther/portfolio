@@ -2,11 +2,11 @@
   <!-- Shows the language it switches to (like the theme toggle shows the theme), labelled in
        that language so a visitor who can't read the current one still finds it -->
   <button
+    v-tooltip="t('toggles.language')"
     type="button"
     class="lang-toggle"
     :lang="t('toggles.languageLang')"
     :aria-label="t('toggles.language')"
-    :title="t('toggles.language')"
     @click="toggleLocale"
   >
     {{ t('toggles.languageCode') }}
@@ -15,6 +15,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { vTooltip } from '../directives/tooltip'
 import { toggleLocale } from '../i18n'
 
 const { t } = useI18n()

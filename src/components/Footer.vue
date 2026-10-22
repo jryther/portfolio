@@ -9,11 +9,11 @@
         <a
           v-for="link in links"
           :key="link.href"
+          v-tooltip="t(link.labelKey)"
           :href="link.href"
           :target="link.external ? '_blank' : undefined"
           :rel="link.external ? 'noreferrer' : undefined"
           :aria-label="t(link.labelKey)"
-          :title="t(link.labelKey)"
           class="footer-link"
         >
           <svg
@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { vTooltip } from '../directives/tooltip'
 
 const { t } = useI18n()
 

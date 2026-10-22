@@ -40,12 +40,14 @@ test.describe('header', () => {
     if (!isMobile) await expect(page.getByRole('navigation').locator('[aria-current]')).toHaveCount(0)
   })
 
-  test('the resume button opens the PDF in a new tab', async ({ page, isMobile }) => {
+  test('the resume button offers the PDF in a new tab and the Word file', async ({ page, isMobile }) => {
     await gotoHome(page)
     if (isMobile) await page.getByRole('button', { name: 'Toggle menu' }).click()
-    const resume = page.getByRole('navigation').getByRole('link', { name: 'Resume' })
-    await expect(resume).toHaveAttribute('target', '_blank')
-    await expect(resume).toHaveAttribute('href', /Resume.*\.pdf/)
+    await page.getByRole('navigation').getByRole('button', { name: 'Resume' }).click()
+    const pdf = page.getByRole('navigation').getByRole('menuitem', { name: /PDF/ })
+    await expect(pdf).toHaveAttribute('target', '_blank')
+    await expect(pdf).toHaveAttribute('href', /Resume.*\.pdf/)
+    await expect(page.getByRole('navigation').getByRole('menuitem', { name: /Word/ })).toHaveAttribute('download', 'Joshua_Ryther_Resume.docx')
   })
 })
 
@@ -116,7 +118,7 @@ test.describe('phone menu', () => {
     await gotoHome(page)
     const menu = page.getByRole('button', { name: 'Toggle menu' })
     await menu.click()
-    await page.getByRole('navigation').getByRole('link', { name: 'Resume' }).focus()
+    await page.getByRole('navigation').getByRole('button', { name: 'Resume' }).focus()
     await page.keyboard.press('Tab')
     await expect(menu).toHaveAttribute('aria-expanded', 'false')
   })

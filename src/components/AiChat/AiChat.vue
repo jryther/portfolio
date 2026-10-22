@@ -6,9 +6,9 @@
       <button
         v-show="fabVisible && !isOpen"
         ref="fabEl"
+        v-tooltip="t('chat.open')"
         class="fab"
         :aria-label="t('chat.open')"
-        :title="t('chat.open')"
         @click="toggleModal"
       >
         <SparkleIcon class="fab-icon" />
@@ -23,9 +23,9 @@
         class="backtop-slot"
       >
         <button
+          v-tooltip="t('chat.backToTop')"
           class="backtop"
           :aria-label="t('chat.backToTop')"
-          :title="t('chat.backToTop')"
           @click="backToTop"
         >
           <UiIcon name="arrow-up" />
@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { vTooltip } from '../../directives/tooltip'
 import { useI18n } from 'vue-i18n'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import ChatPanel from './ChatPanel.vue'

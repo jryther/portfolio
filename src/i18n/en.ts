@@ -11,6 +11,12 @@ const en = {
   app: {
     skipLink: 'Skip to content',
   },
+  // The format menu behind every Resume button
+  resumeMenu: {
+    label: 'Resume formats',
+    pdf: 'PDF',
+    docx: 'Word (.docx)',
+  },
   header: {
     home: 'Josh Ryther — home',
     toggleMenu: 'Toggle menu',
@@ -62,7 +68,6 @@ const en = {
       educationValue: 'B.S. Computer Science, SNHU',
     },
     resume: 'Resume',
-    coverLetter: 'Cover letter',
     experienceEyebrow: '02 — Experience',
     experienceTitle: 'Experience & education',
     type: {
@@ -216,7 +221,6 @@ const en = {
     send: 'Send',
   },
   game: {
-    bestTitle: 'Best score',
     best: 'Best',
     bestScore: 'Best {score}',
     aiProgress: 'AI {progress}%',

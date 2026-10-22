@@ -167,13 +167,12 @@ Animations run once (`once: true`) — do not re-animate on scroll-up.
 
 ## 7. Document Downloads (About.vue)
 
-Resume and Cover Letter are imported as Vite asset URLs:
+The resume is imported as a Vite asset URL:
 ```js
-import resumeUrl      from '../assets/Resume.pdf'
-import coverLetterUrl from '../assets/Cover Letter.docx'
+import resumeUrl from '../assets/Resume.pdf'
 ```
-Both files get content-hashed filenames in production (`Resume-XXXXX.pdf`).
-Buttons use `<a :href="url" download="filename">` — browser-native download.
+It gets a content-hashed filename in production (`Resume-XXXXX.pdf`).
+The button uses `<a :href="url" download="filename">` — browser-native download.
 
 ---
 

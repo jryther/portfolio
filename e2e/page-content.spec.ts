@@ -68,7 +68,7 @@ test.describe('hero', () => {
     await expect(hero.getByText(/Mt\. Hood/)).toBeVisible()
 
     await expect(hero.getByRole('link', { name: 'Get in touch' })).toHaveAttribute('href', '#contact')
-    await expect(hero.getByRole('link', { name: 'View resume' })).toHaveAttribute('href', /Resume.*\.pdf/)
+    await expect(hero.getByRole('button', { name: 'View resume' })).toHaveAttribute('aria-haspopup', 'menu')
     await expect(hero.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com\/in\/joshua-ryther/)
     await expect(hero.getByRole('link', { name: 'Email' })).toHaveAttribute('href', 'mailto:jryther91@gmail.com')
   })
@@ -80,12 +80,21 @@ test.describe('hero', () => {
     await expect(page.getByRole('heading', { name: "Let's connect" })).toBeInViewport()
   })
 
-  test('the resume link serves the PDF', async ({ page }) => {
+  test('the resume menu serves the PDF and the Word file', async ({ page }) => {
     await gotoHome(page)
-    const href = await page.locator('#home').getByRole('link', { name: 'View resume' }).getAttribute('href')
-    const res = await page.request.get(href!)
-    expect(res.ok()).toBe(true)
-    expect((await res.body()).subarray(0, 5).toString()).toBe('%PDF-')
+    const hero = page.locator('#home')
+    await hero.getByRole('button', { name: 'View resume' }).click()
+
+    const pdf = await (await hero.getByRole('menuitem', { name: /PDF/ }).getAttribute('href'))!
+    const pdfRes = await page.request.get(pdf)
+    expect(pdfRes.ok()).toBe(true)
+    expect((await pdfRes.body()).subarray(0, 5).toString()).toBe('%PDF-')
+
+    // A .docx is a ZIP archive, so it starts with "PK"
+    const docx = await (await hero.getByRole('menuitem', { name: /Word/ }).getAttribute('href'))!
+    const docxRes = await page.request.get(docx)
+    expect(docxRes.ok()).toBe(true)
+    expect((await docxRes.body()).subarray(0, 2).toString()).toBe('PK')
   })
 })
 
@@ -101,21 +110,17 @@ test.describe('about', () => {
     await expect(about.locator('.glance-card dd').nth(2)).toHaveText(/^\d+\+ years in software engineering$/)
   })
 
-  test('offers the resume and cover letter as downloads', async ({ page }) => {
+  test('downloads the resume as a PDF or a Word file', async ({ page }) => {
     await gotoHome(page)
     const about = page.locator('#about')
+    const resume = about.getByRole('button', { name: 'Resume' })
 
-    const resume = about.getByRole('link', { name: 'Resume' })
-    await expect(resume).toHaveAttribute('download', 'Joshua_Ryther_Resume.pdf')
-    const coverLetter = about.getByRole('link', { name: 'Cover letter' })
-    await expect(coverLetter).toHaveAttribute('download', 'Joshua_Ryther_Cover_Letter.docx')
-
-    const download = page.waitForEvent('download')
-    await resume.click()
-    expect((await download).suggestedFilename()).toBe('Joshua_Ryther_Resume.pdf')
-
-    const res = await page.request.get((await coverLetter.getAttribute('href'))!)
-    expect(res.ok()).toBe(true)
+    for (const [format, file] of [[/PDF/, 'Joshua_Ryther_Resume.pdf'], [/Word/, 'Joshua_Ryther_Resume.docx']] as const) {
+      await resume.click()
+      const download = page.waitForEvent('download')
+      await about.getByRole('menuitem', { name: format }).click()
+      expect((await download).suggestedFilename()).toBe(file)
+    }
   })
 
   test('lists experience and education in order', async ({ page }) => {

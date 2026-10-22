@@ -1,10 +1,10 @@
 <template>
   <button
+    v-tooltip="isLight ? t('toggles.toDark') : t('toggles.toLight')"
     type="button"
     class="theme-toggle"
     :class="{ light: isLight }"
     :aria-label="isLight ? t('toggles.toDark') : t('toggles.toLight')"
-    :title="isLight ? t('toggles.toDark') : t('toggles.toLight')"
     @click="toggleTheme"
   >
     <!-- Sun -->
@@ -42,6 +42,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { vTooltip } from '../directives/tooltip'
 import { useI18n } from 'vue-i18n'
 import { theme, toggleTheme } from '../composables/useTheme'
 

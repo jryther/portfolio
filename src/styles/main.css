@@ -246,6 +246,42 @@
     border-width: 0;
   }
 
+  /* v-tooltip (src/directives/tooltip.ts): placed with position: fixed by the directive */
+  .tooltip {
+    position: fixed;
+    z-index: 10001;   /* above the floating chat button and notices */
+    max-width: min(28rem, calc(100vw - 1.6rem));
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 0.7rem;
+    background: var(--color-surface-2);
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.25);
+    color: var(--color-snow);
+    font-family: var(--font-sans);
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.4;
+    opacity: 0;
+    transform: translateY(0.3rem);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+  }
+  .tooltip[data-placement="bottom"] {
+    transform: translateY(-0.3rem);
+  }
+  .tooltip.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  .tooltip[hidden] {
+    display: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tooltip {
+      transform: none;
+      transition: none;
+    }
+  }
+
   /* Hidden until a keyboard user tabs to it */
   .skip-link {
     position: absolute;

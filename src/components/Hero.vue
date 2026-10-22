@@ -332,21 +332,18 @@
               stroke-linejoin="round"
             /></svg>
           </a>
-          <a
-            :href="resumeUrl"
-            target="_blank"
-            rel="noreferrer"
-            class="button-ghost"
-          >{{ t('hero.viewResume') }}</a>
+          <ResumeMenu>
+            {{ t('hero.viewResume') }}
+          </ResumeMenu>
 
           <div class="hero-socials">
             <a
+              v-tooltip="'LinkedIn'"
               href="https://linkedin.com/in/joshua-ryther-121400109"
               target="_blank"
               rel="noreferrer"
               class="social-link"
               aria-label="LinkedIn"
-              title="LinkedIn"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -355,10 +352,10 @@
               ><!--!Font Awesome Free v7.2.0 by @fontawesome--><path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 160C544 124.7 515.3 96 480 96L160 96zM165 266.2L231.5 266.2L231.5 480L165 480L165 266.2zM236.7 198.5C236.7 219.8 219.5 237 198.2 237C176.9 237 159.7 219.8 159.7 198.5C159.7 177.2 176.9 160 198.2 160C219.5 160 236.7 177.2 236.7 198.5zM413.9 480L413.9 376C413.9 351.2 413.4 319.3 379.4 319.3C344.8 319.3 339.5 346.3 339.5 374.2L339.5 480L273.1 480L273.1 266.2L336.8 266.2L336.8 295.4L337.7 295.4C346.6 278.6 368.3 260.9 400.6 260.9C467.8 260.9 480.3 305.2 480.3 362.8L480.3 480L413.9 480z" /></svg>
             </a>
             <a
+              v-tooltip="t('hero.email')"
               href="mailto:jryther91@gmail.com"
               class="social-link"
               :aria-label="t('hero.email')"
-              :title="t('hero.email')"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -380,8 +377,9 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { vTooltip } from '../directives/tooltip'
 import { useI18n } from 'vue-i18n'
-import resumeUrl from '../assets/Resume.pdf'
+import ResumeMenu from './ResumeMenu.vue'
 import { theme } from '../composables/useTheme'
 import { scenePaused, heroInView } from '../composables/useScene'
 import { gamePlaying } from '../composables/useGame'

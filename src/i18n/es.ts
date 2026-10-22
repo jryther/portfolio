@@ -10,6 +10,11 @@ const es: MessageSchema = {
   app: {
     skipLink: 'Saltar al contenido',
   },
+  resumeMenu: {
+    label: 'Formatos del currículum',
+    pdf: 'PDF',
+    docx: 'Word (.docx)',
+  },
   header: {
     home: 'Josh Ryther: inicio',
     toggleMenu: 'Abrir o cerrar el menú',
@@ -60,7 +65,6 @@ const es: MessageSchema = {
       educationValue: 'Licenciatura en Ciencias de la Computación, SNHU',
     },
     resume: 'Currículum',
-    coverLetter: 'Carta de presentación',
     experienceEyebrow: '02 — Experiencia',
     experienceTitle: 'Experiencia y formación',
     type: {
@@ -214,7 +218,6 @@ const es: MessageSchema = {
     send: 'Enviar',
   },
   game: {
-    bestTitle: 'Mejor puntuación',
     best: 'Récord',
     bestScore: 'Récord: {score}',
     aiProgress: 'IA {progress} %',

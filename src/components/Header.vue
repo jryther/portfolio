@@ -70,12 +70,12 @@
             >{{ t(`header.nav.${link.id}`) }}</a>
           </li>
           <li class="nav-resume">
-            <a
-              :href="resumeUrl"
-              target="_blank"
-              rel="noreferrer"
-              class="button-ghost resume-btn"
-            >{{ t('header.resume') }}</a>
+            <ResumeMenu
+              button-class="button-ghost resume-btn"
+              align="end"
+            >
+              {{ t('header.resume') }}
+            </ResumeMenu>
           </li>
         </ul>
       </nav>
@@ -93,7 +93,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import resumeUrl from '../assets/Resume.pdf'
+import ResumeMenu from './ResumeMenu.vue'
 import ThemeToggle from './ThemeToggle.vue'
 import SceneToggle from './SceneToggle.vue'
 import LanguageToggle from './LanguageToggle.vue'
@@ -198,7 +198,7 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-.resume-btn {
+:deep(.resume-btn) {
   padding: 0.9rem 1.4rem;
   font-size: 1.4rem;
 }
@@ -277,12 +277,14 @@ onUnmounted(() => {
     visibility: hidden;
     transition: max-height 0.3s ease, visibility 0s linear 0.3s;
   }
-  .nav.active { max-height: 400px; visibility: visible; transition: max-height 0.3s ease; border-bottom: 1px solid var(--color-line); }
+  /* Room for the links plus the open resume formats */
+  .nav.active { max-height: 560px; visibility: visible; transition: max-height 0.3s ease; border-bottom: 1px solid var(--color-line); }
 
   .nav ul {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
+    width: 100%;   /* the panel lays out in a row; without this the list shrinks to its content */
     padding: 0.8rem 2.4rem 2rem;
   }
 
@@ -296,7 +298,11 @@ onUnmounted(() => {
   .nav-link.current { color: var(--color-amber); }
 
   .nav-resume { padding-top: 1.6rem; }
-  .nav-resume a { width: 100%; }
+  .nav-resume :deep(.resume-menu),
+  .nav-resume :deep(.resume-btn) { width: 100%; }
+  /* Inside the phone menu the formats open in place, below the button (a floating list
+     would be clipped by the dropdown panel) */
+  .nav-resume :deep(.resume-menu-list) { position: static; margin-top: 0.6rem; width: 100%; box-shadow: none; }
 }
 
 /* The smallest phones can't fit the name beside three toggles and the menu: the mountain

@@ -1,11 +1,11 @@
 <template>
   <button
     v-if="!prefersReducedMotion"
+    v-tooltip="label"
     type="button"
     class="scene-toggle"
     :class="{ 'is-away': !heroInView }"
     :aria-label="label"
-    :title="label"
     @click="toggleScene"
   >
     <svg
@@ -27,6 +27,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { vTooltip } from '../directives/tooltip'
 import { useI18n } from 'vue-i18n'
 import { scenePaused, heroInView, toggleScene } from '../composables/useScene'
 

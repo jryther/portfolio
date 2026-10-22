@@ -266,7 +266,8 @@ test.describe('AI model loading', () => {
     await chat.fab.click()
     await expect(chat.dialog.getByText(/Load a small AI model that runs in your browser/)).toBeVisible()
     await expect(chat.loadButton).toHaveText('Load AI · ~330 MB')
-    await expect(chat.loadButton).toHaveAttribute('title', 'Google EmbeddingGemma 300M, ~330 MB one-time download')
+    // The tooltip adds the model's details, so screen readers get them as the description
+    await expect(chat.loadButton).toHaveAccessibleDescription('Google EmbeddingGemma 300M, ~330 MB one-time download')
   })
 
   test('while loading, free text waits but topic chips still answer', async ({ page }) => {

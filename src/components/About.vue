@@ -48,28 +48,16 @@
             </div>
           </dl>
           <div class="downloads">
-            <a
-              :href="resumeUrl"
-              class="button-ghost download-btn"
-              download="Joshua_Ryther_Resume.pdf"
+            <ResumeMenu
+              button-class="button-ghost download-btn"
+              pdf-action="download"
             >
               <svg
                 v-bind="downloadIcon"
                 aria-hidden="true"
               ><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M2.5 13.5h11" /></svg>
               {{ t('about.resume') }}
-            </a>
-            <a
-              :href="coverLetterUrl"
-              class="button-ghost download-btn"
-              download="Joshua_Ryther_Cover_Letter.docx"
-            >
-              <svg
-                v-bind="downloadIcon"
-                aria-hidden="true"
-              ><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M2.5 13.5h11" /></svg>
-              {{ t('about.coverLetter') }}
-            </a>
+            </ResumeMenu>
           </div>
         </div>
       </div>
@@ -194,8 +182,7 @@ import jestSvg        from '../assets/techIcons/jest.svg'
 import jenkinsSvg     from '../assets/techIcons/jenkins.svg'
 import awsSvg         from '../assets/techIcons/aws.svg'
 import tailwindSvg    from '../assets/techIcons/tailwindcss.svg'
-import resumeUrl      from '../assets/Resume.pdf'
-import coverLetterUrl from '../assets/Cover Letter.docx'
+import ResumeMenu     from './ResumeMenu.vue'
 
 interface Skill {
   name: string
@@ -346,7 +333,7 @@ const skillGroups: SkillGroup[] = [
   border-top: 1px solid var(--color-line);
 }
 
-.download-btn {
+:deep(.download-btn) {
   padding: 1rem 1.4rem;
   font-size: 1.4rem;
 }

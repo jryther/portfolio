@@ -11,11 +11,11 @@
       <!-- Extra status (e.g. the full section's AI status pill) sits before the buttons -->
       <slot />
       <button
+        v-tooltip="gameLabel"
         class="header-btn"
         :class="{ 'is-active': showGame, 'is-hinting': slowLoad && !showGame }"
         :aria-pressed="showGame"
         :aria-label="gameLabel"
-        :title="gameLabel"
         @click="showGame = !showGame"
       >
         <UiIcon name="game" />
@@ -26,9 +26,9 @@
       </button>
       <button
         v-if="closable"
+        v-tooltip="t('chat.closeShort')"
         class="header-btn"
         :aria-label="t('chat.close')"
-        :title="t('chat.closeShort')"
         @click="emit('close')"
       >
         <UiIcon name="close" />
@@ -39,6 +39,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { vTooltip } from '../../directives/tooltip'
 import { useI18n } from 'vue-i18n'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import UiIcon from '../icons/UiIcon.vue'

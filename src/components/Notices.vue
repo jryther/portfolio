@@ -44,10 +44,10 @@
             {{ t(notice.action.labelKey) }}
           </button>
           <button
+            v-tooltip="t('notices.dismiss')"
             type="button"
             class="notice-close"
             :aria-label="t('notices.dismiss')"
-            :title="t('notices.dismiss')"
             @click="close(notice.id)"
           >
             <UiIcon name="close" />
@@ -60,6 +60,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
+import { vTooltip } from '../directives/tooltip'
 import { useI18n } from 'vue-i18n'
 import UiIcon from './icons/UiIcon.vue'
 import type { UiIconName } from './icons/uiIcons'
