@@ -347,12 +347,15 @@ export class FlappyRenderer {
 
     if (this.sky) g.drawImage(this.sky, 0, 0)
 
+    // Clouds drift on their own, except with reduced motion
+    const driftTime = sim.calm ? 0 : sim.time
+
     // Parallax layers (ground last, it sits in front of the trees)
-    for (let i = 0; i < this.layers.length - 1; i++) this.drawLayer(this.layers[i], cam, sim.time)
+    for (let i = 0; i < this.layers.length - 1; i++) this.drawLayer(this.layers[i], cam, driftTime)
 
     for (const c of sim.columns) this.drawTrees(g, (c.x - cam) * k, c.gapTop, k, p)
 
-    this.drawLayer(this.layers[this.layers.length - 1], cam, sim.time)
+    this.drawLayer(this.layers[this.layers.length - 1], cam, driftTime)
 
     const y = sim.prevBirdY + (sim.birdY - sim.prevBirdY) * a
     const ang = sim.prevAngle + (sim.angle - sim.prevAngle) * a

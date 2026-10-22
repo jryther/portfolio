@@ -148,6 +148,7 @@ import { FlappyRenderer } from '../../game/flappyRender'
 import { GameAudio } from '../../game/flappyAudio'
 import { theme } from '../../composables/useTheme'
 import { gamePlaying } from '../../composables/useGame'
+import { prefersReducedMotion } from '../../composables/useReducedMotion'
 import { modelStatus, modelReady, loadingProgress, loadingText } from '../../composables/useChat'
 import { handleError, notify } from '../../services/errors'
 
@@ -298,15 +299,43 @@ function resizeStage() {
   if (!el || !renderer) return
   const { width, height } = el.getBoundingClientRect()
   if (!width || !height) return
-  // The ResizeObserver's first callback repeats the size we already built for
-  const size = `${Math.round(width)}x${Math.round(height)}`
+  // The ResizeObserver's first callback repeats the size we already built for. The pixel ratio is
+  // part of the key, since moving to a screen with a different density needs a sharper canvas
+  const size = `${Math.round(width)}x${Math.round(height)}@${window.devicePixelRatio}`
   if (size === lastSize) return
   lastSize = size
   const worldW = renderer.resize(width, height)
   if (sim) sim.resize(worldW)
-  else sim = new FlappySim(worldW)
+  else {
+    sim = new FlappySim(worldW)
+    sim.calm = prefersReducedMotion.value
+  }
   renderer.render(sim)
   if (sim.phase !== 'dead') startLoop()
+}
+
+watch(prefersReducedMotion, (calm) => {
+  if (sim) sim.calm = calm
+})
+
+// A pixel-ratio change alone (dragging the window to another screen, some zoom changes) doesn't
+// resize the stage, so watch for it directly. The query matches only the current ratio, so it's
+// re-armed after each change
+let dprQuery: MediaQueryList | null = null
+function watchPixelRatio() {
+  dprQuery?.removeEventListener('change', onPixelRatioChange)
+  dprQuery = window.matchMedia?.(`(resolution: ${window.devicePixelRatio}dppx)`) ?? null
+  dprQuery?.addEventListener('change', onPixelRatioChange)
+}
+function onPixelRatioChange() {
+  resize()
+  watchPixelRatio()
+}
+
+// While the tab is hidden no frames run; coming back, the first frame would otherwise count the
+// whole time away (up to the sim's cap) and drop the bird without any input
+function onVisibilityChange() {
+  if (!document.hidden) lastTime = 0
 }
 
 watch(theme, (next) => {
@@ -360,6 +389,8 @@ onMounted(() => {
   }
   ro = new ResizeObserver(resize)
   ro.observe(stageEl.value!)
+  watchPixelRatio()
+  document.addEventListener('visibilitychange', onVisibilityChange)
   resize()
   stageEl.value?.focus()
 })
@@ -367,6 +398,8 @@ onMounted(() => {
 onUnmounted(() => {
   stopLoop()
   ro?.disconnect()
+  dprQuery?.removeEventListener('change', onPixelRatioChange)
+  document.removeEventListener('visibilitychange', onVisibilityChange)
   audio.dispose()
   gamePlaying.value = false
 })

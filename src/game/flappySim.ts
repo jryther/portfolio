@@ -68,6 +68,8 @@ export class FlappySim {
   /** Seconds since the last flap; drives the wing animation */
   sinceFlap = 1
   time = 0
+  /** Reduced motion: the waiting screen holds still (no bob, no idle scroll) */
+  calm = false
 
   private rand: () => number
   private acc = 0
@@ -77,16 +79,22 @@ export class FlappySim {
   constructor(worldW: number, seed = Date.now()) {
     this.worldW = worldW
     this.rand = mulberry32(seed)
-    this.resize(worldW)
     this.reset()
   }
 
   resize(worldW: number) {
     this.worldW = worldW
-    this.birdX = Math.min(worldW * 0.28, 230)
+    // Mid-round the bird keeps its place, so a resize can't move it into a column; the new
+    // position applies from the next round
+    if (this.phase === 'idle') this.birdX = this.homeX()
+  }
+
+  private homeX(): number {
+    return Math.min(this.worldW * 0.28, 230)
   }
 
   reset() {
+    this.birdX = this.homeX()
     this.phase = 'idle'
     this.score = 0
     this.columns = []
@@ -146,6 +154,11 @@ export class FlappySim {
     this.sinceFlap += STEP
 
     if (this.phase === 'idle') {
+      if (this.calm) {
+        this.birdY = this.idleY()
+        this.angle = 0
+        return
+      }
       this.camX += IDLE_SPEED * STEP
       this.birdY = this.idleY() + Math.sin(this.time * 2.6) * 10
       this.angle = Math.sin(this.time * 2.6) * 0.1
@@ -187,7 +200,9 @@ export class FlappySim {
         events.scored++
       }
     }
-    this.columns = this.columns.filter(c => c.x + COLUMN_W > this.camX - 20)
+    // Columns spawn in order, so spent ones are always at the front (dropped in place, rather
+    // than a new array every tick)
+    while (this.columns.length && this.columns[0].x + COLUMN_W <= this.camX - 20) this.columns.shift()
 
     if (this.birdY - BIRD_R <= 0 || this.birdY >= floor || this.hitsColumn(birdWorldX)) {
       this.birdY = Math.min(Math.max(this.birdY, BIRD_R), floor)

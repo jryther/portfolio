@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { FlappySim, WORLD_H, GROUND_H, BIRD_R, STEP } from '../../game/flappySim'
+import { FlappySim, WORLD_H, GROUND_H, BIRD_R, STEP, COLUMN_W } from '../../game/flappySim'
 
 // Play the same inputs (flap at fixed times) at a given frame rate
 function play(fps: number, seconds: number, flapEvery = 0.45, worldW = 800) {
@@ -87,4 +87,43 @@ describe('FlappySim', () => {
     expect(sim.phase).toBe('idle')
     expect(sim.columns).toHaveLength(0)
   })
+
+  it('keeps the bird in place when resized mid-round, and moves it for the next round', () => {
+    const sim = new FlappySim(800, 7)
+    const home = sim.birdX
+    sim.flap()
+    sim.resize(400)
+    expect(sim.birdX).toBe(home)
+    sim.reset()
+    expect(sim.birdX).toBeLessThan(home)
+    sim.resize(800)
+    expect(sim.birdX).toBe(home)   // idle: resizes apply at once
+  })
+
+  it('holds the waiting screen still with reduced motion', () => {
+    const sim = new FlappySim(800, 7)
+    sim.calm = true
+    const { birdY, camX } = sim
+    sim.advance(0.25)
+    sim.advance(0.25)
+    expect(sim.birdY).toBe(birdY)
+    expect(sim.camX).toBe(camX)
+    expect(sim.angle).toBe(0)
+  })
+
+  it('drops columns once they are off screen', () => {
+    const sim = new FlappySim(800, 7)
+    sim.flap()
+    const ahead = { x: sim.camX + 5000, gapTop: 200, passed: false }
+    sim.columns = [
+      { x: sim.camX - 1000, gapTop: 200, passed: true },
+      { x: sim.camX - 500, gapTop: 200, passed: true },
+      ahead,
+    ]
+    sim.advance(STEP)
+    // The two spent ones are gone (a tick may also spawn a new column ahead)
+    expect(sim.columns).toContain(ahead)
+    for (const c of sim.columns) expect(c.x + COLUMN_W).toBeGreaterThan(sim.camX - 20)
+  })
+
 })

@@ -59,6 +59,9 @@ export class GameAudio {
     this.master.gain.cancelScheduledValues(now)
     this.master.gain.setTargetAtTime(muted ? 0 : 1, now, 0.08)
     if (muted) {
+      // Nothing new to schedule while muted; unmuting carries on from the same step
+      if (this.timer) clearInterval(this.timer)
+      this.timer = null
       setTimeout(() => { if (this.muted) ctx.suspend().catch(() => {}) }, 300)
     } else {
       ctx.resume().catch(() => {})
@@ -211,9 +214,12 @@ export class GameAudio {
 
   private startScheduler() {
     if (this.timer || !this.ctx) return
-    if (!this.track) this.track = this.createTrack(this.ctx, this.ctx.currentTime + 0.1)
-    this.nextStepTime = this.ctx.currentTime + 0.1
-    this.step = 0
+    if (!this.track) {
+      this.track = this.createTrack(this.ctx, this.ctx.currentTime + 0.1)
+      this.step = 0
+    }
+    // After a mute the track carries on from its step (the suspended context's clock paused too)
+    this.nextStepTime = Math.max(this.nextStepTime, this.ctx.currentTime + 0.1)
     this.timer = setInterval(() => this.schedule(), SCHEDULE_EVERY_MS)
   }
 
