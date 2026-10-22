@@ -18,6 +18,8 @@
     <Footer />
     <!-- Floating chat popup; hides while the chat section is on screen -->
     <AiChat />
+    <!-- Toasts for problems with no place of their own on the page -->
+    <Notices />
   </div>
 </template>
 
@@ -30,6 +32,7 @@ import Project from './components/Project.vue'
 import ChatSection from './components/ChatSection.vue'
 import Contact from './components/Contact.vue'
 import Footer from './components/Footer.vue'
+import Notices from './components/Notices.vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()

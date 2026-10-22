@@ -61,20 +61,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SparkleIcon from '../icons/SparkleIcon.vue'
 import ChatPanel from './ChatPanel.vue'
 import ChatHeader from './ChatHeader.vue'
 import UiIcon from '../icons/UiIcon.vue'
+import { MiniGame, loadMiniGame } from './lazyMiniGame'
 import { openChat, chatSectionInView } from '../../composables/useChat'
 import { prefetchWhenIdle } from '../../composables/useGame'
 
 const { t } = useI18n()
-
-// The game's code downloads in the background once the chat opens, so the game icon is instant
-const loadGame = () => import('./MiniGame.vue')
-const MiniGame = defineAsyncComponent(loadGame)
 
 const isOpen     = ref<boolean>(false)
 const fabVisible = ref<boolean>(true)
@@ -89,7 +86,7 @@ async function toggleModal() {
   isOpen.value = !isOpen.value
   if (isOpen.value) {
     openChat()
-    prefetchWhenIdle(loadGame)
+    prefetchWhenIdle(loadMiniGame)
   } else {
     showGame.value = false   // reopening starts back on the chat
   }

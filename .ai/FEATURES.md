@@ -51,6 +51,9 @@ Hero content and the summit coordinates sit at `z-index: 5`.
 ### Reduced motion
 - No rain, no lightning, clouds frozen; theme changes apply instantly
 
+### No canvas
+- If a 2D canvas context isn't available, the cloud/rain layer that failed is skipped (logged as a warning); the SVG scene still shows
+
 ---
 
 ## 2. Skills Grid (About.vue)
@@ -99,6 +102,7 @@ The chat doesn't generate text. Every reply is pre-written in a decision tree (`
 - The input uses `:value` + `@input` instead of `v-model` so it updates during phone-keyboard composition; Enter is ignored while an IME is composing
 - Replies get a short "thinking" beat (500 ms minimum), then type out a few words at a time; both are skipped for `prefers-reduced-motion`
 - Follow-up chips show the topic's unseen children (all children once every one has been seen)
+- Errors: a model load failure shows in the status strip with Try again; a failed model routing falls back to keywords (logged only); an answer that throws is replaced in the conversation by `chat.replyError` (re-rendered on language change), the input unlocks, and the welcome chips come back
 - Popup size lives in `.chat-popup` (scoped): `44rem` wide, capped at `calc(100vw - 2rem)` so it fits phones
 
 ---
@@ -114,6 +118,7 @@ A Flappy-style game behind the game icon in both chat headers (popup and `#chat`
 - The loop stops once a round ends and restarts on Play again. While a round is in play `gamePlaying` (`composables/useGame.ts`) pauses the hero's weather and lightning
 - Top bar: best score (localStorage `flappyHighScore`), AI loading progress if the model is downloading, mute toggle (sound off by default). Game-over card: score, best, Play again
 - **`game/flappyAudio.ts`** — procedural Web Audio, no files. Dark: 66 BPM night track (Fmaj7–Em7–Dm7–Cmaj7 pads, sparse electric-piano notes, sine bass, faint filtered-noise rain, long reverb). Light: 112 BPM summer track (G–D/F#–Em–C plucked arpeggios, bouncing bass, soft kick and hats). A theme change while music plays stops the current track at once (0.3 s fade; each track has its own reverb so the tail stops too) and starts the other from bar one; changed while muted, the right track starts on unmute. SFX: noise-whoosh flap, key-matched bell chime that climbs with the score, thud + falling third on crash, rising flourish for a new best. Generated-impulse reverb and a compressor on the master. The context is created on first unmute and suspended while muted or the tab is hidden
+- Errors: the lazy component (`AiChat/lazyMiniGame.ts`, shared by both chat views) retries once, then shows `GameLoadError.vue` in the panel; opening the game again retries. No 2D canvas, or a crash mid-loop, stops the game and shows an inline "can't run" message. Sound that can't start re-mutes and shows a warning toast
 - Saved original (pre-redesign) version: `mini-game` branch
 
 ---
@@ -153,7 +158,9 @@ Animations run once (`once: true`) — do not re-animate on scroll-up.
 
 - Submits to Formspree via `fetch` POST with JSON body
 - `formspreeEndpoint` is currently `'https://formspree.io/f/YOUR_FORM_ID'` — owner must replace
-- Success: `submitted` ref shows green success message for 5 seconds then hides
+- `state`: `idle` → `sending` → `sent` | `failed`. Sending shows "Sending…" with `aria-disabled` (not `disabled`, so focus stays) and ignores repeat submits; the request times out after 15 s
+- Success: green message (in a persistent `role="status"`) for 5 seconds
+- Failure (non-OK response, network error, timeout): rust-toned message in a persistent `role="alert"`, with a `mailto:` fallback; a separate message when `navigator.onLine` is false. The visitor's text is kept for a retry. Formspree's `errors[]` details and a placeholder-ID hint go to the console
 - No client-side validation beyond HTML5 `required` attributes
 
 ---

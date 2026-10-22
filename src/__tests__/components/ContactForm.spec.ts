@@ -107,12 +107,16 @@ describe('ContactForm', () => {
 
     it('does not show success message on failed response', async () => {
       fetchSpy.mockResolvedValue({ ok: false })
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       const wrapper = mountForm()
       await wrapper.find('form').trigger('submit')
       await flushPromises()
 
       expect(wrapper.find('.success-message').exists()).toBe(false)
+      consoleSpy.mockRestore()
+      vi.restoreAllMocks()
     })
 
     it('does not throw on fetch network error', async () => {
@@ -125,6 +129,96 @@ describe('ContactForm', () => {
 
       expect(wrapper.find('.success-message').exists()).toBe(false)
       consoleSpy.mockRestore()
+    })
+
+    describe('when sending fails', () => {
+      let consoleSpy: ReturnType<typeof vi.spyOn>
+
+      beforeEach(() => {
+        consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+        vi.spyOn(console, 'warn').mockImplementation(() => {})
+      })
+
+      afterEach(() => vi.restoreAllMocks())
+
+      const fillAndSubmit = async (wrapper: ReturnType<typeof mountForm>) => {
+        await wrapper.find('input[type="text"]').setValue('Josh')
+        await wrapper.find('input[type="email"]').setValue('josh@example.com')
+        await wrapper.find('textarea').setValue('Hello!')
+        await wrapper.find('form').trigger('submit')
+        await flushPromises()
+      }
+
+      it('explains the problem in an alert, with email as a fallback', async () => {
+        fetchSpy.mockResolvedValue({ ok: false, status: 500 })
+
+        const wrapper = mountForm()
+        await fillAndSubmit(wrapper)
+
+        const alert = wrapper.find('[role="alert"]')
+        expect(alert.text()).toContain("Your message couldn't be sent")
+        expect(alert.find('a').attributes('href')).toBe('mailto:jryther91@gmail.com')
+        expect(consoleSpy).toHaveBeenCalledWith('[contact]', 'Message failed to send', expect.any(Error))
+      })
+
+      it('shows the same alert on a network error', async () => {
+        fetchSpy.mockRejectedValue(new TypeError('Failed to fetch'))
+
+        const wrapper = mountForm()
+        await fillAndSubmit(wrapper)
+
+        expect(wrapper.find('.error-message').exists()).toBe(true)
+        expect(wrapper.find('.success-message').exists()).toBe(false)
+      })
+
+      it('says when the visitor is offline', async () => {
+        fetchSpy.mockRejectedValue(new TypeError('Failed to fetch'))
+        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+
+        const wrapper = mountForm()
+        await fillAndSubmit(wrapper)
+
+        expect(wrapper.find('.error-message').text()).toContain("You're offline")
+      })
+
+      it('keeps what the visitor typed so they can try again', async () => {
+        fetchSpy.mockResolvedValue({ ok: false, status: 500 })
+
+        const wrapper = mountForm()
+        await fillAndSubmit(wrapper)
+
+        expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('Hello!')
+      })
+
+      it('clears the error once a retry succeeds', async () => {
+        fetchSpy.mockResolvedValueOnce({ ok: false, status: 500 }).mockResolvedValueOnce({ ok: true })
+
+        const wrapper = mountForm()
+        await fillAndSubmit(wrapper)
+        await wrapper.find('form').trigger('submit')
+        await flushPromises()
+
+        expect(wrapper.find('.error-message').exists()).toBe(false)
+        expect(wrapper.find('.success-message').exists()).toBe(true)
+      })
+    })
+
+    it('shows that it is sending, and ignores a second submit meanwhile', async () => {
+      let respond: (value: { ok: boolean }) => void = () => {}
+      fetchSpy.mockReturnValue(new Promise((resolve) => { respond = resolve }))
+
+      const wrapper = mountForm()
+      await wrapper.find('form').trigger('submit')
+      const button = wrapper.find('button[type="submit"]')
+      expect(button.text()).toBe('Sending…')
+      expect(button.attributes('aria-disabled')).toBe('true')
+
+      await wrapper.find('form').trigger('submit')
+      expect(fetchSpy).toHaveBeenCalledTimes(1)
+
+      respond({ ok: true })
+      await flushPromises()
+      expect(button.text()).toBe('Send Message')
     })
 
     it('sends the correct payload to Formspree', async () => {

@@ -206,6 +206,7 @@ const es: MessageSchema = {
     playWhileWait: 'Juega al minijuego mientras esperas',
     loadError: 'El modelo de IA no se pudo cargar en este dispositivo, pero las respuestas rápidas siguen funcionando.',
     tryAgain: 'Reintentar',
+    replyError: 'Lo siento, algo salió mal al responder. Vuelve a preguntar o elige un tema de abajo.',
     placeholder: 'Pregunta sobre Josh...',
     placeholderLoading: 'Cargando el modelo de IA… mientras tanto, elige un tema arriba',
     inputLabel: 'Haz una pregunta sobre Josh',
@@ -226,6 +227,8 @@ const es: MessageSchema = {
     overAnnouncement: 'Fin del juego. Puntuación: {score}.',
     newBest: '¡Nuevo récord!',
     playAgain: 'Jugar de nuevo',
+    loadError: 'No se pudo cargar el juego. Revisa tu conexión y vuelve a abrirlo.',
+    unsupported: 'El juego no puede funcionar en este navegador.',
   },
   contact: {
     eyebrow: '06 — Contacto',
@@ -248,11 +251,28 @@ const es: MessageSchema = {
     messagePlaceholder: '¿De qué te gustaría hablar?',
     submit: 'Enviar mensaje',
     success: '¡Mensaje enviado! Te responderé pronto.',
+    sending: 'Enviando…',
+    error: 'No se pudo enviar tu mensaje. Inténtalo de nuevo en un momento.',
+    errorOffline: 'No tienes conexión, así que tu mensaje no se pudo enviar. Tu texto sigue aquí para cuando vuelvas a conectarte.',
+    errorFallback: 'También puedes escribirme a',
   },
   footer: {
     builtWith: 'Hecho con Vue, Vite y wllama',
     madeIn: 'Desde Salem, Oregón',
     trademark: 'TestNav es una marca comercial de Pearson Education, Inc. Todos los nombres de productos se usan solo con fines de identificación.',
+  },
+  notices: {
+    levels: {
+      info: 'Nota',
+      warn: 'Aviso',
+      error: 'Error',
+    },
+    dismiss: 'Cerrar notificación',
+    unexpected: 'Algo salió mal en esta página. Recargarla puede ayudar.',
+    outdated: 'No se pudo cargar una parte del sitio. Puede que haya una versión más nueva.',
+    reload: 'Recargar',
+    offline: 'No tienes conexión. Enviar mensajes y cargar el modelo de IA no funcionará hasta que vuelvas a conectarte.',
+    soundUnavailable: 'El sonido no está disponible en este navegador.',
   },
 }
 

@@ -3,6 +3,7 @@ import wasmUrl from '@wllama/wllama/esm/wasm/wllama.wasm?url'
 import { TOPIC_LIST } from '../data/chatTree'
 import storedVectors from '../data/topicVectors.json'
 import { MODEL } from './chatModel'
+import { createLogger } from './errors'
 import {
   buildDocs, docsHash, decodeVectors, encodeVectors, normalize, rankTopics, pickTopic,
   type TopicIndex, type StoredTopicVectors,
@@ -15,6 +16,8 @@ import {
 let wllama: Wllama | null = null
 let index: TopicIndex | null = null
 let loadPromise: Promise<void> | null = null
+
+const log = createLogger('wllama')
 
 function getInstance(): Wllama {
   wllama ??= new Wllama({ default: wasmUrl }, { logger: LoggerWithoutDebug, suppressNativeLog: true })
@@ -75,7 +78,7 @@ export function loadModel(onProgress: (progress: number) => void): Promise<void>
     if (stored.hash === docsHash(buildDocs(TOPIC_LIST))) {
       index = decodeVectors(stored)
     } else {
-      console.warn('[wllama] topicVectors.json is out of date, run `npm run embed:topics`. Embedding topics in the browser instead.')
+      log.warn('topicVectors.json is out of date, run `npm run embed:topics`. Embedding topics in the browser instead.')
       index = decodeVectors(await computeTopicVectors())
     }
   })().catch((e) => {

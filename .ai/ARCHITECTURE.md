@@ -26,9 +26,10 @@ App.vue
 │   └── Contact.vue         (id="contact")
 │       └── ContactForm.vue
 ├── Footer.vue
-└── AiChat/AiChat.vue       (fixed overlay, z-index 9999)
+├── AiChat/AiChat.vue       (fixed overlay, z-index 9999)
     ├── AiChat/ChatHeader.vue
     └── AiChat/ChatPanel.vue
+└── Notices.vue             (toasts, fixed top-right under the header, z-index 10000)
 ```
 
 Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padding-top: 10rem` in CSS offsets scrolling for the fixed header.
@@ -91,6 +92,17 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - While `chatSectionInView`, the floating button steps aside: an open popup closes first (280 ms leave transition), then the button fades out (`<Transition name="fab">` + `v-show`); it fades back when the section leaves
 - On desktop the section's top padding is trimmed so landing from the nav (scroll-padding 8rem) shows the whole chat card
 - Both chat headers have a game icon that swaps the ChatPanel for `MiniGame.vue` (lazy-loaded). See FEATURES.md §3b
+
+---
+
+## Error Handling (`services/errors.ts`, `Notices.vue`)
+
+- **Logging:** `createLogger(scope)` → `debug/info/warn/error`, printed as `[scope] …`. debug and info only print in dev; warn and error always. This is the only place that calls `console` (ESLint's `no-console` is on), so use a logger instead
+- **`handleError(scope, message, error, { level?, notify? })`** — for errors a feature has caught: logs, marks the error handled (so the global handlers skip it), and optionally shows a toast
+- **Toasts:** `notify(level, i18nKey, { params?, action?, duration? })`, rendered by `Notices.vue`. Use them only for problems with no place of their own on the page; a feature with its own UI (contact form, chat status strip, game panel) shows its errors inline. Messages are i18n keys under `notices.*`, so they follow the language. Info hides after 6 s, warn after 8 s, errors stay until dismissed; countdowns pause on hover/focus. Same message twice restarts the clock instead of stacking; max 3, and past that the oldest self-hiding notice goes first
+- **Accessibility:** two live regions always in the DOM (`role="alert"` for errors, `role="status"` for the rest); a visually hidden level label ("Error:") so colour and icon aren't the only signal; toasts never take focus; Esc dismisses the focused one and focus moves to the next toast or back where it came from
+- **`installErrorHandling(app)`** (called in `main.ts`): Vue `errorHandler`, `window` `error` (same-origin scripts only) and `unhandledrejection` → log + "Something went wrong" toast; `vite:preloadError` → "newer version" toast with Reload (not for background prefetches wrapped in `quietly()`, nor while offline); `offline`/`online` → a sticky offline warning
+- **`setReporter(fn)`** — hook for a remote error service; none is set (no backend)
 
 ---
 

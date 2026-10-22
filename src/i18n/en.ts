@@ -208,6 +208,7 @@ const en = {
     playWhileWait: 'Play a game while you wait',
     loadError: "The AI model couldn't load on this device, but quick answers still work.",
     tryAgain: 'Try again',
+    replyError: 'Sorry, something went wrong while answering that. Try asking again, or pick a topic below.',
     placeholder: 'Ask about Josh...',
     placeholderLoading: 'Loading the AI model… pick a topic above meanwhile',
     inputLabel: 'Ask a question about Josh',
@@ -228,6 +229,8 @@ const en = {
     overAnnouncement: 'Game over. Score {score}.',
     newBest: 'New best!',
     playAgain: 'Play again',
+    loadError: "The game couldn't load. Check your connection, then open it again.",
+    unsupported: "The game can't run in this browser.",
   },
   contact: {
     eyebrow: '06 — Contact',
@@ -250,11 +253,28 @@ const en = {
     messagePlaceholder: 'What would you like to talk about?',
     submit: 'Send Message',
     success: "Message sent successfully! I'll get back to you soon.",
+    sending: 'Sending…',
+    error: "Your message couldn't be sent. Please try again in a moment.",
+    errorOffline: "You're offline, so your message couldn't be sent. Your text is still here for when you reconnect.",
+    errorFallback: 'You can also email me at',
   },
   footer: {
     builtWith: 'Built with Vue, Vite & wllama',
     madeIn: 'Made in Salem, OR',
     trademark: 'TestNav is a trademark of Pearson Education, Inc. All product names are used for identification purposes only.',
+  },
+  notices: {
+    levels: {
+      info: 'Note',
+      warn: 'Warning',
+      error: 'Error',
+    },
+    dismiss: 'Dismiss notification',
+    unexpected: 'Something went wrong on this page. Reloading may help.',
+    outdated: "Part of the site couldn't load. A newer version may be available.",
+    reload: 'Reload',
+    offline: "You're offline. Sending messages and loading the AI model won't work until you reconnect.",
+    soundUnavailable: "Sound isn't available in this browser.",
   },
 }
 

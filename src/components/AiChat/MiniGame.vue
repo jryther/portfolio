@@ -68,10 +68,23 @@
         class="game-canvas"
       />
 
+      <!-- The game couldn't start or crashed (no canvas support, out of memory) -->
+      <div
+        v-if="failed"
+        class="game-failed"
+        role="alert"
+      >
+        <UiIcon
+          name="alert-circle"
+          class="failed-icon"
+        />
+        <p>{{ t('game.unsupported') }}</p>
+      </div>
+
       <!-- Start hint -->
       <Transition name="fade-game">
         <div
-          v-if="phase === 'idle'"
+          v-if="phase === 'idle' && !failed"
           class="start-hint"
         >
           <span class="hint">
@@ -134,6 +147,7 @@ import { GameAudio } from '../../game/flappyAudio'
 import { theme } from '../../composables/useTheme'
 import { gamePlaying } from '../../composables/useGame'
 import { modelStatus, modelReady, loadingProgress, loadingText } from '../../composables/useChat'
+import { handleError, notify } from '../../services/errors'
 
 const { t } = useI18n()
 
@@ -148,6 +162,7 @@ const highScore = ref(readHighScore())
 const newBest   = ref(false)
 const phase     = ref<Phase>('idle')
 const muted     = ref(true)
+const failed    = ref(false)
 // Only announce "AI ready" if it finished loading while the game was open
 const wasLoading = ref(modelStatus.value === 'loading')
 watch(modelStatus, (s) => { if (s === 'loading') wasLoading.value = true })
@@ -161,9 +176,27 @@ let renderer: FlappyRenderer | null = null
 let rafId = 0
 let lastTime = 0
 
+// Stops the game for good and says so in the stage, instead of leaving a frozen canvas
+function fail(error: unknown) {
+  stopLoop()
+  sim = null
+  renderer = null
+  gamePlaying.value = false
+  failed.value = true
+  handleError('game', 'The mini-game stopped', error)
+}
+
 // ── Loop: real time in, fixed-step physics, interpolated drawing ─────────────
 
 function frame(now: number) {
+  try {
+    step(now)
+  } catch (e) {
+    fail(e)
+  }
+}
+
+function step(now: number) {
   if (!sim || !renderer) return
   const dt = lastTime ? (now - lastTime) / 1000 : 0
   lastTime = now
@@ -171,9 +204,9 @@ function frame(now: number) {
   const events = sim.advance(dt)
   if (events.scored) {
     score.value = sim.score
-    audio.score(sim.score)
+    sound(() => audio.score(sim!.score))
   }
-  if (events.died) audio.crash()
+  if (events.died) sound(() => audio.crash())
   if (sim.phase !== phase.value) onPhaseChange(sim.phase)
 
   renderer.render(sim)
@@ -199,7 +232,7 @@ function onPhaseChange(next: Phase) {
   if (next === 'dead') {
     newBest.value = sim!.score > highScore.value
     if (newBest.value) {
-      audio.best()
+      sound(() => audio.best())
       highScore.value = sim!.score
       try { localStorage.setItem(HIGH_SCORE_KEY, String(sim!.score)) } catch { /* private mode */ }
     }
@@ -212,7 +245,7 @@ function onPhaseChange(next: Phase) {
 function flap() {
   if (!sim) return
   if (sim.flap()) {
-    audio.flap()
+    sound(() => audio.flap())
     if (sim.phase !== phase.value) onPhaseChange(sim.phase)
     startLoop()
   }
@@ -249,6 +282,14 @@ let ro: ResizeObserver | null = null
 let lastSize = ''
 
 function resize() {
+  try {
+    resizeStage()
+  } catch (e) {
+    fail(e)
+  }
+}
+
+function resizeStage() {
   const el = stageEl.value
   if (!el || !renderer) return
   const { width, height } = el.getBoundingClientRect()
@@ -273,19 +314,42 @@ watch(theme, (t) => {
 
 // ── Audio (procedural, muted by default; see game/flappyAudio.ts) ─────────────
 
-const audio = new GameAudio(theme.value)
+let audio = new GameAudio(theme.value)
+
+// Sound is optional: if Web Audio is missing, blocked, or breaks mid-round, the game plays on
+// silently. A fresh, muted GameAudio replaces the broken one, so a later unmute starts clean
+function soundFailed(error: unknown) {
+  audio.dispose()
+  audio = new GameAudio(theme.value)
+  muted.value = true
+  handleError('game', 'Sound stopped working', error, { level: 'warn' })
+  notify('warn', 'notices.soundUnavailable')
+}
+
+function sound(play: () => void) {
+  try {
+    play()
+  } catch (e) {
+    soundFailed(e)
+  }
+}
 
 function toggleMute() {
   muted.value = !muted.value
-  audio.setMuted(muted.value)
+  sound(() => audio.setMuted(muted.value))
   stageEl.value?.focus()
 }
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 
 onMounted(() => {
-  renderer = new FlappyRenderer(canvasEl.value!)
-  renderer.setTheme(theme.value)
+  try {
+    renderer = new FlappyRenderer(canvasEl.value!)
+    renderer.setTheme(theme.value)
+  } catch (e) {
+    fail(e)
+    return
+  }
   ro = new ResizeObserver(resize)
   ro.observe(stageEl.value!)
   resize()
@@ -421,6 +485,28 @@ onUnmounted(() => {
   display: block;
   width: 100%;
   height: 100%;
+}
+
+.game-failed {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2.4rem;
+  text-align: center;
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--color-mist);
+  background-color: var(--color-panel);
+  cursor: default;
+}
+.failed-icon {
+  width: 2.8rem;
+  height: 2.8rem;
+  color: var(--color-rust);
 }
 
 .start-hint {

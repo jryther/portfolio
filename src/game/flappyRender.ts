@@ -131,7 +131,10 @@ export class FlappyRenderer {
   private layers: Layer[] = []
 
   constructor(private canvas: HTMLCanvasElement) {
-    this.ctx = canvas.getContext('2d')!
+    // null when the browser is out of canvas memory or has 2D canvas turned off
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new Error('Canvas 2D is not available')
+    this.ctx = ctx
   }
 
   /** Size in CSS pixels; returns the world width for the simulation */

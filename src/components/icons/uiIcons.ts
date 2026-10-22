@@ -14,6 +14,9 @@ export const ICONS = {
   trophy: ['M8 21h8', 'M12 17v4', 'M7 4h10v5a5 5 0 0 1-10 0V4Z', 'M17 6h2a2 2 0 0 1 0 4h-2', 'M7 6H5a2 2 0 0 0 0 4h2'],
   play: ['M7 5v14l11-7Z'],
   'arrow-up': ['M12 19V5', 'M5 12l7-7 7 7'],
+  info: ['M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z', 'M12 16v-4', 'M12 8h.01'],
+  'alert-triangle': ['M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z', 'M12 9v4', 'M12 17h.01'],
+  'alert-circle': ['M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z', 'M12 8v4', 'M12 16h.01'],
 } as const
 
 export type UiIconName = keyof typeof ICONS

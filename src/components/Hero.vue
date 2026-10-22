@@ -385,6 +385,7 @@ import resumeUrl from '../assets/Resume.pdf'
 import { theme } from '../composables/useTheme'
 import { scenePaused, heroInView } from '../composables/useScene'
 import { gamePlaying } from '../composables/useGame'
+import { handleError } from '../services/errors'
 
 const { t } = useI18n()
 
@@ -533,6 +534,13 @@ function makeBolt(): string {
   return d
 }
 
+// null when the browser is out of canvas memory or has 2D canvas turned off
+function context2d(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Canvas 2D is not available')
+  return ctx
+}
+
 // ── Clouds ────────────────────────────────────────────────────────────────────
 // Flat, illustrated clouds to match the vector ridgelines: crisp scalloped silhouettes
 // with a lit tone and shade crescents under each bump. Two depth layers drift at
@@ -593,7 +601,7 @@ function renderCloud(puffs: Puff[], p: CloudPalette, h: number): HTMLCanvasEleme
   const ofc  = document.createElement('canvas')
   ofc.width  = Math.ceil(maxX - minX) + pad * 2
   ofc.height = Math.ceil(maxY - minY) + pad * 2
-  const ctx  = ofc.getContext('2d')!
+  const ctx  = context2d(ofc)
   ctx.translate(pad - minX, pad - minY)
 
   const shape = (dx = 0, dy = 0) => {
@@ -637,7 +645,7 @@ function makeCloud(sectionWidth: number, depth: number, index: number, count: nu
 }
 
 function initClouds(canvas: HTMLCanvasElement, startDay: boolean): CloudController {
-  const ctx     = canvas.getContext('2d')!
+  const ctx     = context2d(canvas)
   const section = canvas.parentElement as HTMLElement
   let animationId: number | null = null
 
@@ -706,7 +714,7 @@ function initClouds(canvas: HTMLCanvasElement, startDay: boolean): CloudControll
 // brighter and faster, which gives the sheet of rain some volume.
 
 function initRain(canvas: HTMLCanvasElement, startRaining: boolean): RainController {
-  const ctx     = canvas.getContext('2d')!
+  const ctx     = context2d(canvas)
   const section = canvas.parentElement as HTMLElement
   function resize() {
     canvas.width  = section.offsetWidth
@@ -866,9 +874,21 @@ function onVisibilityChange() { scheduleFlash(3000, 9000) }
 
 onMounted(() => {
   const isDay = theme.value === 'light'
-  cloudController = initClouds(cloudCanvas.value!, isDay)
-  if (prefersReducedMotion) cloudController.pause()
-  else rainController = initRain(rainCanvas.value!, !isDay)
+  // Decorative, so nothing to tell the visitor: the sky and mountain still show, and each layer
+  // starts (or fails) on its own
+  try {
+    cloudController = initClouds(cloudCanvas.value!, isDay)
+    if (prefersReducedMotion) cloudController.pause()
+  } catch (e) {
+    handleError('hero', 'Clouds could not start', e, { level: 'warn' })
+  }
+  if (!prefersReducedMotion) {
+    try {
+      rainController = initRain(rainCanvas.value!, !isDay)
+    } catch (e) {
+      handleError('hero', 'Rain could not start', e, { level: 'warn' })
+    }
+  }
   if (scenePaused.value) pauseHeroAnims()
 
   // ── Pause animations when Hero scrolls out of view ──────────────────────

@@ -45,6 +45,7 @@ All tokens are custom properties on `:root`, in `@layer base`. Use them as `var(
 | `--color-amber` | `#E3A867` | **The** accent — CTAs, links, eyebrows, highlights. Use sparingly |
 | `--color-golden` | `#EEBD82` | Amber hover |
 | `--color-ember` | `#D99A5B` | Warnings |
+| `--color-rust` | `#E07A5F` | Errors — icons and borders only, never body text (light: `#A93C26`) |
 | `--color-snow` | `#E8EEEA` | Primary text |
 | `--color-mist` | `#9FB0AA` | Secondary text (body copy) |
 | `--color-ash` | `#7F918B` | Tertiary text, captions, labels |

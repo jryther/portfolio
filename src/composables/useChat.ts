@@ -2,6 +2,7 @@ import { ref, computed, watch } from 'vue'
 import { WELCOME, UNKNOWN_ID, topicLabel, topicAnswer, welcomeText } from '../data/chatTree'
 import { matchKeywords, resolveReply, isConversational, type Reply } from '../services/chatRouter'
 import { i18n, locale } from '../i18n'
+import { handleError } from '../services/errors'
 
 // One conversation shared by the floating popup and the full-page chat section, so a chat
 // started in one carries on in the other. Replies come in the current UI language, and
@@ -21,6 +22,8 @@ export interface ChatMessage {
 }
 
 const WELCOME_MESSAGE_ID = 'welcome'
+// An answer that failed partway; rendered from the UI messages, so it follows the language too
+const REPLY_ERROR_ID = 'reply-error'
 
 export const messages        = ref<ChatMessage[]>([])
 export const followUps       = ref<string[]>([])
@@ -77,6 +80,7 @@ let cacheChecked = false
 /** A pre-written message's text in the current language */
 function localizedText(msg: ChatMessage & { topicId: string }): string {
   if (msg.topicId === WELCOME_MESSAGE_ID) return welcomeText(locale.value)
+  if (msg.topicId === REPLY_ERROR_ID) return i18n.global.t('chat.replyError')
   return msg.role === 'user' ? topicLabel(msg.topicId, locale.value) : topicAnswer(msg.topicId, locale.value)
 }
 
@@ -103,11 +107,16 @@ export function openChat() {
 async function autoLoadIfCached() {
   if (cacheChecked || modelStatus.value !== 'idle') return
   cacheChecked = true
-  const { isModelCached } = await modelService()
-  if (await isModelCached()) {
-    loadingFromCache = true
-    startModel()
+  try {
+    const { isModelCached } = await modelService()
+    if (!(await isModelCached())) return
+  } catch (e) {
+    // Nothing to show: the visitor still gets the "Load AI" offer, which reports its own failure
+    handleError('chat', 'Could not check for a cached AI model', e, { level: 'warn' })
+    return
   }
+  loadingFromCache = true
+  startModel()
 }
 
 export async function startModel() {
@@ -122,8 +131,9 @@ export async function startModel() {
     loadingProgress.value = 100
     modelStatus.value = 'ready'
   } catch (e) {
+    // The chat's status strip shows this one, with a retry
     modelStatus.value = 'error'
-    console.error('[wllama]', e)
+    handleError('chat', 'The AI model failed to load', e)
   }
 }
 
@@ -136,7 +146,7 @@ async function route(question: string): Promise<string> {
       const { routeWithModel } = await modelService()
       return await routeWithModel(question)
     } catch (e) {
-      console.error('[wllama]', e)
+      handleError('chat', 'Model routing failed, falling back to keywords', e, { level: 'warn' })
     }
   }
   return best?.id ?? UNKNOWN_ID
@@ -150,22 +160,42 @@ async function ask(question: string, topicId?: string) {
   messages.value.push({ role: 'user', text: question, topicId })
   followUps.value = []
   thinking.value = true
+  const answerAt = messages.value.length
 
-  const started = performance.now()
-  const routed = topicId ?? await route(question)
-  const reply = resolveReply(routed, previousTopicId, visited, locale.value)
-  if (!isConversational(reply.topicId)) {
-    previousTopicId = reply.topicId
-    visited.add(reply.topicId)
+  try {
+    const started = performance.now()
+    const routed = topicId ?? await route(question)
+    const reply = resolveReply(routed, previousTopicId, visited, locale.value)
+
+    // Instant answers still get a beat of "thinking" so the exchange reads as a conversation
+    const minThinking = prefersReducedMotion ? 0 : 500
+    const elapsed = performance.now() - started
+    if (elapsed < minThinking) await sleep(minThinking - elapsed)
+
+    thinking.value = false
+    await typeOut(reply)
+
+    // Only a shown answer counts as seen, so one that failed doesn't steer "tell me more"
+    if (!isConversational(reply.topicId)) {
+      previousTopicId = reply.topicId
+      visited.add(reply.topicId)
+    }
+    const unseen = reply.followUps.filter(id => !visited.has(id))
+    followUps.value = unseen.length ? unseen : reply.followUps
+  } catch (e) {
+    handleError('chat', 'Failed to answer a question', e)
+    showReplyError(answerAt)
   }
+}
 
-  // Instant answers still get a beat of "thinking" so the exchange reads as a conversation
-  const minThinking = prefersReducedMotion ? 0 : 500
-  const elapsed = performance.now() - started
-  if (elapsed < minThinking) await sleep(minThinking - elapsed)
-
+// Say so in the conversation (in place of any half-typed answer), unlock the input, and offer
+// the starting topics again so the visitor has somewhere to go
+function showReplyError(answerAt: number) {
   thinking.value = false
-  await typeOut(reply)
+  typing.value = false
+  messages.value.splice(answerAt)
+  messages.value.push({ role: 'assistant', text: i18n.global.t('chat.replyError'), topicId: REPLY_ERROR_ID })
+  followUps.value = [...WELCOME.followUps]
 }
 
 // Reveal the answer a few words at a time, like it's being typed
@@ -188,9 +218,6 @@ async function typeOut(reply: Reply) {
   }
   // In case the language changed while it was typing (the watcher skips the message being typed)
   live.text = localizedText(live)
-
-  const unseen = reply.followUps.filter(id => !visited.has(id))
-  followUps.value = unseen.length ? unseen : reply.followUps
 }
 
 export function sendMessage() {

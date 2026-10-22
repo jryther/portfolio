@@ -24,7 +24,7 @@ describe('UI messages', () => {
   it('has no untranslated or empty Spanish text', () => {
     const enStrings = new Set(strings(en))
     // Names, codes and figures that are the same in both languages
-    const same = new Set(['Frontend', 'LinkedIn', '2020 — 2022', '2009 — 2014', 'WCAG AA', 'WCAG 2.1 AA accessibility compliance'])
+    const same = new Set(['Frontend', 'LinkedIn', '2020 — 2022', '2009 — 2014', 'WCAG AA', 'WCAG 2.1 AA accessibility compliance', 'Error'])
     for (const text of strings(es)) {
       expect(text.trim(), 'empty message').not.toBe('')
       if (enStrings.has(text) && !same.has(text)) expect.soft(text, 'same as English').toBe('(translated)')

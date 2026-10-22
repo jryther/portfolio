@@ -1,11 +1,15 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import { i18n } from './i18n'
+import { installErrorHandling } from './services/errors'
 import './styles/main.css'
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
 const app = createApp(App)
+
+// First, so anything that goes wrong while setting up is caught too
+installErrorHandling(app)
 
 app.use(i18n)
 

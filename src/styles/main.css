@@ -19,6 +19,7 @@
     --color-amber:     #E3A867;   /* THE accent — links, CTAs, highlights */
     --color-golden:    #EEBD82;   /* amber hover */
     --color-ember:     #D99A5B;   /* warnings */
+    --color-rust:      #E07A5F;   /* errors — icons and borders, never body text */
     --color-snow:      #E8EEEA;   /* primary text */
     --color-mist:      #9FB0AA;   /* secondary text */
     --color-ash:       #7F918B;   /* tertiary text, captions */
@@ -155,6 +156,7 @@
     --color-amber:     #9A4F0E;   /* cedar in the sun — deep enough for AA text */
     --color-golden:    #7E3F0A;
     --color-ember:     #8F4E12;
+    --color-rust:      #A93C26;
     --color-snow:      #13201C;
     --color-mist:      #43534D;
     --color-ash:       #5E6E68;

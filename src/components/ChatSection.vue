@@ -138,11 +138,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted, defineAsyncComponent } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ChatPanel from './AiChat/ChatPanel.vue'
 import ChatHeader from './AiChat/ChatHeader.vue'
 import UiIcon from './icons/UiIcon.vue'
+import { MiniGame, loadMiniGame } from './AiChat/lazyMiniGame'
 import { aiExamples as examplesFor } from '../data/chatTree'
 import { MODEL } from '../services/chatModel'
 import { messageList } from '../i18n'
@@ -153,10 +154,6 @@ import {
 } from '../composables/useChat'
 
 const { t, locale } = useI18n()
-
-// The game's code downloads in the background once the section is in view, so the game icon is instant
-const loadGame = () => import('./AiChat/MiniGame.vue')
-const MiniGame = defineAsyncComponent(loadGame)
 
 const sectionEl  = ref<HTMLElement | null>(null)
 const chatCardEl = ref<HTMLElement | null>(null)
@@ -192,7 +189,7 @@ onMounted(() => {
     chatSectionInView.value = entry.isIntersecting
     if (entry.isIntersecting) {
       openChat()
-      prefetchWhenIdle(loadGame)
+      prefetchWhenIdle(loadMiniGame)
     }
   }, { rootMargin: '-35% 0px -35% 0px' })
   if (sectionEl.value) observer.observe(sectionEl.value)
