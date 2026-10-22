@@ -91,6 +91,10 @@ describe('matchKeywords', () => {
     expect(route('hi, what languages does he know?').best?.id).toBe('skill_languages')
   })
 
+  it('does not read "his" as the greeting "hi"', () => {
+    expect(route('When is his birthday?').best).toBeNull()
+  })
+
   it.each([
     ['¿Sabe React?', 'skill_react'],
     ['¿Dónde estudió?', 'education'],

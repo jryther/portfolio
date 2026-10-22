@@ -44,7 +44,8 @@ function scorePhrases(padded: string, phrases: readonly string[]): number {
     const p = normalize(phrase)
     const stem = p.replace(/s$/, '')
     if (!p || seen.has(stem)) continue
-    if (padded.includes(` ${p} `) || padded.includes(` ${p}s `)) {
+    // Plurals count too, except for two-letter keywords ("hi" must not match "his")
+    if (padded.includes(` ${p} `) || (p.length > 2 && padded.includes(` ${p}s `))) {
       seen.add(stem)
       score += 1 + 0.5 * (p.split(' ').length - 1)
     }
