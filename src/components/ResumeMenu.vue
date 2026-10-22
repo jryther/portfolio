@@ -44,7 +44,7 @@
           :download="item.download"
           :target="item.download ? undefined : '_blank'"
           :rel="item.download ? undefined : 'noreferrer'"
-          @click="close(false)"
+          @click="close()"
         >
           <span class="format">{{ item.label }}</span>
           <span class="ext">{{ item.ext }}</span>
@@ -66,7 +66,8 @@ import resumeDocx from '../assets/Resume.docx'
 // Keyboard (WAI-ARIA menu button pattern): Enter, Space or ArrowDown opens it on the first
 // format, ArrowUp on the last; ArrowUp/ArrowDown move between formats, Home/End jump to the
 // ends, Escape closes it and returns focus to the button, and Tab moves on and closes it.
-// Clicking outside or choosing a format closes it too.
+// Clicking outside closes it too, and choosing a format closes it with focus back on the button
+// (the chosen item is hidden, so focus would otherwise drop to the top of the page).
 
 const props = withDefaults(defineProps<{
   /** Classes for the button, so it matches where it sits */

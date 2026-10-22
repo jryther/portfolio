@@ -213,12 +213,6 @@
     color: inherit;
   }
 
-  ul, li {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
   ::selection {
     background: color-mix(in srgb, var(--color-amber) 30%, transparent);
     color: var(--color-snow);
@@ -271,9 +265,6 @@
   .tooltip.is-visible {
     opacity: 1;
     transform: none;
-  }
-  .tooltip[hidden] {
-    display: none;
   }
   @media (prefers-reduced-motion: reduce) {
     .tooltip {

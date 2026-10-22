@@ -192,11 +192,11 @@ export const vTooltip: Directive<HTMLElement, TooltipValue> = {
     const { text, placement } = normalize(binding.value)
     state.text = text
     state.placement = placement
-    syncAccessibility(el, state)
-    if (state.visible) {
-      state.tip.textContent = text
-      position(el, state)
-    }
+    syncAccessibility(el, state)   // also puts the new text in the tooltip
+    if (!state.visible) return
+    // Text cleared while showing: hide rather than leave an empty box on screen
+    if (text) position(el, state)
+    else hide(el, state)
   },
 
   beforeUnmount(el) {

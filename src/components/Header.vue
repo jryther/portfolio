@@ -151,6 +151,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('keydown', onKeyDown)
   sectionObserver?.disconnect()
 })
 </script>

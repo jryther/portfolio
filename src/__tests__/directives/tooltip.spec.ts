@@ -116,6 +116,16 @@ describe('v-tooltip', () => {
     expect(tooltip().textContent).toBe('Switch to light mode')
   })
 
+  it('hides instead of showing an empty box when its text is cleared', async () => {
+    const { button, tip, tooltip } = mountButton('Play a game')
+    button.dispatchEvent(pointer('pointerenter'))
+    vi.advanceTimersByTime(500)
+    expect(tooltip().hidden).toBe(false)
+    tip.value = ''
+    await nextTick()
+    expect(tooltip().hidden).toBe(true)
+  })
+
   it('removes its tooltip when the element goes away', () => {
     const { wrapper } = mountButton('Close', { 'aria-label': 'Close' })
     expect(document.querySelectorAll('[role="tooltip"]')).toHaveLength(1)

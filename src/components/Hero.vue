@@ -532,7 +532,8 @@ function makeBolt(): string {
   return d
 }
 
-// null when the browser is out of canvas memory or has 2D canvas turned off
+// Throws when the browser is out of canvas memory or has 2D canvas turned off (getContext
+// returns null); onMounted catches it, so each layer fails on its own
 function context2d(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Canvas 2D is not available')
