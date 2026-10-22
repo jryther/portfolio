@@ -30,10 +30,8 @@ import { computed } from 'vue'
 import { vTooltip } from '../directives/tooltip'
 import { useI18n } from 'vue-i18n'
 import { scenePaused, heroInView, toggleScene } from '../composables/useScene'
-
 // Reduced motion already stops the scene, so the control would do nothing
-const prefersReducedMotion = typeof window !== 'undefined'
-  && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+import { prefersReducedMotion } from '../composables/useReducedMotion'
 
 const { t } = useI18n()
 

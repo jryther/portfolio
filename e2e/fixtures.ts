@@ -1,8 +1,7 @@
 import { test as base, expect, type Page, type Route } from '@playwright/test'
 
-// Shared setup for every spec: the page runs offline. Google Fonts, the ~330 MB AI model on
-// Hugging Face and the Formspree endpoint are all blocked unless a test routes them itself,
-// so a run never downloads the model or sends a real message.
+// Shared setup for every spec: the page runs offline. Google Fonts and the ~330 MB AI model on
+// Hugging Face are blocked unless a test routes them itself, so a run never downloads the model.
 
 export const test = base.extend({
   context: async ({ context }, use) => {
@@ -14,7 +13,6 @@ export const test = base.extend({
 export { expect }
 
 export const MODEL_URL = /huggingface\.co/
-export const FORMSPREE_URL = /formspree\.io/
 
 /** Opens the page and waits for the app to mount */
 export async function gotoHome(page: Page, path = '/') {

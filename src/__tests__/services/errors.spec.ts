@@ -121,6 +121,26 @@ describe('notify', () => {
     vi.advanceTimersByTime(800)
     expect(notices.value).toHaveLength(1)
   })
+
+  it('updates a repeated message with its new details', () => {
+    notify('info', 'note', { params: { count: 1 } })
+    notify('info', 'note', { params: { count: 2 } })
+    expect(notices.value[0].params).toEqual({ count: 2 })
+  })
+
+  it('keeps a repeated message until dismissed when it comes again without a time limit', () => {
+    notify('info', 'note', { duration: 1000 })
+    notify('info', 'note', { duration: null })
+    vi.advanceTimersByTime(60_000)
+    expect(notices.value).toHaveLength(1)
+  })
+
+  it('starts a countdown for a repeated message that had none', () => {
+    notify('warn', 'note', { duration: null })
+    notify('warn', 'note', { duration: 1000 })
+    vi.advanceTimersByTime(1000)
+    expect(notices.value).toHaveLength(0)
+  })
 })
 
 describe('handleError', () => {

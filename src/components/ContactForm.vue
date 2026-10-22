@@ -1,7 +1,6 @@
 <template>
   <form
     class="contact-form"
-    :aria-busy="sending"
     @submit.prevent="handleSubmit"
   >
     <div class="form-row">
@@ -34,56 +33,53 @@
 
     <label class="form-field">
       <span class="field-label">{{ t('form.message') }}</span>
+      <!-- Capped so the prefilled email stays within what mail apps accept from a link -->
       <textarea
         v-model="formData.message"
         name="message"
         :placeholder="t('form.messagePlaceholder')"
         rows="5"
+        :maxlength="MESSAGE_MAX"
         required
         class="field message-field"
       />
     </label>
 
-    <!-- aria-disabled rather than disabled while sending, so the button keeps keyboard focus -->
-    <button
-      type="submit"
-      class="button submit-btn"
-      :aria-disabled="sending"
-    >
-      {{ sending ? t('form.sending') : t('form.submit') }}
-    </button>
-
-    <!-- Live regions stay in the DOM so screen readers announce the result when it appears -->
-    <div role="status">
+    <div class="submit-row">
+      <button
+        type="submit"
+        class="button submit-btn"
+        aria-describedby="contact-form-hint"
+      >
+        {{ t('form.submit') }}
+      </button>
       <p
-        v-if="state === 'sent'"
-        class="form-message success-message"
+        id="contact-form-hint"
+        class="form-hint"
+      >
+        {{ t('form.hint') }}
+      </p>
+    </div>
+
+    <!-- A live region kept in the DOM, so screen readers announce the note when it appears -->
+    <div role="status">
+      <div
+        v-if="opened"
+        class="form-message"
       >
         <svg
-          viewBox="0 0 16 16"
+          viewBox="0 0 24 24"
           class="message-icon"
           fill="none"
           stroke="currentColor"
-          stroke-width="2"
+          stroke-width="1.8"
           stroke-linecap="round"
           stroke-linejoin="round"
           aria-hidden="true"
-        ><path d="m3 8.5 3 3 7-7" /></svg>
-        {{ t('form.success') }}
-      </p>
-    </div>
-    <div role="alert">
-      <div
-        v-if="state === 'failed'"
-        class="form-message error-message"
-      >
-        <UiIcon
-          name="alert-circle"
-          class="message-icon"
-        />
+        ><path :d="EMAIL_ICON" /></svg>
         <p>
-          {{ offline ? t('form.errorOffline') : t('form.error') }}
-          {{ t('form.errorFallback') }}
+          {{ t('form.opened') }}
+          {{ t('form.fallback') }}
           <a
             :href="`mailto:${CONTACT_EMAIL}`"
             class="fallback-link"
@@ -95,10 +91,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import UiIcon from './icons/UiIcon.vue'
-import { createLogger, handleError } from '../services/errors'
+import { CONTACT_EMAIL, EMAIL_ICON } from '../data/contact'
+
+// No server: sending opens the visitor's own email app, addressed to Josh with their message
+// filled in. The text stays in the form, since the page can't tell whether they sent it.
 
 interface FormData {
   name: string
@@ -106,62 +104,27 @@ interface FormData {
   message: string
 }
 
-type SendState = 'idle' | 'sending' | 'sent' | 'failed'
-
-const CONTACT_EMAIL = 'jryther91@gmail.com'
-// The owner still has to fill in the form ID (see .ai/CONTEXT.md)
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID'
-// Give up on a request that hangs, so the button doesn't say "Sending…" forever
-const SEND_TIMEOUT_MS = 15000
-const SUCCESS_VISIBLE_MS = 5000
+// Mail apps cut off very long prefilled links; this keeps the encoded link well within them
+const MESSAGE_MAX = 1500
 
 const { t } = useI18n()
-const log = createLogger('contact')
 
 const formData = ref<FormData>({ name: '', email: '', message: '' })
-const state    = ref<SendState>('idle')
-const offline  = ref<boolean>(false)
-const sending  = computed(() => state.value === 'sending')
+const opened   = ref<boolean>(false)
 
-let successTimer: ReturnType<typeof setTimeout> | undefined
-
-// Formspree explains a rejected submission in { errors: [{ message }] }
-async function failureDetails(response: Response): Promise<string> {
-  try {
-    const body = await response.json() as { errors?: { message?: string }[] }
-    const details = body.errors?.map(e => e.message).filter(Boolean).join('; ')
-    return details ? `: ${details}` : ''
-  } catch {
-    return ''
-  }
+/** The mailto: link for the current form: subject with the visitor's name, then their message
+ * and how to reply */
+function mailtoLink({ name, email, message }: FormData): string {
+  const subject = t('form.subject', { name: name.trim() })
+  const body = `${message.trim()}\n\n${name.trim()}\n${email.trim()}`
+  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 }
 
-const handleSubmit = async (): Promise<void> => {
-  if (sending.value) return
-  clearTimeout(successTimer)
-  state.value = 'sending'
-  try {
-    const response = await fetch(FORMSPREE_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(formData.value),
-      signal: AbortSignal.timeout?.(SEND_TIMEOUT_MS),
-    })
-    if (!response.ok) throw new Error(`Formspree responded ${response.status}${await failureDetails(response)}`)
-
-    state.value = 'sent'
-    formData.value = { name: '', email: '', message: '' }
-    successTimer = setTimeout(() => { state.value = 'idle' }, SUCCESS_VISIBLE_MS)
-  } catch (error: unknown) {
-    // The visitor's text stays in the form so they can retry without retyping it
-    offline.value = !navigator.onLine
-    state.value = 'failed'
-    handleError('contact', 'Message failed to send', error, { level: offline.value ? 'warn' : 'error' })
-    if (FORMSPREE_ENDPOINT.includes('YOUR_FORM_ID')) log.warn('The Formspree form ID is still a placeholder; set it in ContactForm.vue')
-  }
+// The browser has already checked the fields (required, valid email) before this runs
+function handleSubmit() {
+  window.location.assign(mailtoLink(formData.value))
+  opened.value = true
 }
-
-onUnmounted(() => clearTimeout(successTimer))
 </script>
 
 <style scoped>
@@ -192,17 +155,25 @@ onUnmounted(() => clearTimeout(successTimer))
   resize: vertical;
 }
 
+.submit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem 1.6rem;
+}
+
 .submit-btn {
-  align-self: flex-start;
   padding: 1.3rem 2.4rem;
 }
-.submit-btn[aria-disabled="true"] {
-  opacity: 0.6;
-  cursor: progress;
+
+.form-hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-ash);
 }
 
 @media (width < 480px) {
-  .submit-btn { align-self: stretch; }
+  .submit-btn { flex: 1 1 100%; }
 }
 
 .field-label {
@@ -213,11 +184,10 @@ onUnmounted(() => clearTimeout(successTimer))
   color: var(--color-ash);
 }
 
-/* Success and error share a shape; --tone picks the colour */
 .form-message {
   --tone: var(--color-moss);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
   padding: 1rem;
   border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
@@ -228,19 +198,16 @@ onUnmounted(() => clearTimeout(successTimer))
   line-height: var(--leading-base);
   animation: slideIn 0.3s ease-in-out;
 }
-.error-message {
-  --tone: var(--color-rust);
-  align-items: flex-start;
+.form-message p {
+  margin: 0;
 }
 
 .message-icon {
   flex-shrink: 0;
   width: 1.6rem;
   height: 1.6rem;
-  color: var(--tone);
-}
-.error-message .message-icon {
   margin-top: 0.2rem;
+  color: var(--tone);
 }
 
 .fallback-link {
@@ -256,5 +223,8 @@ onUnmounted(() => clearTimeout(successTimer))
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(-10px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .form-message { animation: none; }
 }
 </style>

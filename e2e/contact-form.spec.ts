@@ -1,7 +1,9 @@
 import type { Page } from '@playwright/test'
-import { test, expect, gotoHome, scrollToSection, FORMSPREE_URL } from './fixtures'
+import { test, expect, gotoHome, scrollToSection } from './fixtures'
 
-// The contact form posts to Formspree; every request here is answered by a mock
+// The contact form has no server: sending opens the visitor's email app with the message filled
+// in (unit tests check the mailto: link itself). Here: the browser's validation, and what the
+// page shows after sending.
 
 test.describe('contact form', () => {
   test.beforeEach(async ({ page }) => {
@@ -17,11 +19,10 @@ test.describe('contact form', () => {
       email: root.getByLabel('Email'),
       message: root.getByLabel('Message'),
       submit: root.getByRole('button', { name: 'Send Message' }),
-      // The status and alert regions are always in the DOM (so screen readers announce changes);
-      // what matters is the message inside them
-      success: root.getByRole('status').getByText('Message sent successfully'),
-      error: root.getByRole('alert').getByText("couldn't be sent"),
-      fallbackEmail: root.getByRole('alert').getByRole('link', { name: 'jryther91@gmail.com' }),
+      // The status region is always in the DOM (so screen readers announce changes); what
+      // matters is the note inside it
+      note: root.getByRole('status').getByText('Your email app should open'),
+      fallbackEmail: root.getByRole('status').getByRole('link', { name: 'jryther91@gmail.com' }),
     }
   }
 
@@ -34,44 +35,11 @@ test.describe('contact form', () => {
     for (const field of [f.name, f.email, f.message]) await expect(field).toHaveAttribute('required', '')
   })
 
-  test('sends the message and clears the form', async ({ page }) => {
-    let body: unknown
-    await page.route(FORMSPREE_URL, async (route) => {
-      body = route.request().postDataJSON()
-      await route.fulfill({ status: 200, json: { ok: true } })
-    })
-    const f = form(page)
-    await f.name.fill('Ada Lovelace')
-    await f.email.fill('ada@example.com')
-    await f.message.fill('Hello from Playwright')
-    await f.submit.click()
-
-    await expect(f.success).toHaveText("Message sent successfully! I'll get back to you soon.")
-    expect(body).toEqual({ name: 'Ada Lovelace', email: 'ada@example.com', message: 'Hello from Playwright' })
-    await expect(f.name).toHaveValue('')
-    await expect(f.email).toHaveValue('')
-    await expect(f.message).toHaveValue('')
+  test('says that sending opens an email app', async ({ page }) => {
+    await expect(form(page).submit).toHaveAccessibleDescription('Opens your email app with your message ready to send.')
   })
 
-  test('the success message goes away after a few seconds', async ({ page }) => {
-    await page.clock.install()
-    await page.route(FORMSPREE_URL, route => route.fulfill({ status: 200, json: { ok: true } }))
-    const f = form(page)
-    await f.name.fill('Ada')
-    await f.email.fill('ada@example.com')
-    await f.message.fill('Hi')
-    await f.submit.click()
-    await expect(f.success).toBeVisible()
-    await page.clock.runFor(5_100)
-    await expect(f.success).toBeHidden()
-  })
-
-  test('does not submit with missing or invalid fields', async ({ page }) => {
-    let requests = 0
-    await page.route(FORMSPREE_URL, (route) => {
-      requests++
-      return route.fulfill({ status: 200, json: {} })
-    })
+  test('does not send with missing or invalid fields', async ({ page }) => {
     const f = form(page)
     const isValid = (el: typeof f.name) => el.evaluate((input: HTMLInputElement) => input.validity.valid)
 
@@ -84,41 +52,20 @@ test.describe('contact form', () => {
     await f.submit.click()
     expect(await isValid(f.email)).toBe(false)
 
-    expect(requests).toBe(0)
-    await expect(f.success).toHaveCount(0)
-    await expect(f.error).toHaveCount(0)
+    await expect(f.note).toHaveCount(0)
   })
 
-  test('keeps what was typed when the server rejects it', async ({ page }) => {
-    await page.route(FORMSPREE_URL, route => route.fulfill({ status: 500, body: 'error' }))
+  test('after sending, shows a fallback and keeps the text on the page', async ({ page }) => {
     const f = form(page)
     await f.name.fill('Ada')
     await f.email.fill('ada@example.com')
     await f.message.fill('Hi')
-    const response = page.waitForResponse(FORMSPREE_URL)
     await f.submit.click()
-    await response
 
-    await expect(f.success).toHaveCount(0)
-    await expect(f.error).toBeVisible()
-    await expect(f.fallbackEmail).toBeVisible()
-    await expect(f.name).toHaveValue('Ada')
+    await expect(f.note).toBeVisible()
+    await expect(f.fallbackEmail).toHaveAttribute('href', 'mailto:jryther91@gmail.com')
+    // The email app opens on its own; the page stays where it was
+    await expect(page).toHaveURL(/^http:\/\/localhost/)
     await expect(f.message).toHaveValue('Hi')
-  })
-
-  test('keeps what was typed when the network is down', async ({ page }) => {
-    // The default route in fixtures.ts aborts the request
-    const f = form(page)
-    await f.name.fill('Ada')
-    await f.email.fill('ada@example.com')
-    await f.message.fill('Hi')
-    const failed = page.waitForEvent('requestfailed', req => FORMSPREE_URL.test(req.url()))
-    await f.submit.click()
-    await failed
-
-    await expect(f.success).toHaveCount(0)
-    await expect(f.error).toBeVisible()
-    await expect(f.fallbackEmail).toBeVisible()
-    await expect(f.email).toHaveValue('ada@example.com')
   })
 })

@@ -92,7 +92,7 @@ src/
 │   ├── Project.vue           # Professional work: TestNav case study + supporting work
 │   ├── ChatSection.vue       # Full-page "Ask" chat + how it works
 │   ├── Contact.vue           # Contact links + form card
-│   ├── ContactForm.vue       # Formspree-backed email form
+│   ├── ContactForm.vue       # Email form (opens the visitor's email app)
 │   ├── Footer.vue            # One-line footer + trademark disclaimer
 │   ├── Notices.vue           # Toast notices for errors with no place of their own
 │   ├── icons/                # UiIcon (line icons) + SparkleIcon
@@ -159,8 +159,8 @@ Page text lives in the locale files (`src/i18n/en.ts` and `es.ts`, kept in step)
 | Name, tagline, social links | `Hero.vue` |
 | Bio, education, experience, skills | `About.vue` |
 | Professional work (case study, stat tiles, supporting cards) | `Project.vue` |
-| Contact email, LinkedIn, location | `Contact.vue` |
-| Form submission endpoint | `ContactForm.vue` → `FORMSPREE_ENDPOINT` |
+| Contact email, LinkedIn | `src/data/contact.ts` (used by the hero, contact section, form and footer) |
+| Location | `Contact.vue` |
 | Footer links | `Footer.vue` |
 | Resume files | `src/assets/Resume.pdf`, `Resume.docx` (menu in `ResumeMenu.vue`) |
 | AI chat answers, keywords, example questions | `data/chatTree.ts` + `data/chatTree.es.ts` (then `npm run embed:topics`) |
@@ -180,7 +180,7 @@ Page text lives in the locale files (`src/i18n/en.ts` and `es.ts`, kept in step)
 
 ## Contact Form
 
-Uses [Formspree](https://formspree.io/) for serverless email delivery. Replace `YOUR_FORM_ID` in `ContactForm.vue` with your actual Formspree form ID.
+No server or form service: sending opens the visitor's email app with a message to `CONTACT_EMAIL` (`src/data/contact.ts`), the subject and text already filled in. The text stays in the form, and the address is shown as a fallback in case no email app opens.
 
 ---
 
@@ -246,7 +246,7 @@ npm run test:e2e:ui
 npm run test:e2e:report
 ```
 
-The page runs offline in these tests: Google Fonts, the Hugging Face model and Formspree are blocked (`e2e/fixtures.ts`), and tests that need them mock the response. Nothing downloads the ~330 MB model or sends a real message. Tests run with reduced motion so the page is deterministic (no AOS, no weather, instant chat replies); specs that cover motion-only UI turn it back off.
+The page runs offline in these tests: Google Fonts and the Hugging Face model are blocked (`e2e/fixtures.ts`), and tests that need them mock the response. Nothing downloads the ~330 MB model. Tests run with reduced motion so the page is deterministic (no AOS, no weather, instant chat replies); specs that cover motion-only UI turn it back off.
 
 ```
 e2e/

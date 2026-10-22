@@ -1,12 +1,13 @@
 <template>
   <!-- Shows the language it switches to (like the theme toggle shows the theme), labelled in
-       that language so a visitor who can't read the current one still finds it -->
+       that language so a visitor who can't read the current one still finds it. The name
+       starts with the visible code, so voice control users can say what they see -->
   <button
     v-tooltip="t('toggles.language')"
     type="button"
     class="lang-toggle"
     :lang="t('toggles.languageLang')"
-    :aria-label="t('toggles.language')"
+    :aria-label="`${t('toggles.languageCode')}, ${t('toggles.language')}`"
     @click="toggleLocale"
   >
     {{ t('toggles.languageCode') }}

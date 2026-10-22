@@ -156,12 +156,12 @@ Animations run once (`once: true`) — do not re-animate on scroll-up.
 
 ## 6. Contact Form (ContactForm.vue)
 
-- Submits to Formspree via `fetch` POST with JSON body
-- `FORMSPREE_ENDPOINT` is currently `'https://formspree.io/f/YOUR_FORM_ID'` — owner must replace
-- `state`: `idle` → `sending` → `sent` | `failed`. Sending shows "Sending…" with `aria-disabled` (not `disabled`, so focus stays) and ignores repeat submits; the request times out after 15 s
-- Success: green message (in a persistent `role="status"`) for 5 seconds
-- Failure (non-OK response, network error, timeout): rust-toned message in a persistent `role="alert"`, with a `mailto:` fallback; a separate message when `navigator.onLine` is false. The visitor's text is kept for a retry. Formspree's `errors[]` details and a placeholder-ID hint go to the console
-- No client-side validation beyond HTML5 `required` attributes
+- No server or third-party service: submitting opens the visitor's email app with a `mailto:` link to `CONTACT_EMAIL` (`src/data/contact.ts`)
+- Subject `form.subject` ("Portfolio message from {name}", in the page's language); body is the message, then the visitor's name and email. Every part is URI-encoded
+- The message is capped at 1500 characters (`MESSAGE_MAX`) so the link stays within what mail apps accept
+- A hint under the button (`aria-describedby`) says it opens an email app
+- After submitting, a note in a persistent `role="status"` says the email app should open, with the address as a fallback link. The text stays in the form, since the page can't tell whether it was sent
+- No client-side validation beyond HTML5 `required` and `type="email"`
 
 ---
 

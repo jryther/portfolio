@@ -90,13 +90,18 @@ function startTimer(id: number) {
 export function notify(level: NoticeLevel, messageKey: string, options: NotifyOptions = {}): number {
   const duration = options.duration === undefined ? DEFAULT_DURATION[level] : options.duration
 
-  // The same message already showing: restart its clock rather than stacking a copy
+  // The same message already showing: update it and restart its clock rather than stacking a
+  // copy. A null duration now keeps it until dismissed
   const existing = notices.value.find(n => n.messageKey === messageKey)
   if (existing) {
-    const timer = timers.get(existing.id)
-    if (timer) {
-      clearTimeout(timer.handle)
-      timer.remaining = duration ?? timer.remaining
+    existing.level = level
+    existing.params = options.params
+    existing.action = options.action
+    clearTimeout(timers.get(existing.id)?.handle)
+    if (duration === null) {
+      timers.delete(existing.id)
+    } else {
+      timers.set(existing.id, { remaining: duration, started: Date.now() })
       startTimer(existing.id)
     }
     return existing.id

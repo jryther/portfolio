@@ -11,8 +11,8 @@ import type { Directive } from 'vue'
 //   else Escape does (a second Escape then closes the chat popup or the menu as usual).
 // - Each tooltip has role="tooltip". When its text adds to the element's accessible name
 //   (v-tooltip on a button with visible text), the trigger points to it with aria-describedby.
-//   When it only repeats the name (icon buttons with an aria-label), it's hidden from screen
-//   readers so the name isn't read out twice.
+//   When the name already says it (icon buttons with an aria-label), it's hidden from screen
+//   readers so it isn't read out twice.
 //
 // Usage: v-tooltip="t('toggles.toDark')"  or  v-tooltip="{ text, placement: 'bottom' }"
 
@@ -48,7 +48,7 @@ function normalize(value: TooltipValue): { text: string, placement: 'top' | 'bot
 const squash = (s: string) => s.replace(/\s+/g, ' ').trim().toLowerCase()
 
 /**
- * Describe the trigger with the tooltip, unless the tooltip only repeats its accessible name.
+ * Describe the trigger with the tooltip, unless its accessible name already includes the text.
  * The text is kept in the tooltip even while it's hidden: screen readers read a description
  * from a hidden element, and it has to be there before the tooltip ever shows.
  */
@@ -56,8 +56,8 @@ function syncAccessibility(el: HTMLElement, state: TooltipState) {
   state.tip.textContent = state.text
   const name = el.getAttribute('aria-label') ?? el.textContent ?? ''
   const ids = (el.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(id => id && id !== state.tip.id)
-  const repeatsName = squash(name) === squash(state.text)
-  if (repeatsName) {
+  const inName = squash(name).includes(squash(state.text))
+  if (inName) {
     state.tip.setAttribute('aria-hidden', 'true')
   } else {
     state.tip.removeAttribute('aria-hidden')

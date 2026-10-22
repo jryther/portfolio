@@ -256,11 +256,11 @@ const en = {
     message: 'Message',
     messagePlaceholder: 'What would you like to talk about?',
     submit: 'Send Message',
-    success: "Message sent successfully! I'll get back to you soon.",
-    sending: 'Sending…',
-    error: "Your message couldn't be sent. Please try again in a moment.",
-    errorOffline: "You're offline, so your message couldn't be sent. Your text is still here for when you reconnect.",
-    errorFallback: 'You can also email me at',
+    hint: 'Opens your email app with your message ready to send.',
+    // The email's subject line
+    subject: 'Portfolio message from {name}',
+    opened: 'Your email app should open with your message ready to send.',
+    fallback: "If it didn't, you can email me at",
   },
   footer: {
     builtWith: 'Built with Vue, Vite & wllama',

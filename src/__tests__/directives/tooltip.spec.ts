@@ -37,6 +37,12 @@ describe('v-tooltip', () => {
     expect(button.hasAttribute('aria-describedby')).toBe(false)
   })
 
+  it('also hides itself when the accessible name contains its text', () => {
+    const { button, tooltip } = mountButton('Ver en español', { 'aria-label': 'ES, Ver en español' }, 'ES')
+    expect(tooltip().getAttribute('aria-hidden')).toBe('true')
+    expect(button.hasAttribute('aria-describedby')).toBe(false)
+  })
+
   it('describes the trigger when it adds to the accessible name', () => {
     const { button, tooltip } = mountButton('A 330 MB one-time download', {}, 'Load AI')
     expect(tooltip().hasAttribute('aria-hidden')).toBe(false)

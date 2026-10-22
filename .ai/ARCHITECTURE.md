@@ -72,8 +72,8 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 
 ### `ContactForm.vue`
 - Controlled form with `v-model` on `formData` ref
-- Submits to Formspree via `fetch` POST
-- `slideIn` `@keyframes` animation on success message kept in `<style scoped>`
+- No server: submitting opens the visitor's email app through a `mailto:` link to `CONTACT_EMAIL` (`src/data/contact.ts`), with the subject and message filled in
+- `slideIn` `@keyframes` animation on the "your email app should open" note kept in `<style scoped>`
 
 ### `Footer.vue`
 - One-line bar: copyright/credit line plus LinkedIn and email icon links (`links` array, with `v-tooltip`)

@@ -127,6 +127,13 @@ function onNavFocusOut(e: FocusEvent) {
   if (isMenuOpen.value && next && !(e.currentTarget as HTMLElement).contains(next) && next !== menuBtn.value) isMenuOpen.value = false
 }
 
+// The phone menu only exists below 768px (see the media query). Widening the window past that
+// closes it, so it isn't still open when the window narrows again
+const phoneQuery = typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 768px)') : null
+function onPhoneChange(e: MediaQueryListEvent) {
+  if (!e.matches) isMenuOpen.value = false
+}
+
 function onScroll() {
   isScrolled.value = window.scrollY > 8
 }
@@ -135,6 +142,7 @@ onMounted(() => {
   onScroll()
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('keydown', onKeyDown)
+  phoneQuery?.addEventListener('change', onPhoneChange)
 
   // Highlight the nav link for whichever section crosses the upper-middle of the viewport
   sectionObserver = new IntersectionObserver((entries) => {
@@ -152,6 +160,7 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll)
   window.removeEventListener('keydown', onKeyDown)
+  phoneQuery?.removeEventListener('change', onPhoneChange)
   sectionObserver?.disconnect()
 })
 </script>

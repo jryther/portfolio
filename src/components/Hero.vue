@@ -269,7 +269,10 @@
           class="status-pill"
           data-aos="fade-up"
         >
-          <span class="status-dot" />
+          <span
+            class="status-dot"
+            :class="{ 'is-still': scenePaused }"
+          />
           {{ t('hero.status') }}
         </p>
 
@@ -339,7 +342,7 @@
           <div class="hero-socials">
             <a
               v-tooltip="'LinkedIn'"
-              href="https://linkedin.com/in/joshua-ryther-121400109"
+              :href="LINKEDIN_URL"
               target="_blank"
               rel="noreferrer"
               class="social-link"
@@ -353,7 +356,7 @@
             </a>
             <a
               v-tooltip="t('hero.email')"
-              href="mailto:jryther91@gmail.com"
+              :href="`mailto:${CONTACT_EMAIL}`"
               class="social-link"
               :aria-label="t('hero.email')"
             >
@@ -380,10 +383,12 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { vTooltip } from '../directives/tooltip'
 import { useI18n } from 'vue-i18n'
 import ResumeMenu from './ResumeMenu.vue'
+import { CONTACT_EMAIL, LINKEDIN_URL } from '../data/contact'
 import { theme } from '../composables/useTheme'
 import { scenePaused, heroInView } from '../composables/useScene'
 import { gamePlaying } from '../composables/useGame'
 import { handleError } from '../services/errors'
+import { prefersReducedMotion } from '../composables/useReducedMotion'
 
 const { t } = useI18n()
 
@@ -402,9 +407,6 @@ const skyFlash    = ref<HTMLElement | null>(null)
 const bolt        = ref<SVGGElement | null>(null)
 const bigfootLit  = ref<SVGPathElement | null>(null)
 const boltPath    = ref<string>('')
-
-const prefersReducedMotion = typeof window !== 'undefined'
-  && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 // ── Static mountain geometry ─────────────────────────────────────────────────
 
@@ -817,7 +819,7 @@ function canFlash() {
     && heroVisible
     && !scenePaused.value
     && !gamePlaying.value
-    && !prefersReducedMotion
+    && !prefersReducedMotion.value
     && document.visibilityState === 'visible'
 }
 
@@ -859,8 +861,17 @@ let heroVisible = true
 function pauseHeroAnims()  { rainController?.pause();  cloudController?.pause()  }
 function resumeHeroAnims() {
   // Reduced motion: clouds stay as a still frame and the rain never starts
-  if (prefersReducedMotion || scenePaused.value) return
+  if (prefersReducedMotion.value || scenePaused.value) return
   rainController?.resume(); cloudController?.resume()
+}
+
+function startRain() {
+  if (rainController || !rainCanvas.value) return
+  try {
+    rainController = initRain(rainCanvas.value, theme.value === 'dark')
+  } catch (e) {
+    handleError('hero', 'Rain could not start', e, { level: 'warn' })
+  }
 }
 
 function syncHeroAnims() {
@@ -877,17 +888,11 @@ onMounted(() => {
   // starts (or fails) on its own
   try {
     cloudController = initClouds(cloudCanvas.value!, isDay)
-    if (prefersReducedMotion) cloudController.pause()
+    if (prefersReducedMotion.value) cloudController.pause()
   } catch (e) {
     handleError('hero', 'Clouds could not start', e, { level: 'warn' })
   }
-  if (!prefersReducedMotion) {
-    try {
-      rainController = initRain(rainCanvas.value!, !isDay)
-    } catch (e) {
-      handleError('hero', 'Rain could not start', e, { level: 'warn' })
-    }
-  }
+  if (!prefersReducedMotion.value) startRain()
   if (scenePaused.value) pauseHeroAnims()
 
   // ── Pause animations when Hero scrolls out of view ──────────────────────
@@ -905,6 +910,12 @@ onMounted(() => {
   watch(scenePaused, (paused) => {
     if (paused) { pauseHeroAnims(); scheduleFlash() }
     else syncHeroAnims()
+  })
+
+  // ── The visitor can turn reduced motion on or off while the page is open ──
+  watch(prefersReducedMotion, (reduce) => {
+    if (reduce) { pauseHeroAnims(); scheduleFlash() }
+    else { startRain(); syncHeroAnims() }
   })
 
   // ── Weather follows the theme: storm at dusk, clear skies in summer ──
@@ -1064,6 +1075,11 @@ onUnmounted(() => {
   border-radius: 50%;
   background: var(--color-moss);
   animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+/* The pause control stops every moving part of the hero, this one included */
+.status-dot.is-still::after {
+  animation: none;
+  opacity: 0;
 }
 @keyframes ping {
   75%, 100% { transform: scale(2.4); opacity: 0; }

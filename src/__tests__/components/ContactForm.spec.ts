@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mount, flushPromises } from '@vue/test-utils'
+import { mount } from '@vue/test-utils'
 import ContactForm from '../../components/ContactForm.vue'
 import { i18n, setLocale } from '../../i18n'
 
@@ -38,9 +38,9 @@ describe('ContactForm', () => {
     expect(wrapper.find('input[type="email"]').attributes('placeholder')).toBe('ana@empresa.com')
   })
 
-  it('does not show the success message initially', () => {
+  it('does not show the email-app note initially', () => {
     const wrapper = mountForm()
-    expect(wrapper.find('.success-message').exists()).toBe(false)
+    expect(wrapper.find('.form-message').exists()).toBe(false)
   })
 
   it('binds v-model to name input', async () => {
@@ -64,177 +64,69 @@ describe('ContactForm', () => {
     expect((textarea.element as HTMLTextAreaElement).value).toBe('Hello!')
   })
 
+  it("explains that sending opens the visitor's email app", () => {
+    const wrapper = mountForm()
+    const button = wrapper.find('button[type="submit"]')
+    const hint = wrapper.find(`#${button.attributes('aria-describedby')}`)
+    expect(hint.text()).toBe('Opens your email app with your message ready to send.')
+  })
+
+  it('caps the message length so the email link stays usable', () => {
+    const wrapper = mountForm()
+    expect(wrapper.find('textarea').attributes('maxlength')).toBe('1500')
+  })
+
   describe('form submission', () => {
-    let fetchSpy: ReturnType<typeof vi.fn>
+    const assign = vi.fn()
+    const realLocation = window.location
 
     beforeEach(() => {
-      fetchSpy = vi.fn()
-      vi.stubGlobal('fetch', fetchSpy)
+      assign.mockReset()
+      Object.defineProperty(window, 'location', { value: { ...realLocation, assign }, configurable: true })
     })
-
     afterEach(() => {
-      vi.unstubAllGlobals()
+      Object.defineProperty(window, 'location', { value: realLocation, configurable: true })
     })
 
-    it('shows success message after successful submission', async () => {
-      fetchSpy.mockResolvedValue({ ok: true })
-
+    async function submit(name = 'Ada Lovelace', email = 'ada@example.com', message = 'Hello & welcome!\nSecond line') {
       const wrapper = mountForm()
-      await wrapper.find('input[type="text"]').setValue('Josh')
-      await wrapper.find('input[type="email"]').setValue('josh@example.com')
-      await wrapper.find('textarea').setValue('Hello!')
+      await wrapper.find('input[type="text"]').setValue(name)
+      await wrapper.find('input[type="email"]').setValue(email)
+      await wrapper.find('textarea').setValue(message)
       await wrapper.find('form').trigger('submit')
-      await flushPromises()
+      return wrapper
+    }
 
-      expect(wrapper.find('.success-message').exists()).toBe(true)
-      expect(wrapper.find('.success-message').text()).toContain('Message sent successfully')
+    const opened = () => new URL(assign.mock.calls[0][0] as string)
+
+    it('opens an email to Josh with the subject and message filled in', async () => {
+      await submit()
+      expect(assign).toHaveBeenCalledTimes(1)
+      expect(opened().protocol).toBe('mailto:')
+      expect(opened().pathname).toBe('jryther91@gmail.com')
+      expect(opened().searchParams.get('subject')).toBe('Portfolio message from Ada Lovelace')
+      expect(opened().searchParams.get('body')).toBe('Hello & welcome!\nSecond line\n\nAda Lovelace\nada@example.com')
     })
 
-    it('clears form fields after successful submission', async () => {
-      fetchSpy.mockResolvedValue({ ok: true })
-
-      const wrapper = mountForm()
-      await wrapper.find('input[type="text"]').setValue('Josh')
-      await wrapper.find('input[type="email"]').setValue('josh@example.com')
-      await wrapper.find('textarea').setValue('Hello!')
-      await wrapper.find('form').trigger('submit')
-      await flushPromises()
-
-      expect((wrapper.find('input[type="text"]').element as HTMLInputElement).value).toBe('')
-      expect((wrapper.find('input[type="email"]').element as HTMLInputElement).value).toBe('')
-      expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('')
+    it('encodes the text so symbols in it cannot break the link', async () => {
+      await submit('A&B', 'ab@example.com', 'x?y=z&subject=nope #1')
+      expect(assign.mock.calls[0][0]).not.toContain('&subject=nope')
+      expect(opened().searchParams.get('subject')).toBe('Portfolio message from A&B')
+      expect(opened().searchParams.get('body')).toContain('x?y=z&subject=nope #1')
     })
 
-    it('does not show success message on failed response', async () => {
-      fetchSpy.mockResolvedValue({ ok: false })
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      vi.spyOn(console, 'warn').mockImplementation(() => {})
-
-      const wrapper = mountForm()
-      await wrapper.find('form').trigger('submit')
-      await flushPromises()
-
-      expect(wrapper.find('.success-message').exists()).toBe(false)
-      consoleSpy.mockRestore()
-      vi.restoreAllMocks()
+    it('writes the subject in Spanish when the page is in Spanish', async () => {
+      setLocale('es')
+      await submit()
+      expect(opened().searchParams.get('subject')).toBe('Mensaje del portafolio de Ada Lovelace')
     })
 
-    it('does not throw on fetch network error', async () => {
-      fetchSpy.mockRejectedValue(new Error('Network error'))
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
-      const wrapper = mountForm()
-      await wrapper.find('form').trigger('submit')
-      await flushPromises()
-
-      expect(wrapper.find('.success-message').exists()).toBe(false)
-      consoleSpy.mockRestore()
-    })
-
-    describe('when sending fails', () => {
-      let consoleSpy: ReturnType<typeof vi.spyOn>
-
-      beforeEach(() => {
-        consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-        vi.spyOn(console, 'warn').mockImplementation(() => {})
-      })
-
-      afterEach(() => vi.restoreAllMocks())
-
-      const fillAndSubmit = async (wrapper: ReturnType<typeof mountForm>) => {
-        await wrapper.find('input[type="text"]').setValue('Josh')
-        await wrapper.find('input[type="email"]').setValue('josh@example.com')
-        await wrapper.find('textarea').setValue('Hello!')
-        await wrapper.find('form').trigger('submit')
-        await flushPromises()
-      }
-
-      it('explains the problem in an alert, with email as a fallback', async () => {
-        fetchSpy.mockResolvedValue({ ok: false, status: 500 })
-
-        const wrapper = mountForm()
-        await fillAndSubmit(wrapper)
-
-        const alert = wrapper.find('[role="alert"]')
-        expect(alert.text()).toContain("Your message couldn't be sent")
-        expect(alert.find('a').attributes('href')).toBe('mailto:jryther91@gmail.com')
-        expect(consoleSpy).toHaveBeenCalledWith('[contact]', 'Message failed to send', expect.any(Error))
-      })
-
-      it('shows the same alert on a network error', async () => {
-        fetchSpy.mockRejectedValue(new TypeError('Failed to fetch'))
-
-        const wrapper = mountForm()
-        await fillAndSubmit(wrapper)
-
-        expect(wrapper.find('.error-message').exists()).toBe(true)
-        expect(wrapper.find('.success-message').exists()).toBe(false)
-      })
-
-      it('says when the visitor is offline', async () => {
-        fetchSpy.mockRejectedValue(new TypeError('Failed to fetch'))
-        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
-
-        const wrapper = mountForm()
-        await fillAndSubmit(wrapper)
-
-        expect(wrapper.find('.error-message').text()).toContain("You're offline")
-      })
-
-      it('keeps what the visitor typed so they can try again', async () => {
-        fetchSpy.mockResolvedValue({ ok: false, status: 500 })
-
-        const wrapper = mountForm()
-        await fillAndSubmit(wrapper)
-
-        expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('Hello!')
-      })
-
-      it('clears the error once a retry succeeds', async () => {
-        fetchSpy.mockResolvedValueOnce({ ok: false, status: 500 }).mockResolvedValueOnce({ ok: true })
-
-        const wrapper = mountForm()
-        await fillAndSubmit(wrapper)
-        await wrapper.find('form').trigger('submit')
-        await flushPromises()
-
-        expect(wrapper.find('.error-message').exists()).toBe(false)
-        expect(wrapper.find('.success-message').exists()).toBe(true)
-      })
-    })
-
-    it('shows that it is sending, and ignores a second submit meanwhile', async () => {
-      let respond: (value: { ok: boolean }) => void = () => {}
-      fetchSpy.mockReturnValue(new Promise((resolve) => { respond = resolve }))
-
-      const wrapper = mountForm()
-      await wrapper.find('form').trigger('submit')
-      const button = wrapper.find('button[type="submit"]')
-      expect(button.text()).toBe('Sending…')
-      expect(button.attributes('aria-disabled')).toBe('true')
-
-      await wrapper.find('form').trigger('submit')
-      expect(fetchSpy).toHaveBeenCalledTimes(1)
-
-      respond({ ok: true })
-      await flushPromises()
-      expect(button.text()).toBe('Send Message')
-    })
-
-    it('sends the correct payload to Formspree', async () => {
-      fetchSpy.mockResolvedValue({ ok: true })
-
-      const wrapper = mountForm()
-      await wrapper.find('input[type="text"]').setValue('Josh')
-      await wrapper.find('input[type="email"]').setValue('josh@example.com')
-      await wrapper.find('textarea').setValue('Hello!')
-      await wrapper.find('form').trigger('submit')
-      await flushPromises()
-
-      const [, options] = fetchSpy.mock.calls[0] as [string, RequestInit]
-      const body = JSON.parse(options.body as string)
-      expect(body).toEqual({ name: 'Josh', email: 'josh@example.com', message: 'Hello!' })
+    it('shows a note with a fallback link, and keeps the text in case it was not sent', async () => {
+      const wrapper = await submit()
+      const note = wrapper.find('[role="status"] .form-message')
+      expect(note.text()).toContain('Your email app should open with your message ready to send.')
+      expect(note.find('a').attributes('href')).toBe('mailto:jryther91@gmail.com')
+      expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toContain('Hello')
     })
   })
 })
-

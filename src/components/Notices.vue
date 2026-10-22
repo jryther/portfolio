@@ -19,7 +19,10 @@
       aria-relevant="additions"
       class="notice-region"
     >
-      <TransitionGroup name="notice">
+      <TransitionGroup
+        name="notice"
+        @after-leave="onNoticeGone"
+      >
         <div
           v-for="notice in region.items"
           :key="notice.id"
@@ -104,6 +107,19 @@ function onFocusIn(e: FocusEvent) {
 }
 function onFocusOut(e: FocusEvent) {
   if (rootEl.value?.contains(e.relatedTarget as Node | null)) return
+  focusInside = false
+  if (!hovering) resumeNotices()
+}
+
+// The app can take a notice away while it has focus ("back online" replaces "offline"). The
+// browser drops focus to the page without a focusout, so hand it on and let the countdowns run
+function onNoticeGone() {
+  if (!focusInside || rootEl.value?.contains(document.activeElement)) return
+  if (!document.activeElement || document.activeElement === document.body) {
+    const next = rootEl.value?.querySelector<HTMLElement>('.notice:not(.notice-leave-active) .notice-close')
+    if (next) { next.focus(); return }
+    if (returnFocus?.isConnected) returnFocus.focus()
+  }
   focusInside = false
   if (!hovering) resumeNotices()
 }

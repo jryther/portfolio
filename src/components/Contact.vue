@@ -71,24 +71,25 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import ContactForm from './ContactForm.vue'
+import { CONTACT_EMAIL, LINKEDIN_URL, EMAIL_ICON, LINKEDIN_ICON } from '../data/contact'
 
 const { t } = useI18n()
 
-// Lucide-style 24px line icons; labels are contact.<key> in the locale files
+// Labels are contact.<key> in the locale files
 const contactLinks = [
   {
     key: 'email',
-    value: 'jryther91@gmail.com',
-    href: 'mailto:jryther91@gmail.com',
+    value: CONTACT_EMAIL,
+    href: `mailto:${CONTACT_EMAIL}`,
     external: false,
-    icon: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm17 2-9 6-9-6',
+    icon: EMAIL_ICON,
   },
   {
     key: 'linkedin',
     value: 'in/joshua-ryther',
-    href: 'https://linkedin.com/in/joshua-ryther-121400109',
+    href: LINKEDIN_URL,
     external: true,
-    icon: 'M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6ZM2 9h4v12H2zM4 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z',
+    icon: LINKEDIN_ICON,
   },
   {
     key: 'location',
