@@ -40,9 +40,7 @@
     "env.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/**/*.vue",
-    "src/**/*.spec.ts"
-  ],
-  "exclude": ["src/workers/**"]
+    "src/**/*.vue"
+  ]
 }
 

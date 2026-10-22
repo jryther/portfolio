@@ -6,7 +6,7 @@
 |---|---|
 | `index.html` | HTML shell; loads `/src/main.ts` |
 | `src/main.ts` | Creates Vue app, imports `main.css`, initializes AOS |
-| `src/App.vue` | Root component — composes Header, Hero, About, Project, Contact, Footer, AiChat |
+| `src/App.vue` | Root component — composes Header, Hero, About, Project, ChatSection, Contact, Footer, AiChat, Notices |
 | `src/styles/main.css` | Global stylesheet — design tokens, reset, base element styles, shared classes (`@layer reset, base, components`) |
 
 ---
@@ -32,14 +32,15 @@ App.vue
 └── Notices.vue             (toasts, fixed top-right under the header, z-index 10000)
 ```
 
-Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padding-top: 10rem` in CSS offsets scrolling for the fixed header.
+Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padding-top: 8rem` in CSS offsets scrolling for the fixed header.
 
 ---
 
 ## Component Responsibilities
 
 ### `Header.vue`
-- Fixed navigation bar, `z-index: 100`, `background: rgba(15,20,25,0.92)`
+- Fixed navigation bar, `z-index: 100`; transparent at the top, translucent charcoal (`color-mix`) with a blur once scrolled (`.scrolled`)
+- Right side: Resume menu button (`ResumeMenu.vue`), scene pause, language and theme toggles
 - Mobile: hamburger button + `max-height` CSS transition on `.nav.active`
 - Desktop nav link colors/hover live in `<style scoped>` with the rest of the header
 - Mobile hamburger/active-state `nth-child` selectors kept in `<style scoped>`
@@ -57,8 +58,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 ### `About.vue`
 - Three blocks: bio + "At a glance" card, experience & education timeline (`timeline` array), and skills grouped by category (`skillGroups` array)
 - Timeline rail/dot styles and the skill-chip desaturate→colour hover live in `<style scoped>`
-- Download buttons use the global `.button-ghost` class
-- Resume imported as an asset URL via Vite
+- Resume button is a `ResumeMenu` (PDF + Word) styled with the global `.button-ghost` class, with `pdf-action="download"` so the PDF downloads here instead of opening in a tab
 
 ### `Project.vue`
 - Role line, a featured TestNav case study (`featured` bullets + `stats` tiles + store links), and four "around the platform" cards (`supporting`), all from arrays in `<script setup>`
@@ -67,7 +67,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - No hover lift effect on cards (removed intentionally — cards are informational, not interactive links)
 
 ### `Contact.vue`
-- Two contact method cards (email + phone) with hover border highlight
+- Contact list from the `contactLinks` array: email, LinkedIn, and location (no link). No phone number
 - Delegates form rendering to `ContactForm.vue`
 
 ### `ContactForm.vue`
@@ -76,8 +76,8 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - `slideIn` `@keyframes` animation on success message kept in `<style scoped>`
 
 ### `Footer.vue`
-- Three-column grid: Quick Links, Professional, Resources
-- Trademark disclaimer at bottom (`TestNav is a trademark of Pearson Education, Inc.`)
+- One-line bar: copyright/credit line plus LinkedIn and email icon links (`links` array, with `v-tooltip`)
+- Trademark disclaimer below (`footer.trademark`: TestNav is a trademark of Pearson Education, Inc.)
 - Layout and link hover styles in `<style scoped>`
 
 ### Chat: `composables/useChat.ts`, `AiChat/ChatPanel.vue`, `AiChat/AiChat.vue`, `ChatSection.vue`
@@ -139,25 +139,28 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 
 ```ts
 base: '/'                       // Cloudflare Pages serves from domain root
+assetsInclude: ['**/*.docx']    // The Word resume is imported as an asset URL
 plugins: [vue()]                // plus basicSsl() in 'lan' mode
-server.host: 'localhost'        // Required for COOP/COEP to work locally
+define: { __VUE_I18N_*__ }      // vue-i18n: Composition API only, no legacy API, no prod devtools
+server.host: 'localhost'        // true in 'lan' mode (npm run dev:lan, HTTPS)
 server.headers: {               // SharedArrayBuffer for wllama multi-threading in dev
-  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Opener-Policy': 'same-origin',   // vite preview inherits these
   'Cross-Origin-Embedder-Policy': 'credentialless'
 }
 worker.format: 'es'             // ESM workers
-build.chunkSizeWarningLimit: 3000  // The lazy wllama chunk is ~540 kB
+build.chunkSizeWarningLimit: 3000  // The lazy wllama chunk is ~920 kB
+test: { environment: 'jsdom', globals: true, ... }  // Vitest config lives here too
 ```
 
-Production COOP/COEP headers are served via `public/_headers` (Cloudflare Pages).
+Production headers (COOP/COEP plus `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`) are served via `public/_headers` (Cloudflare Pages). `vite preview` doesn't read that file, so the e2e tests in CI only see the COOP/COEP pair from `server.headers`.
 
 ---
 
 ## Asset Pipeline
 
 - `.svg` icons imported in `<script setup>` → Vite returns URL string → used in `<img :src="...">`
-- `.pdf` imported → Vite returns URL → used in `<a :href="..." download>`
-- `.webp`, `.png` imported → Vite returns URL → used in `<img :src="...">`
+- `.pdf` and `.docx` imported in `ResumeMenu.vue` → Vite returns URLs → used as the menu items' `href` (types for both in `env.d.ts`)
+- Static files that need a fixed URL (favicons, `_headers`) live in `public/`
 - All assets under `src/assets/` get content-hashed filenames in production build
 
 ---

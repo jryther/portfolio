@@ -28,6 +28,8 @@ Live at **[joshryther.com](https://joshryther.com)**
 - **AI chat** — A full-page "Ask" section plus a floating popup (which steps aside while the section is on screen), sharing one conversation about Josh's professional background. Answers are pre-written in a decision tree; questions are matched by keyword, or by a small in-browser embedding model the visitor can load (~330 MB, CPU only, works on any device)
 - **Mini-game** — A Flappy-style game in the chat, styled like the site (cut-tree stumps and logs, firs, Mt. Hood ridgelines), dark and light themed, and frame-rate independent
 - **Experience timeline & skills grid** — Work and education on one timeline; skills grouped by category
+- **English / Spanish** — `vue-i18n`; Spanish-language browsers get Spanish, and a header toggle switches (choice remembered)
+- **Resume** — PDF and Word versions from a format menu in the header, hero, and About section
 - **Responsive** — Full mobile/tablet/desktop support with hamburger nav
 
 ---
@@ -49,11 +51,16 @@ npm run dev
 ## Build & Deploy
 
 ```sh
-# Production build (runs lint + tests + vite build, outputs to dist/)
+# Production build (runs lint + unit tests + vite build, outputs to dist/)
 npm run build
+
+# Type-check the app, the e2e specs and vite.config.ts
+npm run type-check
 ```
 
-Cloudflare Pages auto-deploys on every push to `main`. The build command and output directory (`dist`) are configured in the Cloudflare Pages dashboard.
+Every pull request into `main` runs CI (`.github/workflows/ci.yml`): `npm ci`, `npm audit signatures`, `npm audit`, lint, type check, unit tests, one `vite build`, and the Playwright tests against that build. Dependabot patch/minor updates are merged automatically once those checks pass (majors and wllama wait for review).
+
+Cloudflare Pages auto-deploys on every push to `main`. The build command (`npx vite build`, since CI has already run lint and tests) and output directory (`dist`) are configured in the Cloudflare Pages dashboard. Production response headers (COOP/COEP for the AI model, plus basic security headers) are in `public/_headers`.
 
 ---
 
@@ -61,21 +68,14 @@ Cloudflare Pages auto-deploys on every push to `main`. The build command and out
 
 ```
 src/
-├── __tests__/
-│   ├── components/
-│   │   └── ContactForm.spec.ts
-│   ├── composables/
-│   │   ├── useTheme.spec.ts
-│   │   └── useScene.spec.ts
-│   └── services/
-│       ├── chatRouter.spec.ts
-│       └── topicIndex.spec.ts
+├── __tests__/                # Vitest unit tests (see Testing below)
 │
 ├── styles/
 │   └── main.css              # Global styles — tokens, reset, base, shared classes
 │
 ├── assets/
 │   ├── Resume.pdf
+│   ├── Resume.docx
 │   ├── topo.svg              # Topographic contour section background
 │   ├── topo-light.svg        # Contour background for light mode
 │   ├── spinner-solid-full.svg
@@ -86,20 +86,28 @@ src/
 │   ├── Hero.vue              # SVG Mount Hood scene, weather, day/night
 │   ├── ThemeToggle.vue       # Sun/moon theme switch
 │   ├── SceneToggle.vue       # Pause/play the hero animation
-│   ├── About.vue             # Bio, timeline, skills grid, documents
+│   ├── LanguageToggle.vue    # English/Spanish switch
+│   ├── ResumeMenu.vue        # Resume button + PDF/Word format menu
+│   ├── About.vue             # Bio, timeline, skills grid, resume
 │   ├── Project.vue           # Professional work: TestNav case study + supporting work
 │   ├── ChatSection.vue       # Full-page "Ask" chat + how it works
 │   ├── Contact.vue           # Contact links + form card
 │   ├── ContactForm.vue       # Formspree-backed email form
 │   ├── Footer.vue            # One-line footer + trademark disclaimer
+│   ├── Notices.vue           # Toast notices for errors with no place of their own
+│   ├── icons/                # UiIcon (line icons) + SparkleIcon
 │   └── AiChat/
 │       ├── AiChat.vue        # Floating chat button + popup
+│       ├── ChatHeader.vue    # Title bar shared by the popup and the section
 │       ├── ChatPanel.vue     # Messages, chips, model status, input (used by both)
-│       └── MiniGame.vue      # Flappy-style mini-game behind the chat's game icon
+│       ├── MiniGame.vue      # Flappy-style mini-game behind the chat's game icon
+│       ├── lazyMiniGame.ts   # Lazy-loads MiniGame (one retry)
+│       └── GameLoadError.vue # Shown if the game can't load
 │
 ├── game/
 │   ├── flappySim.ts          # Fixed-step game simulation (frame-rate independent)
-│   └── flappyRender.ts       # Themed canvas renderer with cached parallax layers
+│   ├── flappyRender.ts       # Themed canvas renderer with cached parallax layers
+│   └── flappyAudio.ts        # Procedural Web Audio music and sound effects
 │
 ├── composables/
 │   ├── useChat.ts            # The shared chat conversation and model state
@@ -107,39 +115,56 @@ src/
 │   ├── useTheme.ts           # Dark/light theme state + persistence
 │   └── useScene.ts           # Hero animation pause state
 │
+├── directives/
+│   └── tooltip.ts            # v-tooltip: accessible styled tooltips
+│
+├── i18n/
+│   ├── en.ts / es.ts         # UI text (es is typed against en)
+│   ├── locales.ts            # Supported languages + browser detection
+│   └── index.ts              # vue-i18n setup, setLocale()
+│
 ├── data/
 │   ├── chatTree.ts           # Chat decision tree: topics, keywords, examples, answers
+│   ├── chatTree.es.ts        # Spanish answers and labels
 │   └── topicVectors.json     # Precomputed topic embeddings (npm run embed:topics)
 │
 ├── services/
 │   ├── chatRouter.ts         # Keyword routing + "tell me more"
 │   ├── topicIndex.ts         # Embedding similarity, vector storage
 │   ├── chatModel.ts          # Model name, URL, size
-│   └── wllama.ts             # Loads the model, embeds questions
+│   ├── wllama.ts             # Loads the model, embeds questions
+│   └── errors.ts             # Logging, error handling, toast notices
 │
 ├── App.vue                   # Root — composes all sections
 └── main.ts                   # App entry, AOS init
 
+e2e/                          # Playwright end-to-end tests (see Testing below)
+
 scripts/
 └── embed-topics.mjs          # Regenerates src/data/topicVectors.json in headless Chrome
+
+public/
+└── _headers                  # Cloudflare Pages response headers (COOP/COEP, security)
 ```
 
 ---
 
 ## Customization
 
-All personalizable content lives in the Vue components. Key locations:
+Page text lives in the locale files (`src/i18n/en.ts` and `es.ts`, kept in step); structure, links and lists live in the Vue components. Key locations:
 
 | What | Where |
 |---|---|
+| All UI text, in both languages | `src/i18n/en.ts`, `src/i18n/es.ts` |
 | Name, tagline, social links | `Hero.vue` |
 | Bio, education, experience, skills | `About.vue` |
 | Professional work (case study, stat tiles, supporting cards) | `Project.vue` |
-| Contact email / phone | `Contact.vue` |
-| Form submission endpoint | `ContactForm.vue` → `formspreeEndpoint` |
+| Contact email, LinkedIn, location | `Contact.vue` |
+| Form submission endpoint | `ContactForm.vue` → `FORMSPREE_ENDPOINT` |
 | Footer links | `Footer.vue` |
-| AI chat answers, keywords, example questions | `data/chatTree.ts` (then `npm run embed:topics`) |
-| Design tokens (colors, type scale) | `src/styles/main.css` → `@theme` |
+| Resume files | `src/assets/Resume.pdf`, `Resume.docx` (menu in `ResumeMenu.vue`) |
+| AI chat answers, keywords, example questions | `data/chatTree.ts` + `data/chatTree.es.ts` (then `npm run embed:topics`) |
+| Design tokens (colors, type scale) | `src/styles/main.css` → `:root` custom properties |
 
 ---
 
@@ -181,12 +206,23 @@ Coverage reports are written to `coverage/` (HTML at `coverage/index.html`).
 ```
 src/__tests__/
 ├── components/
-│   └── ContactForm.spec.ts   # mount/submit/validation behaviour
+│   ├── About.spec.ts         # timeline bullets, in both languages
+│   ├── ContactForm.spec.ts   # mount/submit/validation behaviour, failure states
+│   ├── MiniGameSound.spec.ts # sound failure handling, key handling
+│   └── Notices.spec.ts       # toast notices
 ├── composables/
+│   ├── useChat.spec.ts       # recovering from a failed answer
 │   ├── useScene.spec.ts      # hero pause state
 │   └── useTheme.spec.ts      # default/restore/toggle/persist behaviour
+├── directives/
+│   └── tooltip.spec.ts       # v-tooltip show/hide/dismiss
+├── game/
+│   └── flappySim.spec.ts     # frame-rate independence, determinism, autopilot
+├── i18n/
+│   └── messages.spec.ts      # English/Spanish key parity, messages compile
 └── services/
     ├── chatRouter.spec.ts    # tree integrity, keyword routing, "tell me more"
+    ├── errors.spec.ts        # logging, notices, global error handlers
     └── topicIndex.spec.ts    # vector storage, similarity ranking, stale-vector check
 ```
 
@@ -194,7 +230,7 @@ src/__tests__/
 
 ### End-to-end tests
 
-**[Playwright](https://playwright.dev/)** drives the whole page in Chromium, at desktop size and as a phone (Pixel 7). It starts its own Vite dev server on port 5180.
+**[Playwright](https://playwright.dev/)** drives the whole page in Chromium, at desktop size and as a phone (Pixel 7). Locally it starts its own Vite dev server on port 5180; in CI (`CI` set) it runs against the production build with `vite preview` on the same port.
 
 ```sh
 # First time only: download the browser
@@ -220,10 +256,12 @@ e2e/
 ├── preferences.spec.ts       # theme, language (incl. Spanish browsers) and animation toggles, persisted
 ├── chat.spec.ts              # popup + section chat, chips, keyword answers, model loading/error states
 ├── mini-game.spec.ts         # game toggle, play to game over, best score, sound, keyboard focus
-└── contact-form.spec.ts      # validation, successful send, server and network failures
+├── contact-form.spec.ts      # validation, successful send, server and network failures
+├── resume-menu.spec.ts       # resume format menu: keyboard, mouse, links
+└── tooltips.spec.ts          # tooltips on hover, keyboard focus, Escape, touch
 ```
 
-These aren't part of `npm run build`, since the Cloudflare build has no browser.
+These aren't part of `npm run build` (the Cloudflare build has no browser); CI runs them on every pull request.
 
 ---
 

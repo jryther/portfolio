@@ -55,10 +55,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # App + unit tests (vue-tsc), e2e specs, and vite.config.ts
       - name: Type check
-        run: |
-          npx vue-tsc --noEmit -p tsconfig.app.json
-          npx tsc --noEmit -p tsconfig.e2e.json
+        run: npm run type-check
 
       - name: Unit tests
         run: npm run test:run
@@ -118,12 +117,14 @@ jobs:
 
       # Patch and minor only (for grouped PRs, update-type is the largest change in the group).
       # Majors and wllama stay open for review: a wllama update needs `npm run embed:topics`.
+      # --match-head-commit: merge only the exact commit the checks ran on, never a newer push.
       - name: Merge
         if: >-
           (steps.meta.outputs.update-type == 'version-update:semver-patch' ||
            steps.meta.outputs.update-type == 'version-update:semver-minor') &&
           !contains(steps.meta.outputs.dependency-names, '@wllama/')
-        run: gh pr merge --squash "$PR_URL"
+        run: gh pr merge --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

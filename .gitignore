@@ -27,10 +27,6 @@ coverage
 
 .eslintcache
 
-# Cypress
-/cypress/videos/
-/cypress/screenshots/
-
 # Playwright
 /test-results/
 /playwright-report/

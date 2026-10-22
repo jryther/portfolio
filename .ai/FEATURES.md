@@ -140,7 +140,7 @@ Animations run once (`once: true`) — do not re-animate on scroll-up.
 
 ## 5. Responsive Navigation (Header.vue)
 
-**Desktop (> 768px):** Horizontal flex nav (About / Work / Contact + ghost Resume button); the logo links home
+**Desktop (> 768px):** Horizontal flex nav (About / Work / Ask / Contact + ghost Resume menu button); the logo links home
 
 **Scroll state:** after 8px of scroll the header gains a blurred translucent background and hairline border (`.scrolled`)
 
@@ -157,7 +157,7 @@ Animations run once (`once: true`) — do not re-animate on scroll-up.
 ## 6. Contact Form (ContactForm.vue)
 
 - Submits to Formspree via `fetch` POST with JSON body
-- `formspreeEndpoint` is currently `'https://formspree.io/f/YOUR_FORM_ID'` — owner must replace
+- `FORMSPREE_ENDPOINT` is currently `'https://formspree.io/f/YOUR_FORM_ID'` — owner must replace
 - `state`: `idle` → `sending` → `sent` | `failed`. Sending shows "Sending…" with `aria-disabled` (not `disabled`, so focus stays) and ignores repeat submits; the request times out after 15 s
 - Success: green message (in a persistent `role="status"`) for 5 seconds
 - Failure (non-OK response, network error, timeout): rust-toned message in a persistent `role="alert"`, with a `mailto:` fallback; a separate message when `navigator.onLine` is false. The visitor's text is kept for a retry. Formspree's `errors[]` details and a placeholder-ID hint go to the console
@@ -165,14 +165,15 @@ Animations run once (`once: true`) — do not re-animate on scroll-up.
 
 ---
 
-## 7. Document Downloads (About.vue)
+## 7. Resume (ResumeMenu.vue)
 
-The resume is imported as a Vite asset URL:
+The resume ships as a PDF and a Word file, both imported as Vite asset URLs in `ResumeMenu.vue`:
 ```js
-import resumeUrl from '../assets/Resume.pdf'
+import resumePdf from '../assets/Resume.pdf'
+import resumeDocx from '../assets/Resume.docx'
 ```
-It gets a content-hashed filename in production (`Resume-XXXXX.pdf`).
-The button uses `<a :href="url" download="filename">` — browser-native download.
+They get content-hashed filenames in production (`Resume-XXXXX.pdf`).
+`ResumeMenu` is a WAI-ARIA menu button (used in the header, hero and About) listing both formats. `pdfAction: 'view'` (default) opens the PDF in a new tab; `'download'` (About) saves it as `Joshua_Ryther_Resume.pdf`. The Word file always downloads.
 
 ---
 
@@ -191,17 +192,17 @@ Laid out like an experience entry rather than a project grid, in order of emphas
 
 ## 9. Cloudflare Pages Deployment
 
-```sh
-npm run build
-```
+Cloudflare Pages auto-deploys on every push to `main` with the build command `npx vite build` (output `dist`). Lint, type check, unit tests and the Playwright tests have already run in CI (`.github/workflows/ci.yml`) on the pull request, so the deploy doesn't repeat them. Locally, `npm run build` still runs lint → unit tests → `vite build` in sequence.
 
-`npm run build` runs lint → tests → `vite build` in sequence. Cloudflare Pages auto-deploys on every push to `main`.
-
-`public/_headers` sets the COOP/COEP headers that let wllama use `SharedArrayBuffer` for multi-threading:
+`public/_headers` sets the COOP/COEP headers that let wllama use `SharedArrayBuffer` for multi-threading, plus a few security headers:
 ```
 /*
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Embedder-Policy: credentialless
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
 ```
 
 `vite.config.ts` `base: '/'` ensures all asset paths resolve correctly from the domain root.

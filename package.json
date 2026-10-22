@@ -17,6 +17,7 @@
     "test:e2e:report": "playwright show-report",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "type-check": "vue-tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.e2e.json && tsc --noEmit -p tsconfig.node.json",
     "embed:topics": "node scripts/embed-topics.mjs"
   },
   "dependencies": {

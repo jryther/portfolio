@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Apply a saved light theme before first paint (dark is the default) -->
     <script>try{if(localStorage.getItem("theme")==="light")document.documentElement.dataset.theme="light"}catch(e){}</script>
     <!-- Same language choice as src/i18n/locales.ts, so <html lang> is right before the app loads -->
     <script>try{var l=localStorage.getItem("locale");if(l!=="en"&&l!=="es")l=/^es/i.test(navigator.language)?"es":"en";document.documentElement.lang=l}catch(e){}</script>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -22,6 +22,7 @@
     <meta property="og:title" content="Josh Ryther | Full-Stack Software Engineer">
     <meta property="og:description" content="Salem, Oregon based Full-Stack Software Engineer specializing in Vue, React, TypeScript, and Node.js. Building robust, accessible, high-quality software.">
     <meta property="og:url" content="https://joshryther.com/">
+    <link rel="canonical" href="https://joshryther.com/">
 </head>
 <body>
     <div id="app"></div>

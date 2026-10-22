@@ -28,5 +28,5 @@ This directory contains machine-readable documentation for AI coding agents work
 - **1 rem = 10 px** (html font-size: 62.5%)
 - **Primary accent color:** `#E3A867` (amber) — the only accent; use sparingly — token `--color-amber`
 - **Background:** `#0B1012` (charcoal) — token `--color-charcoal`
-- **Fonts:** Inter (`font-sans`) + JetBrains Mono (`font-mono`) for labels, dates, and tags
+- **Fonts:** Inter (`--font-sans`) + JetBrains Mono (`--font-mono`) for labels, dates, and tags
 
