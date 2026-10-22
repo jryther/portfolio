@@ -1,7 +1,8 @@
 /* eslint-disable no-console -- command-line output */
-// Writes src/data/modelPieces.json: the SHA-256 of each piece the AI model is downloaded in
-// (see src/services/modelDownload.ts), so the browser can reject a corrupted or tampered piece
-// before keeping it.
+// Writes src/data/modelPieces.json: the file's exact size, the piece size, and the SHA-256 of
+// each piece the AI model is downloaded in (see src/services/modelDownload.ts), so the browser
+// can reject a corrupted or tampered piece before keeping it. The app reads the size and piece
+// size from that file, so PIECE_BYTES below is the only place the piece size is set.
 //
 // Run after changing the model URL or PIECE_BYTES:
 //   node scripts/model-piece-hashes.mjs path/to/model.gguf <sha256 published for the file>
@@ -12,7 +13,8 @@ import { createHash } from 'node:crypto'
 import { openSync, readSync, closeSync, statSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-const PIECE_BYTES = 8 * 1024 * 1024   // must match src/services/modelDownload.ts
+// A pause throws away at most the piece in progress
+const PIECE_BYTES = 8 * 1024 * 1024
 const outFile = fileURLToPath(new URL('../src/data/modelPieces.json', import.meta.url))
 
 const [file, expected] = process.argv.slice(2)

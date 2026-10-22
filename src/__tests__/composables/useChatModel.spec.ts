@@ -11,8 +11,7 @@ const service = vi.hoisted(() => ({
 }))
 
 vi.mock('../../services/wllama', () => ({
-  isModelCached: async () => service.cached,
-  partialDownload: async () => service.partial,
+  savedModel: async () => ({ cached: service.cached, partial: service.partial }),
   loadModel: (progress: (p: number) => void, signal?: AbortSignal) => new Promise<void>((resolve, reject) => {
     signal?.addEventListener('abort', () => reject(new DOMException('Paused', 'AbortError')))
     service.loads.push({ progress, finish: resolve, signal })

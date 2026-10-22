@@ -43,15 +43,34 @@ jobs:
         id: check
         run: node scripts/check-model-update.mjs
 
-      - name: Install dependencies
+      # The check compares against main, so it still sees the update while its PR is open, and after
+      # it was closed without merging. A PR (open or closed) already titled for this revision means
+      # there's nothing new: an open one is up to date, and a closed one was turned down
+      - name: Skip if already proposed
+        id: new
         if: steps.check.outputs.updated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVISION: ${{ steps.check.outputs.revision }}
+        run: |
+          title="deps: update EmbeddingGemma model to ${REVISION:0:7}"
+          echo "title=$title" >> "$GITHUB_OUTPUT"
+          if gh pr list --head "$BRANCH" --state all --limit 100 --json title --jq '.[].title' | grep -Fxq "$title"; then
+            echo "Already proposed: $title"
+            echo "propose=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "propose=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.new.outputs.propose == 'true'
         run: npm ci
 
       # The browser checks every downloaded piece against these. The script refuses a file whose
       # SHA-256 isn't the one Hugging Face lists for it. Before the topic vectors, which load the
       # model through the same checks and would reject the new file against the old hashes
       - name: Recompute model piece hashes
-        if: steps.check.outputs.updated == 'true'
+        if: steps.new.outputs.propose == 'true'
         env:
           MODEL_URL: ${{ steps.check.outputs.url }}
           MODEL_SHA256: ${{ steps.check.outputs.sha256 }}
@@ -61,27 +80,32 @@ jobs:
 
       # Downloads the new model (~330 MB) and embeds the topics with it, in the runner's Chrome
       - name: Recompute topic vectors
-        if: steps.check.outputs.updated == 'true'
+        if: steps.new.outputs.propose == 'true'
         run: npm run embed:topics
 
       - name: Open or update the PR
-        if: steps.check.outputs.updated == 'true'
+        if: steps.new.outputs.propose == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           REVISION: ${{ steps.check.outputs.revision }}
+          TITLE: ${{ steps.new.outputs.title }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$BRANCH"
-          git commit -am "deps: update EmbeddingGemma model to ${REVISION:0:7}"
+          git commit -am "$TITLE"
           git push --force origin "$BRANCH"
 
-          if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
-            gh pr create --head "$BRANCH" --base main --assignee jryther \
-              --title "deps: update EmbeddingGemma model to ${REVISION:0:7}" \
-              --body "A new \`embeddinggemma-300M-Q8_0.gguf\` is on Hugging Face ([commit](https://huggingface.co/ggml-org/embeddinggemma-300M-GGUF/commit/$REVISION)). This repins \`src/services/chatModel.ts\` and recomputes \`src/data/topicVectors.json\` and \`src/data/modelPieces.json\` with it.
+          body="A new \`embeddinggemma-300M-Q8_0.gguf\` is on Hugging Face ([commit](https://huggingface.co/ggml-org/embeddinggemma-300M-GGUF/commit/$REVISION)). This repins \`src/services/chatModel.ts\` and recomputes \`src/data/topicVectors.json\` and \`src/data/modelPieces.json\` with it.
 
           Before merging, try a few free-text questions in the chat to check that they still find the right topics."
+
+          # A PR still open for an older revision now carries this one, so it's retitled to match
+          open=$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')
+          if [ -n "$open" ]; then
+            gh pr edit "$open" --title "$TITLE" --body "$body"
+          else
+            gh pr create --head "$BRANCH" --base main --assignee jryther --title "$TITLE" --body "$body"
           fi
 
           gh workflow run ci.yml --ref "$BRANCH"

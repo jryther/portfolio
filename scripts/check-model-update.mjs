@@ -7,9 +7,9 @@
 //
 // Compares the model file itself, not the repo's latest commit: a README edit moves the
 // commit but not the model, and shouldn't open a PR. When the file has changed, it rewrites
-// the URL's commit, `bytes` and `sizeLabel`. Afterwards, run `npm run model:hashes` (new piece
-// hashes for the download), then `npm run embed:topics` (a new model means new topic vectors).
-// In that order: embedding loads the model through the hash checks.
+// the URL's commit and `sizeLabel`. Afterwards, run `npm run model:hashes` (the exact size and
+// new piece hashes for the download), then `npm run embed:topics` (a new model means new topic
+// vectors). In that order: embedding loads the model through the hash checks.
 //
 // Like Dependabot's cooldown, a commit has to be COOLDOWN_DAYS old before it's proposed.
 // In GitHub Actions it writes `updated` (true/false), `revision`, `url` and `sha256` (the new
@@ -64,16 +64,14 @@ if (ageDays < COOLDOWN_DAYS) {
   process.exit(0)
 }
 
-// Matches the existing style: 333_590_944 and '~330 MB'
-const bytes = String(current.size).replace(/\B(?=(\d{3})+(?!\d))/g, '_')
+// Matches the existing style: '~330 MB'
 const sizeLabel = `~${Math.round(current.size / 1e7) * 10} MB`
 
 const newUrl = pinnedUrl.replace(pinnedRev, latest.sha)
 const updated = source
   .replace(pinnedUrl, newUrl)
-  .replace(/bytes: [\d_]+,/, `bytes: ${bytes},`)
   .replace(/sizeLabel: '[^']*',/, `sizeLabel: '${sizeLabel}',`)
 writeFileSync(modelFile, updated)
 
-console.log(`Repinned ${path} from ${pinnedRev} to ${latest.sha} (${bytes} bytes)`)
+console.log(`Repinned ${path} from ${pinnedRev} to ${latest.sha} (${current.size} bytes)`)
 setOutput({ updated: true, revision: latest.sha, url: newUrl, sha256: current.oid })

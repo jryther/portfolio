@@ -111,11 +111,11 @@ async function autoLoadIfCached() {
   if (cacheChecked || modelStatus.value !== 'idle') return
   cacheChecked = true
   try {
-    const { isModelCached, partialDownload } = await modelService()
-    if (!(await isModelCached())) {
-      const saved = await partialDownload()
-      if (saved > 0 && modelStatus.value === 'idle') {
-        loadingProgress.value = Math.floor(saved * 100)
+    const { savedModel } = await modelService()
+    const { cached, partial } = await savedModel()
+    if (!cached) {
+      if (partial > 0 && modelStatus.value === 'idle') {
+        loadingProgress.value = Math.floor(partial * 100)
         modelStatus.value = 'paused'
       }
       return

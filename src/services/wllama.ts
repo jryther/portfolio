@@ -38,15 +38,24 @@ async function inWllamaCache(): Promise<boolean> {
   }
 }
 
-/** True when the whole model is already in the browser cache, so loading skips the download */
-export async function isModelCached(): Promise<boolean> {
-  return (await savedFraction(MODEL.url, MODEL.bytes)) === 1 || await inWllamaCache()
+/** Where a whole copy of the model is cached, if anywhere: every piece of our own download
+ * (checked against the piece hashes as it came in), or wllama's copy from earlier visits */
+type CachedCopy = 'pieces' | 'wllama' | null
+
+/** The cached copy, plus how much of an unfinished download is saved (0–1) */
+async function findCachedCopy(): Promise<{ copy: CachedCopy, saved: number }> {
+  const saved = await savedFraction(MODEL.url, modelPieces)
+  if (saved === 1) return { copy: 'pieces', saved }
+  return { copy: await inWllamaCache() ? 'wllama' : null, saved }
 }
 
-/** How much of an unfinished download an earlier visit saved, 0–1 (0 when none) */
-export async function partialDownload(): Promise<number> {
-  const saved = await savedFraction(MODEL.url, MODEL.bytes)
-  return saved < 1 ? saved : 0
+/**
+ * What an earlier visit left behind: the whole model (cached: it loads without a download), or
+ * part of a paused download (partial, 0–1; 0 when none)
+ */
+export async function savedModel(): Promise<{ cached: boolean, partial: number }> {
+  const { copy, saved } = await findCachedCopy()
+  return { cached: copy !== null, partial: copy ? 0 : saved }
 }
 
 const isAbort = (e: unknown) => e instanceof DOMException && e.name === 'AbortError'
@@ -74,21 +83,25 @@ export async function computeTopicVectors(): Promise<StoredTopicVectors> {
   }
 }
 
-/**
- * Download (or read from cache) and load just the model weights. Aborting the signal pauses
- * the download, keeping what's saved so far
- */
-export async function loadWeights(onProgress: (progress: number) => void = () => {}, signal?: AbortSignal): Promise<void> {
+async function loadWeightsFrom(copy: CachedCopy, onProgress: (progress: number) => void, signal?: AbortSignal): Promise<void> {
   const instance = getInstance()
-  if (await inWllamaCache()) {
+  if (copy === 'wllama') {
     await instance.loadModelFromUrl(MODEL.url, {
       ...LOAD_PARAMS,
       progressCallback: ({ loaded, total }) => onProgress(total ? loaded / total : 0),
     })
     return
   }
-  const file = await downloadModel(MODEL.url, { size: MODEL.bytes, pieceHashes: modelPieces.pieces, onProgress, signal })
+  const file = await downloadModel(MODEL.url, modelPieces, { onProgress, signal })
   await instance.loadModel([file], LOAD_PARAMS)
+}
+
+/**
+ * Download (or read from cache) and load just the model weights. Aborting the signal pauses
+ * the download, keeping what's saved so far
+ */
+export async function loadWeights(onProgress: (progress: number) => void = () => {}, signal?: AbortSignal): Promise<void> {
+  await loadWeightsFrom((await findCachedCopy()).copy, onProgress, signal)
 }
 
 /**
@@ -97,10 +110,10 @@ export async function loadWeights(onProgress: (progress: number) => void = () =>
  * promise rejects with an AbortError, and calling loadModel again carries on from there.
  */
 export function loadModel(onProgress: (progress: number) => void, signal?: AbortSignal): Promise<void> {
-  let fromCache = false
+  let copy: CachedCopy = null
   loadPromise ??= (async () => {
-    fromCache = await isModelCached()
-    await loadWeights(onProgress, signal)
+    copy = (await findCachedCopy()).copy
+    await loadWeightsFrom(copy, onProgress, signal)
     const stored = storedVectors as StoredTopicVectors
     if (stored.hash === docsHash(buildDocs(TOPIC_LIST))) {
       index = decodeVectors(stored)
@@ -114,11 +127,13 @@ export function loadModel(onProgress: (progress: number) => void, signal?: Abort
     if (isAbort(e)) throw e
     const failed = wllama
     // A copy from the browser cache that won't load is likely damaged, and a retry would read the
-    // same file again, so drop it: the retry downloads a fresh one
-    if (fromCache) {
-      await Promise.all([clearSaved(), failed?.cacheManager.delete(MODEL.url)]).catch((err: unknown) => {
+    // same file again, so drop that copy, and only that one: a paused download's pieces stay
+    if (copy) {
+      try {
+        await (copy === 'pieces' ? clearSaved() : failed?.cacheManager.delete(MODEL.url))
+      } catch (err) {
         log.warn('Could not remove the cached model after a failed load', err)
-      })
+      }
     }
     // A load that failed after the worker started leaves it half initialized, and wllama refuses
     // to load into it again ("Module is already initialized"), so a retry starts afresh

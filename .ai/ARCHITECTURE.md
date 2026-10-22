@@ -127,14 +127,16 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - `prefetchWhenIdle`: downloads the game's code in the background once a chat view opens
 
 ### `services/chatModel.ts`
-- Model name, pinned URL, exact size in bytes, size label, task prefix, dimensions. Separate so the UI can show them without loading wllama
+- Model name, pinned URL, size label, task prefix, dimensions. Separate so the UI can show them without loading wllama. The exact size is in `data/modelPieces.json`
 
 ### `services/wllama.ts`
-- `loadModel(onProgress, signal?)`, `isModelCached()`, `partialDownload()`, `routeWithModel(question)`, `embed(text)`, `computeTopicVectors()`, `loadWeights()`
+- `loadModel(onProgress, signal?)`, `savedModel()` (`{ cached, partial }`), `routeWithModel(question)`, `embed(text)`, `computeTopicVectors()`, `loadWeights()`
 - Downloads through `modelDownload.ts` and loads the joined Blob with `wllama.loadModel`; an abort (pause) keeps the saved pieces and the worker
+- One cache check per load finds the cached copy: every piece saved, or wllama's own copy from earlier visits. A copy that fails to load is cleared, and only that one
 
 ### `services/modelDownload.ts`
-- Resumable download: 8 MB ranged requests, each saved to Cache Storage under `<url>?piece=<i>` (a query: the cache ignores #fragments), joined into one Blob at the end. Each piece must match its SHA-256 in `data/modelPieces.json` (and its `Content-Range`) before it's saved, so a corrupted or tampered download is never kept or loaded. `savedFraction`, `clearSaved`. After changing the model URL or `PIECE_BYTES`, run `npm run model:hashes -- <file> <sha256>` (the model-update workflow does this)
+- Resumable download: ranged requests of `pieceBytes` (8 MB), each saved to Cache Storage under `<url>?piece=<i>&sha256=<hash>` (a query: the cache ignores #fragments), joined into one Blob at the end. Each piece must match its SHA-256 in `data/modelPieces.json` (and its `Content-Range`) before it's saved, so a corrupted or tampered download is never kept or loaded. The hash in the key means pieces from another model or piece size never count, and are cleared. `savedFraction`, `clearSaved`
+- `data/modelPieces.json` holds the size, piece size and hashes; it's the only copy of them. After changing the model URL or the piece size (`PIECE_BYTES` in `scripts/model-piece-hashes.mjs`), run `npm run model:hashes -- <file> <sha256>` (the model-update workflow does this)
 - wllama runs inference in its own worker; this module is lazy-loaded by AiChat
 
 ---
