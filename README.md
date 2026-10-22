@@ -44,7 +44,7 @@ npm run dev
 
 > **Note:** The dev server requires `localhost` (not `127.0.0.1`) due to [COOP/COEP headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy) that let the in-browser AI model use `SharedArrayBuffer` for multi-threading.
 
-**Testing on other devices (phone, tablet):** run `npm run dev:lan` and open the **Network** URL it prints (`https://192.168.x.x:5173/`). It uses a self-signed certificate, so accept the browser warning once. HTTPS is required there: over plain HTTP on a network IP, browsers turn off the model cache and multi-threading the AI chat needs. If other devices can't connect, allow Node.js through Windows Firewall for your network.
+**Testing on other devices (phone, tablet):** run `npm run dev:lan` and open the **Network** URL it prints (`https://192.168.x.x:5173/`). It uses a self-signed certificate, so accept the browser warning once. HTTPS is required there: over plain HTTP on a network IP, browsers turn off the model cache and multi-threading the AI chat needs. If other devices can't connect, allow Node.js through Windows Firewall for your network. Only use it on a network you trust: anyone on it can open the dev server, which serves the source code.
 
 ---
 
@@ -78,7 +78,7 @@ src/
 │   ├── Resume.docx
 │   ├── topo.svg              # Topographic contour section background
 │   ├── topo-light.svg        # Contour background for light mode
-│   ├── spinner-solid-full.svg
+│   ├── fonts/                # Self-hosted Inter and JetBrains Mono (woff2, OFL licences)
 │   └── techIcons/            # SVG icons for the skills grid
 │
 ├── components/
@@ -126,13 +126,14 @@ src/
 ├── data/
 │   ├── chatTree.ts           # Chat decision tree: topics, keywords, examples, answers
 │   ├── chatTree.es.ts        # Spanish answers and labels
-│   └── topicVectors.json     # Precomputed topic embeddings (npm run embed:topics)
+│   ├── topicVectors.json     # Precomputed topic embeddings (npm run embed:topics)
+│   └── modelPieces.json      # SHA-256 of each model download piece (npm run model:hashes)
 │
 ├── services/
 │   ├── chatRouter.ts         # Keyword routing + "tell me more"
 │   ├── topicIndex.ts         # Embedding similarity, vector storage
 │   ├── chatModel.ts          # Model name, URL, size
-│   ├── modelDownload.ts      # Pausable, resumable model download (cached in pieces)
+│   ├── modelDownload.ts      # Pausable, resumable, hash-checked model download (cached in pieces)
 │   ├── wllama.ts             # Loads the model, embeds questions
 │   └── errors.ts             # Logging, error handling, toast notices
 │
@@ -142,7 +143,9 @@ src/
 e2e/                          # Playwright end-to-end tests (see Testing below)
 
 scripts/
-└── embed-topics.mjs          # Regenerates src/data/topicVectors.json in headless Chrome
+├── embed-topics.mjs          # Regenerates src/data/topicVectors.json in headless Chrome
+├── model-piece-hashes.mjs    # Regenerates src/data/modelPieces.json from a verified model file
+└── check-model-update.mjs    # Weekly model-update workflow: repins a newer model
 
 public/
 ├── og-image.png              # Link preview image (1200×630)
@@ -233,7 +236,7 @@ src/__tests__/
 │   └── messages.spec.ts      # English/Spanish key parity, messages compile
 └── services/
     ├── chatRouter.spec.ts    # tree integrity, keyword routing, "tell me more"
-    ├── modelDownload.spec.ts # ranged pieces, pause and resume, cache cleanup
+    ├── modelDownload.spec.ts # ranged pieces, pause and resume, integrity checks, cache cleanup
     ├── errors.spec.ts        # logging, notices, global error handlers
     └── topicIndex.spec.ts    # vector storage, similarity ranking, stale-vector check
 ```
@@ -258,7 +261,7 @@ npm run test:e2e:ui
 npm run test:e2e:report
 ```
 
-The page runs offline in these tests: Google Fonts and the Hugging Face model are blocked (`e2e/fixtures.ts`), and tests that need them mock the response. Nothing downloads the ~330 MB model. Tests run with reduced motion so the page is deterministic (no AOS, no weather, instant chat replies); specs that cover motion-only UI turn it back off.
+The page runs offline in these tests: anything off the site, such as the Hugging Face model, is blocked (`e2e/fixtures.ts`), and tests that need them mock the response. Nothing downloads the ~330 MB model. Tests run with reduced motion so the page is deterministic (no AOS, no weather, instant chat replies); specs that cover motion-only UI turn it back off.
 
 ```
 e2e/

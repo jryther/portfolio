@@ -1,7 +1,7 @@
 import { test as base, expect, type Page, type Route } from '@playwright/test'
 
-// Shared setup for every spec: the page runs offline. Google Fonts and the ~330 MB AI model on
-// Hugging Face are blocked unless a test routes them itself, so a run never downloads the model.
+// Shared setup for every spec: the page runs offline. Anything off the site (the ~330 MB AI model
+// on Hugging Face) is blocked unless a test routes it itself, so a run never downloads the model.
 
 export const test = base.extend({
   context: async ({ context }, use) => {

@@ -72,7 +72,7 @@ Rule of thumb: if more than one or two things per screen are amber, something sh
 | `--font-sans` | Inter → system UI | Everything by default |
 | `--font-mono` | JetBrains Mono → system mono | Eyebrows, dates, chips/tags, form labels, coordinates |
 
-Loaded from Google Fonts in `index.html` (Inter 400–700, JetBrains Mono 400–500).
+Self-hosted: variable Latin `woff2` files in `src/assets/fonts/` with `@font-face` rules at the top of `main.css` (OFL licences alongside). `index.html` preloads Inter. No request goes to Google.
 
 ### Typography Scale
 

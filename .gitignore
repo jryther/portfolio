@@ -41,3 +41,6 @@ __screenshots__/
 
 # Private notes: keep any local copy out of git
 *Career Master File*.md
+
+# Claude Code session data (worktrees, local settings)
+/.claude/

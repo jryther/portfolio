@@ -134,7 +134,7 @@ Routing is **anchor-based** (`href="#section-id"`), not Vue Router. `scroll-padd
 - Downloads through `modelDownload.ts` and loads the joined Blob with `wllama.loadModel`; an abort (pause) keeps the saved pieces and the worker
 
 ### `services/modelDownload.ts`
-- Resumable download: 8 MB ranged requests, each saved to Cache Storage under `<url>?piece=<i>` (a query: the cache ignores #fragments), joined into one Blob at the end. `savedFraction`, `clearSaved`
+- Resumable download: 8 MB ranged requests, each saved to Cache Storage under `<url>?piece=<i>` (a query: the cache ignores #fragments), joined into one Blob at the end. Each piece must match its SHA-256 in `data/modelPieces.json` (and its `Content-Range`) before it's saved, so a corrupted or tampered download is never kept or loaded. `savedFraction`, `clearSaved`. After changing the model URL or `PIECE_BYTES`, run `npm run model:hashes -- <file> <sha256>` (the model-update workflow does this)
 - wllama runs inference in its own worker; this module is lazy-loaded by AiChat
 
 ---

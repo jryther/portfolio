@@ -1,6 +1,7 @@
 # Weekly check for a new EmbeddingGemma model file, which Dependabot can't watch (it lives on
 # Hugging Face, pinned by commit in src/services/chatModel.ts). When the file has changed, it
-# repins it, recomputes the topic vectors, and opens a PR for review. It never merges.
+# repins it, recomputes the topic vectors and the download's piece hashes, and opens a PR for
+# review. It never merges.
 #
 # Needs "Allow GitHub Actions to create and approve pull requests" turned on under
 # Settings > Actions > General.
@@ -51,6 +52,17 @@ jobs:
         if: steps.check.outputs.updated == 'true'
         run: npm run embed:topics
 
+      # The browser checks every downloaded piece against these. The script refuses a file whose
+      # SHA-256 isn't the one Hugging Face lists for it
+      - name: Recompute model piece hashes
+        if: steps.check.outputs.updated == 'true'
+        env:
+          MODEL_URL: ${{ steps.check.outputs.url }}
+          MODEL_SHA256: ${{ steps.check.outputs.sha256 }}
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/model.gguf" "$MODEL_URL"
+          npm run model:hashes -- "$RUNNER_TEMP/model.gguf" "$MODEL_SHA256"
+
       - name: Open or update the PR
         if: steps.check.outputs.updated == 'true'
         env:
@@ -66,7 +78,7 @@ jobs:
           if [ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
             gh pr create --head "$BRANCH" --base main --assignee jryther \
               --title "deps: update EmbeddingGemma model to ${REVISION:0:7}" \
-              --body "A new \`embeddinggemma-300M-Q8_0.gguf\` is on Hugging Face ([commit](https://huggingface.co/ggml-org/embeddinggemma-300M-GGUF/commit/$REVISION)). This repins \`src/services/chatModel.ts\` and recomputes \`src/data/topicVectors.json\` with it.
+              --body "A new \`embeddinggemma-300M-Q8_0.gguf\` is on Hugging Face ([commit](https://huggingface.co/ggml-org/embeddinggemma-300M-GGUF/commit/$REVISION)). This repins \`src/services/chatModel.ts\` and recomputes \`src/data/topicVectors.json\` and \`src/data/modelPieces.json\` with it.
 
           Before merging, try a few free-text questions in the chat to check that they still find the right topics."
           fi

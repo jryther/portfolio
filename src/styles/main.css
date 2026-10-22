@@ -5,6 +5,24 @@
    always win over anything here. */
 @layer reset, base, components;
 
+/* ── Fonts ── Served from the site itself rather than Google Fonts, so visitors' browsers
+   don't contact Google. Variable fonts, one file per family covering every weight used; the
+   Latin subset includes Spanish. SIL Open Font License, see assets/fonts/LICENSE-*.txt */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/inter-latin.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+  src: url('../assets/fonts/jetbrains-mono-latin.woff2') format('woff2');
+}
+
 /* ── Design tokens (dark theme by default) ── */
 @layer base {
   :root {

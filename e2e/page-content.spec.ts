@@ -45,6 +45,20 @@ test.describe('page', () => {
     expect(failed).toEqual([])
   })
 
+  // Fonts are self-hosted, so visitors' browsers never contact another site just by opening the
+  // page (only the AI model download, when they ask for it, goes to Hugging Face)
+  test('loads its own fonts and requests nothing from other sites', async ({ page }) => {
+    const offSite: string[] = []
+    page.on('request', (req) => { if (new URL(req.url()).hostname !== 'localhost') offSite.push(req.url()) })
+    await gotoHome(page)
+    await page.waitForLoadState('load')
+    await page.evaluate(() => document.fonts.ready)
+    expect(await page.evaluate(() => document.fonts.check('600 16px Inter') && document.fonts.check('400 16px "JetBrains Mono"'))).toBe(true)
+    const loaded = await page.evaluate(() => [...document.fonts].filter(f => f.status === 'loaded').map(f => f.family.replace(/"/g, '')))
+    expect(loaded).toEqual(expect.arrayContaining(['Inter', 'JetBrains Mono']))
+    expect(offSite).toEqual([])
+  })
+
   test('renders the sections in order', async ({ page }) => {
     await gotoHome(page)
     const ids = await page.locator('main > section').evaluateAll(els => els.map(el => el.id))

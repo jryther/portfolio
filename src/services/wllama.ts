@@ -2,6 +2,7 @@ import { Wllama, LoggerWithoutDebug } from '@wllama/wllama/esm/index.js'
 import wasmUrl from '@wllama/wllama/esm/wasm/wllama.wasm?url'
 import { TOPIC_LIST } from '../data/chatTree'
 import storedVectors from '../data/topicVectors.json'
+import modelPieces from '../data/modelPieces.json'
 import { MODEL } from './chatModel'
 import { createLogger } from './errors'
 import { downloadModel, savedFraction, clearSaved } from './modelDownload'
@@ -86,7 +87,7 @@ export async function loadWeights(onProgress: (progress: number) => void = () =>
     })
     return
   }
-  const file = await downloadModel(MODEL.url, { size: MODEL.bytes, onProgress, signal })
+  const file = await downloadModel(MODEL.url, { size: MODEL.bytes, pieceHashes: modelPieces.pieces, onProgress, signal })
   await instance.loadModel([file], LOAD_PARAMS)
 }
 

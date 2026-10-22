@@ -18,7 +18,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "type-check": "vue-tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.e2e.json && tsc --noEmit -p tsconfig.node.json",
-    "embed:topics": "node scripts/embed-topics.mjs"
+    "embed:topics": "node scripts/embed-topics.mjs",
+    "model:hashes": "node scripts/model-piece-hashes.mjs"
   },
   "dependencies": {
     "@wllama/wllama": "3.8.1",

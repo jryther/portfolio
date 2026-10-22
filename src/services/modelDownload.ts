@@ -3,8 +3,10 @@
 // of starting the ~330 MB over.
 //
 // Each piece is a ranged request (the model host supports them) saved to Cache Storage under
-// the model URL plus ?piece=<index> (a query, not a #fragment: the cache ignores fragments). Once every piece is in, they're joined into one Blob for wllama.
-// The cache also serves as the model cache on later visits.
+// the model URL plus ?piece=<index> (a query, not a #fragment: the cache ignores fragments).
+// A piece is only kept if its SHA-256 matches the list in data/modelPieces.json, so a corrupted
+// or tampered download is never saved or loaded. Once every piece is in, they're joined into one
+// Blob for wllama. The cache also serves as the model cache on later visits.
 
 const CACHE_NAME = 'ai-model'
 // A pause throws away at most the piece in progress
@@ -13,6 +15,8 @@ export const PIECE_BYTES = 8 * 1024 * 1024
 export interface DownloadOptions {
   /** Total file size in bytes (the URL is pinned, so it's known in advance) */
   size: number
+  /** SHA-256 (hex) of each PIECE_BYTES piece, in order (scripts/model-piece-hashes.mjs) */
+  pieceHashes: readonly string[]
   /** Called with 0–1 as bytes arrive, including pieces already saved */
   onProgress?: (fraction: number) => void
   /** Aborting it pauses the download; saved pieces are kept */
@@ -60,11 +64,18 @@ export async function clearSaved(): Promise<void> {
   if (typeof caches !== 'undefined') await caches.delete(CACHE_NAME)
 }
 
-/** Downloads one piece, reporting bytes as they arrive, and returns it once complete */
-async function fetchPiece(url: string, size: number, i: number, signal: AbortSignal | undefined, onBytes: (n: number) => void): Promise<Blob> {
+async function sha256Hex(blob: Blob): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer())
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+/** Downloads one piece, reporting bytes as they arrive, and returns it once complete and verified */
+async function fetchPiece(url: string, size: number, i: number, hash: string, signal: AbortSignal | undefined, onBytes: (n: number) => void): Promise<Blob> {
   const { start, end } = pieceRange(size, i)
   const response = await fetch(url, { headers: { Range: `bytes=${start}-${end}` }, signal })
   if (response.status !== 206) throw new Error(`Model download: expected a partial response, got HTTP ${response.status}`)
+  const range = response.headers.get('Content-Range')
+  if (range !== `bytes ${start}-${end}/${size}`) throw new Error(`Model download: piece ${i} came back as "${range}"`)
   const reader = response.body!.getReader()
   const parts: Uint8Array[] = []
   let received = 0
@@ -77,21 +88,24 @@ async function fetchPiece(url: string, size: number, i: number, signal: AbortSig
   }
   const expected = end - start + 1
   if (received !== expected) throw new Error(`Model download: piece ${i} has ${received} bytes, expected ${expected}`)
-  return new Blob(parts as BlobPart[])
+  const piece = new Blob(parts as BlobPart[])
+  if (await sha256Hex(piece) !== hash) throw new Error(`Model download: piece ${i} failed its integrity check`)
+  return piece
 }
 
 /**
  * The whole file as one Blob: saved pieces from the cache, the rest downloaded (and saved).
  * Rejects with an AbortError when the signal aborts; everything saved so far is kept.
  */
-export async function downloadModel(url: string, { size, onProgress = () => {}, signal }: DownloadOptions): Promise<Blob> {
+export async function downloadModel(url: string, { size, pieceHashes, onProgress = () => {}, signal }: DownloadOptions): Promise<Blob> {
+  const count = pieceCount(size)
+  if (pieceHashes.length !== count) throw new Error(`Model download: ${pieceHashes.length} piece hashes for ${count} pieces`)
   const cache = await openCache()
   // Pieces of a different model (an earlier pinned URL) are no longer needed
   for (const request of await cache.keys()) {
     if (!request.url.startsWith(piecePrefix(url))) await cache.delete(request)
   }
 
-  const count = pieceCount(size)
   const saved = await savedPieces(cache, url)
   let done = 0
   for (const i of saved) { const { start, end } = pieceRange(size, i); done += end - start + 1 }
@@ -101,7 +115,7 @@ export async function downloadModel(url: string, { size, onProgress = () => {}, 
     if (saved.has(i)) continue
     signal?.throwIfAborted()
     let inPiece = 0
-    const piece = await fetchPiece(url, size, i, signal, (n) => {
+    const piece = await fetchPiece(url, size, i, pieceHashes[i], signal, (n) => {
       inPiece += n
       onProgress((done + inPiece) / size)
     })
