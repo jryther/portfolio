@@ -17,7 +17,11 @@ test.describe('contact form', () => {
       email: root.getByLabel('Email'),
       message: root.getByLabel('Message'),
       submit: root.getByRole('button', { name: 'Send Message' }),
-      success: root.getByRole('status'),
+      // The status and alert regions are always in the DOM (so screen readers announce changes);
+      // what matters is the message inside them
+      success: root.getByRole('status').getByText('Message sent successfully'),
+      error: root.getByRole('alert').getByText("couldn't be sent"),
+      fallbackEmail: root.getByRole('alert').getByRole('link', { name: 'jryther91@gmail.com' }),
     }
   }
 
@@ -82,6 +86,7 @@ test.describe('contact form', () => {
 
     expect(requests).toBe(0)
     await expect(f.success).toHaveCount(0)
+    await expect(f.error).toHaveCount(0)
   })
 
   test('keeps what was typed when the server rejects it', async ({ page }) => {
@@ -95,6 +100,8 @@ test.describe('contact form', () => {
     await response
 
     await expect(f.success).toHaveCount(0)
+    await expect(f.error).toBeVisible()
+    await expect(f.fallbackEmail).toBeVisible()
     await expect(f.name).toHaveValue('Ada')
     await expect(f.message).toHaveValue('Hi')
   })
@@ -110,6 +117,8 @@ test.describe('contact form', () => {
     await failed
 
     await expect(f.success).toHaveCount(0)
+    await expect(f.error).toBeVisible()
+    await expect(f.fallbackEmail).toBeVisible()
     await expect(f.email).toHaveValue('ada@example.com')
   })
 })
