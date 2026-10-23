@@ -29,6 +29,19 @@ test.describe('chat popup', () => {
     await expect(chat.dialog.getByText('Ask About Josh')).toBeVisible()
   })
 
+  test('the contact answer links to email, LinkedIn and GitHub', async ({ page }) => {
+    await gotoHome(page)
+    const chat = chatPopup(page)
+    await chat.fab.click()
+    await chat.chip('How can I contact him?').click()
+    const answer = chat.assistantBubbles.last()
+    await expect(answer.getByRole('link', { name: 'jryther91@gmail.com' })).toHaveAttribute('href', 'mailto:jryther91@gmail.com')
+    await expect(answer.getByRole('link', { name: 'linkedin.com/in/joshua-ryther-121400109' })).toHaveAttribute('href', 'https://linkedin.com/in/joshua-ryther-121400109')
+    const github = answer.getByRole('link', { name: 'github.com/jryther' })
+    await expect(github).toHaveAttribute('href', 'https://github.com/jryther')
+    await expect(github).toHaveAttribute('target', '_blank')
+  })
+
   test('closes with the close button and with Escape, handing focus back', async ({ page }) => {
     await gotoHome(page)
     const chat = chatPopup(page)

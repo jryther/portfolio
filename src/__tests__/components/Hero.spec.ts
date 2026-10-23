@@ -5,7 +5,7 @@ import Hero from '../../components/Hero.vue'
 import { i18n } from '../../i18n'
 import { scenePaused } from '../../composables/useScene'
 import { prefersReducedMotion } from '../../composables/useReducedMotion'
-import { CONTACT_EMAIL, LINKEDIN_URL } from '../../data/contact'
+import { CONTACT_EMAIL, LINKEDIN_URL, GITHUB_URL } from '../../data/contact'
 
 // jsdom can't draw on a canvas, so each weather layer fails to start, which the hero logs and
 // carries on without. The log shows which layers it tried to start, and when.
@@ -42,9 +42,10 @@ describe('Hero', () => {
     expect(rainAttempts()).toBe(1)
   })
 
-  it('links to LinkedIn and email from the shared contact details', () => {
+  it('links to LinkedIn, GitHub and email from the shared contact details', () => {
     const hero = mountHero()
     expect(hero.find(`a[href="${LINKEDIN_URL}"]`).exists()).toBe(true)
+    expect(hero.find(`a[href="${GITHUB_URL}"]`).exists()).toBe(true)
     expect(hero.find(`a[href="mailto:${CONTACT_EMAIL}"]`).exists()).toBe(true)
   })
 

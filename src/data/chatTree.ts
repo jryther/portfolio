@@ -363,8 +363,8 @@ const topics: ChatTopic[] = [
   {
     id: 'contact',
     label: 'How can I contact him?',
-    keywords: ['contact', 'reach', 'email', 'e-mail', 'linkedin', 'get in touch', 'interview', 'connect', 'message him', 'talk to him', 'phone', 'call'],
-    answer: "The best way to reach Josh is email at jryther91@gmail.com. You can also find him on LinkedIn (linkedin.com/in/joshua-ryther-121400109) or use the contact form on this page.",
+    keywords: ['contact', 'reach', 'email', 'e-mail', 'linkedin', 'github', 'his code', 'get in touch', 'interview', 'connect', 'message him', 'talk to him', 'phone', 'call'],
+    answer: "The best way to reach Josh is email at jryther91@gmail.com. You can also find him on LinkedIn (linkedin.com/in/joshua-ryther-121400109) and GitHub (github.com/jryther), or use the contact form on this page.",
     followUps: ['logistics', 'overview', 'projects'],
   },
   {

@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import ContactForm from './ContactForm.vue'
-import { CONTACT_EMAIL, LINKEDIN_URL, EMAIL_ICON, LINKEDIN_ICON } from '../data/contact'
+import { CONTACT_EMAIL, LINKEDIN_URL, GITHUB_URL, EMAIL_ICON, LINKEDIN_ICON, GITHUB_ICON } from '../data/contact'
 
 const { t } = useI18n()
 
@@ -90,6 +90,13 @@ const contactLinks = [
     href: LINKEDIN_URL,
     external: true,
     icon: LINKEDIN_ICON,
+  },
+  {
+    key: 'github',
+    value: 'github.com/jryther',
+    href: GITHUB_URL,
+    external: true,
+    icon: GITHUB_ICON,
   },
   {
     key: 'location',
