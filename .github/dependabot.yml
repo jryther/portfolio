@@ -36,6 +36,9 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # typescript-eslint doesn't support TypeScript 7 yet; remove this once it does
+      - dependency-name: "typescript"
+        versions: [">=7"]
     assignees:
       - jryther
     commit-message:

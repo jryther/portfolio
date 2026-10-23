@@ -7,7 +7,8 @@ import { AI_EXAMPLES_ES } from '../../data/chatTree.es'
 const allAnswers = (topic: (typeof TOPIC_LIST)[number]) => [topic.answer, ...Object.values(topic.translations ?? {}).map(t => t.answer)]
 
 // Terms that must never appear in a public answer. Stored as SHA-256 hashes so the
-// repo never spells them out; each word of every answer is hashed and checked against them
+// repo never spells them out; each word, and each pair of words, of every answer is hashed and
+// checked against them
 const BANNED_WORD_HASHES = new Set([
   '839cd11692e82b35399802778a0d4b08fb21690eb757a7d9e5030d9a2bcc2b97',
   'b3eff28ac9bf48d348ed16c0081876ead7a07f72eeb4e8e16f713c75350e3dbd',
@@ -20,6 +21,11 @@ const BANNED_WORD_HASHES = new Set([
   '1225ae6c1ae69dcb4ee4781b703e12206f3b549cd3ca151070a8d8d8f371dd71',
   '3c469e9d6c5875d37a43f353d4f88e61fcf812c66eee3457465a40b0da4153e0',
   'c51e455b41df6c017327e16001dd064b8b6733faeaa69b23d9bd79c8079237d5',
+  '88b1deea6a18cfd0d1df1f0048d0946332fe61d1adc2bacb25e5f6a774b56cc5',
+  '178b6e061a04a75e46b85f8c9ef1803583f5cb5a459d4ba45c3b7529c5f0c3ec',
+  '238561a7a119565acfa8b875833e8615ab37388ec6b85cd8e895a0679f8d2256',
+  '94e917b1d329a423d0feca43a55a376e5998317751e07978e71347181413b306',
+  '6fe5b97f438c4c26d6fb94b0afdb9b64f75755939fdbe72288bbe459e30d87b7',
 ])
 
 async function sha256Hex(text: string): Promise<string> {
@@ -76,9 +82,16 @@ describe('chatTree', () => {
   })
 
   it('keeps private terms out of the public answers', async () => {
-    const words = new Set(TOPIC_LIST.flatMap(allAnswers).join(' ').toLowerCase().match(/[a-z0-9]+(?:,\d{3})*/g))
+    const terms = new Set<string>()
+    for (const answer of TOPIC_LIST.flatMap(allAnswers)) {
+      const words = answer.toLowerCase().match(/[a-z0-9]+(?:,\d{3})*/g) ?? []
+      words.forEach((word, i) => {
+        terms.add(word)
+        if (i > 0) terms.add(`${words[i - 1]} ${word}`)
+      })
+    }
     const banned: string[] = []
-    for (const word of words) if (BANNED_WORD_HASHES.has(await sha256Hex(word))) banned.push(word)
+    for (const term of terms) if (BANNED_WORD_HASHES.has(await sha256Hex(term))) banned.push(term)
     expect(banned).toEqual([])
   })
 })
