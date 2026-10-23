@@ -106,6 +106,7 @@ test.describe('hero', () => {
     await expect(hero.getByRole('link', { name: 'Get in touch' })).toHaveAttribute('href', '#contact')
     await expect(hero.getByRole('button', { name: 'View resume' })).toHaveAttribute('aria-haspopup', 'menu')
     await expect(hero.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com\/in\/joshua-ryther/)
+    await expect(hero.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', 'https://github.com/jryther')
     await expect(hero.getByRole('link', { name: 'Email' })).toHaveAttribute('href', 'mailto:jryther91@gmail.com')
   })
 
@@ -222,6 +223,13 @@ test.describe('work', () => {
     }
   })
 
+  test('points to personal projects on GitHub', async ({ page }) => {
+    await gotoHome(page)
+    const more = page.locator('#projects .more-work')
+    await expect(more).toHaveText('Personal projects and experiments live on GitHub.')
+    await expect(more.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', 'https://github.com/jryther')
+  })
+
   test('the spotlight glow follows the pointer', async ({ page, isMobile }) => {
     test.skip(isMobile, 'No hover on touch screens')
     await gotoHome(page)
@@ -255,6 +263,7 @@ test.describe('contact', () => {
     await expect(contact.getByRole('heading', { name: "Let's connect" })).toBeVisible()
     await expect(contact.getByRole('link', { name: /jryther91@gmail\.com/ })).toHaveAttribute('href', 'mailto:jryther91@gmail.com')
     await expect(contact.getByRole('link', { name: /LinkedIn/ })).toHaveAttribute('href', /linkedin\.com/)
+    await expect(contact.getByRole('link', { name: /GitHub/ })).toHaveAttribute('href', 'https://github.com/jryther')
     // Location is plain text, not a link
     await expect(contact.locator('.contact-row:not(a)')).toContainText('Salem, Oregon')
     await expect(contact.getByRole('heading', { name: 'Send a message' })).toBeVisible()
@@ -268,6 +277,7 @@ test.describe('footer', () => {
     await expect(footer).toContainText(`© ${new Date().getFullYear()} Josh Ryther`)
     await expect(footer).toContainText('Built with Vue, Vite & wllama')
     await expect(footer.getByRole('link', { name: 'LinkedIn' })).toHaveAttribute('href', /linkedin\.com/)
+    await expect(footer.getByRole('link', { name: 'GitHub' })).toHaveAttribute('href', 'https://github.com/jryther')
     await expect(footer.getByRole('link', { name: 'Email' })).toHaveAttribute('href', 'mailto:jryther91@gmail.com')
     await expect(footer.getByText(/TestNav is a trademark of Pearson Education/)).toBeVisible()
   })

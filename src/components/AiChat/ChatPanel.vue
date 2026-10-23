@@ -287,8 +287,9 @@ watch(busy, async (nowBusy, wasBusy) => {
   el?.focus({ preventScroll: true })
 })
 
-// Email addresses and LinkedIn URLs in an answer become links (built as elements, never HTML)
-const LINK_RE = /([\w.+-]+@[\w-]+(?:\.[\w-]+)+)|((?:https?:\/\/)?(?:www\.)?linkedin\.com\/in\/[\w-]+)/g
+// Email addresses and LinkedIn and GitHub profile URLs in an answer become links (built as
+// elements, never HTML)
+const LINK_RE = /([\w.+-]+@[\w-]+(?:\.[\w-]+)+)|((?:https?:\/\/)?(?:www\.)?(?:linkedin\.com\/in|github\.com)\/[\w-]+)/g
 function linkParts(text: string): { text: string, href?: string, external?: boolean }[] {
   const parts: { text: string, href?: string, external?: boolean }[] = []
   let last = 0

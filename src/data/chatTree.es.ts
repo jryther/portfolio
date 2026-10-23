@@ -293,9 +293,9 @@ export const esTopics = (yearsAtPearson: number): Record<string, TopicTranslatio
   },
   contact: {
     label: '¿Cómo puedo contactarlo?',
-    keywords: ['contactar', 'contactarlo', 'contacto', 'correo', 'correo electrónico', 'ponerme en contacto', 'entrevista', 'escribirle', 'hablar con él', 'comunicarme', 'teléfono', 'llamar'],
+    keywords: ['contactar', 'contactarlo', 'contacto', 'correo', 'correo electrónico', 'ponerme en contacto', 'github', 'su código', 'entrevista', 'escribirle', 'hablar con él', 'comunicarme', 'teléfono', 'llamar'],
     examples: ['¿Cómo me comunico con Josh?', '¿Cuál es su correo electrónico?', '¿Dónde encuentro su LinkedIn?', '¿Cómo agendo una entrevista?'],
-    answer: 'La mejor forma de contactar a Josh es por correo electrónico en jryther91@gmail.com. También puedes encontrarlo en LinkedIn (linkedin.com/in/joshua-ryther-121400109) o usar el formulario de contacto de esta página.',
+    answer: 'La mejor forma de contactar a Josh es por correo electrónico en jryther91@gmail.com. También puedes encontrarlo en LinkedIn (linkedin.com/in/joshua-ryther-121400109) y GitHub (github.com/jryther), o usar el formulario de contacto de esta página.',
   },
   logistics: {
     label: '¿Está abierto a nuevos puestos?',

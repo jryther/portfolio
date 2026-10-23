@@ -113,6 +113,7 @@ const es: MessageSchema = {
     },
   },
   work: {
+    moreWork: 'Mis proyectos personales y experimentos están en',
     eyebrow: '04 — Trabajo',
     title: 'Trabajo profesional',
     role: 'Ingeniero de software',
@@ -246,6 +247,7 @@ const es: MessageSchema = {
     intro2: 'Si buscas un desarrollador full-stack, necesitas una opinión técnica o simplemente quieres charlar sobre ingeniería de software, ¡escríbeme!',
     email: 'Correo electrónico',
     linkedin: 'LinkedIn',
+    github: 'GitHub',
     location: 'Ubicación',
     locationValue: 'Salem, Oregón',
     formTitle: 'Envía un mensaje',

@@ -152,6 +152,19 @@
           </p>
         </article>
       </div>
+
+      <p
+        class="more-work"
+        data-aos="fade-up"
+      >
+        {{ t('work.moreWork') }}
+        <a
+          :href="GITHUB_URL"
+          target="_blank"
+          rel="noreferrer"
+          class="more-work-link"
+        >GitHub</a>.
+      </p>
     </div>
   </section>
 </template>
@@ -160,6 +173,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { messageList } from '../i18n'
+import { GITHUB_URL } from '../data/contact'
 
 // Work at Pearson, in order of emphasis: the TestNav client
 // first (testing, then accessibility), supporting systems second. Describes what each system
@@ -195,6 +209,22 @@ const supporting = computed(() => messageList<Supporting>('work.supporting'))
 </script>
 
 <style scoped>
+/* "Personal projects … on GitHub", under the supporting cards */
+.more-work {
+  margin-top: 4.8rem;
+  font-size: var(--text-base);
+  color: var(--color-ash);
+}
+.more-work-link {
+  color: var(--color-amber);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-amber) 40%, transparent);
+  text-underline-offset: 0.4rem;
+}
+.more-work-link:hover {
+  text-decoration-color: var(--color-amber);
+}
+
 .work-heading {
   margin-top: 1.5rem;
   margin-bottom: 3.5rem;

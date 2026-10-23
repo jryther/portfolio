@@ -116,6 +116,7 @@ const en = {
     },
   },
   work: {
+    moreWork: 'Personal projects and experiments live on',
     eyebrow: '04 — Work',
     title: 'Professional work',
     role: 'Software Engineer',
@@ -249,6 +250,7 @@ const en = {
     intro2: "Whether you're looking for a full-stack developer, need technical insights, or just want to chat about software engineering, feel free to reach out!",
     email: 'Email',
     linkedin: 'LinkedIn',
+    github: 'GitHub',
     location: 'Location',
     locationValue: 'Salem, Oregon',
     formTitle: 'Send a message',

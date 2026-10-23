@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { vTooltip } from '../directives/tooltip'
-import { CONTACT_EMAIL, LINKEDIN_URL, EMAIL_ICON, LINKEDIN_ICON } from '../data/contact'
+import { CONTACT_EMAIL, LINKEDIN_URL, GITHUB_URL, EMAIL_ICON, LINKEDIN_ICON, GITHUB_ICON } from '../data/contact'
 
 const { t } = useI18n()
 
@@ -50,6 +50,12 @@ const links = [
     href: LINKEDIN_URL,
     external: true,
     icon: LINKEDIN_ICON,
+  },
+  {
+    labelKey: 'contact.github',
+    href: GITHUB_URL,
+    external: true,
+    icon: GITHUB_ICON,
   },
   {
     labelKey: 'contact.email',
