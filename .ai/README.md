@@ -1,6 +1,6 @@
 # AI Agent Documentation Index
 
-This directory contains machine-readable documentation for AI coding agents working on the `portfolio-v3` repository.
+This directory contains machine-readable documentation for AI coding agents working on the `portfolio` repository.
 
 ## Files
 
