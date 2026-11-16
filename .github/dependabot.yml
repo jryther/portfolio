@@ -15,6 +15,12 @@
 # Not covered: the EmbeddingGemma model, pinned by URL in src/services/chatModel.ts. The
 # model-update workflow (.github/workflows/model-update.yml) watches it instead.
 #
+# Overrides in package.json (minimatch, glob) are a temporary fix for advisories
+# GHSA-g3hv-75wg-m249 and GHSA-3g3m-2fjr-6pw4. Dependabot doesn't remove them, and they stay
+# capped below the next major. Once eslint, typescript-eslint and js-beautify (via
+# @vue/test-utils) depend on patched versions, delete the "overrides" block, run
+# `npm install && npm audit`, and commit if it's clean.
+#
 # Docs: https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 
 version: 2
@@ -58,6 +64,11 @@ updates:
         update-types:
           - minor
           - patch
+        # Listing the vitest group first isn't enough on its own: Dependabot has still put
+        # @vitest/coverage-v8 here while vitest went to its own PR, which breaks `npm ci`
+        exclude-patterns:
+          - "vitest"
+          - "@vitest/*"
       # What ships to visitors (vue, vue-i18n)
       production-dependencies:
         dependency-type: production
