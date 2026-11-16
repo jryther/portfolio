@@ -58,6 +58,11 @@ updates:
         update-types:
           - minor
           - patch
+        # Listing the vitest group first isn't enough on its own: Dependabot has still put
+        # @vitest/coverage-v8 here while vitest went to its own PR, which breaks `npm ci`
+        exclude-patterns:
+          - "vitest"
+          - "@vitest/*"
       # What ships to visitors (vue, vue-i18n)
       production-dependencies:
         dependency-type: production
